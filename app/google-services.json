@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "369046932481",
+    "project_id": "digital-vaccination-app",
+    "storage_bucket": "digital-vaccination-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:369046932481:android:dfeb54e6207916abaf0400",
+        "android_client_info": {
+          "package_name": "com.example.digitalvaccineapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBpks6ltY1qRJyM7gWif_jLC6nWnIjMDfk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
