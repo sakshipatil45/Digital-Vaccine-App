@@ -20,6 +20,7 @@ public class VaccinationActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private VaccinationAdapter adapter;
     private List<Vaccination> vaccinationList = new ArrayList<>();
+    private com.google.android.material.floatingactionbutton.FloatingActionButton fabAddVaccination;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +32,18 @@ public class VaccinationActivity extends AppCompatActivity {
         adapter = new VaccinationAdapter(vaccinationList);
         recyclerView.setAdapter(adapter);
 
+        fabAddVaccination = findViewById(R.id.fabAddVaccination);
+        fabAddVaccination.setOnClickListener(v -> {
+            android.content.Intent intent = new android.content.Intent(this, AddVaccinationActivity.class);
+            startActivity(intent);
+        });
+
+        fetchVaccinations();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         fetchVaccinations();
     }
 
