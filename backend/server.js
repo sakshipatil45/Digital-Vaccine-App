@@ -5,6 +5,7 @@ const { db } = require("./config/firebase");
 
 const vaccinationRoutes = require("./routes/vaccinationRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const certificateRoutes = require("./routes/certificateRoutes");
 const errorMiddleware = require("./middleware/errorMiddleware");
 const cron = require("node-cron");
 const { checkAndSendReminders } = require("./services/reminderService");
@@ -23,6 +24,7 @@ app.get("/", (req, res) => {
 
 // Register Module Routes
 app.use("/api/vaccinations", vaccinationRoutes);
+app.use("/api/vaccinations", certificateRoutes);
 app.use("/api/admin", adminRoutes);
 
 // Test Firestore route
