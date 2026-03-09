@@ -1,5 +1,6 @@
 package com.example.digitalvaccineapp.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,6 +11,7 @@ import com.example.digitalvaccineapp.adapter.VaccinationAdapter;
 import com.example.digitalvaccineapp.models.ApiResponse;
 import com.example.digitalvaccineapp.models.Vaccination;
 import com.example.digitalvaccineapp.network.RetrofitClient;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
@@ -20,7 +22,6 @@ public class VaccinationActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private VaccinationAdapter adapter;
     private List<Vaccination> vaccinationList = new ArrayList<>();
-    private com.google.android.material.floatingactionbutton.FloatingActionButton fabAddVaccination;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,18 +33,12 @@ public class VaccinationActivity extends AppCompatActivity {
         adapter = new VaccinationAdapter(vaccinationList);
         recyclerView.setAdapter(adapter);
 
-        fabAddVaccination = findViewById(R.id.fabAddVaccination);
-        fabAddVaccination.setOnClickListener(v -> {
-            android.content.Intent intent = new android.content.Intent(this, AddVaccinationActivity.class);
+        ExtendedFloatingActionButton btnAdd = findViewById(R.id.btnAddVaccination);
+        btnAdd.setOnClickListener(v -> {
+            Intent intent = new Intent(this, AddVaccinationActivity.class);
             startActivity(intent);
         });
 
-        fetchVaccinations();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
         fetchVaccinations();
     }
 
@@ -65,5 +60,11 @@ public class VaccinationActivity extends AppCompatActivity {
                 Toast.makeText(VaccinationActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        fetchVaccinations(); // Refresh list when returning from Add activity
     }
 }
