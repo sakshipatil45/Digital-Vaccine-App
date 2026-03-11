@@ -30,6 +30,7 @@ public class VaccinationAdapter extends RecyclerView.Adapter<VaccinationAdapter.
         Vaccination vaccination = vaccinationList.get(position);
         holder.tvName.setText(vaccination.getVaccineName());
         holder.tvHospital.setText(vaccination.getHospitalName());
+        holder.tvDependent.setText("For: " + vaccination.getDependentName());
         holder.tvDate.setText(vaccination.getDateTaken());
         holder.tvDose.setText("Dose: " + vaccination.getDoseNumber());
         
@@ -55,13 +56,14 @@ public class VaccinationAdapter extends RecyclerView.Adapter<VaccinationAdapter.
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvDate, tvStatus, tvHospital, tvDose;
+        TextView tvName, tvDate, tvStatus, tvHospital, tvDose, tvDependent;
         View vStatusBadge;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvVaccineName);
             tvHospital = itemView.findViewById(R.id.tvHospitalName);
+            tvDependent = itemView.findViewById(R.id.tvDependentName);
             tvDate = itemView.findViewById(R.id.tvDateTaken);
             tvStatus = itemView.findViewById(R.id.tvStatus);
             tvDose = itemView.findViewById(R.id.tvDoseInfo);

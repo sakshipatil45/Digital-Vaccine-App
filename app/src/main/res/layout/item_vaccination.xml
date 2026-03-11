@@ -62,6 +62,19 @@
             app:layout_constraintStart_toEndOf="@id/iconContainer"
             app:layout_constraintTop_toBottomOf="@id/tvVaccineName" />
 
+        <TextView
+            android:id="@+id/tvDependentName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Self"
+            android:textColor="@color/primary_dark"
+            android:textSize="12sp"
+            android:textStyle="italic"
+            app:layout_constraintEnd_toStartOf="@id/vStatusBadge"
+            app:layout_constraintStart_toEndOf="@id/iconContainer"
+            app:layout_constraintTop_toBottomOf="@id/tvHospitalName" />
+
         <!-- Divider -->
         <View
             android:id="@+id/divider"

@@ -12,17 +12,19 @@ public class Vaccination {
     private String nextDueDate;
     private String hospitalName;
     private String status;
+    private String dependentName;
     private Object createdAt;
 
     // Default constructor for GSON
     public Vaccination() {}
 
-    public Vaccination(String vaccineName, int doseNumber, String dateTaken, String hospitalName, String status) {
+    public Vaccination(String vaccineName, int doseNumber, String dateTaken, String hospitalName, String status, String dependentName) {
         this.vaccineName = vaccineName;
         this.doseNumber = doseNumber;
         this.dateTaken = dateTaken;
         this.hospitalName = hospitalName;
         this.status = status;
+        this.dependentName = dependentName;
     }
 
     // Getters and Setters
@@ -40,4 +42,6 @@ public class Vaccination {
     public void setHospitalName(String hospitalName) { this.hospitalName = hospitalName; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getDependentName() { return dependentName; }
+    public void setDependentName(String dependentName) { this.dependentName = dependentName; }
 }

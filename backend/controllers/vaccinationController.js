@@ -19,7 +19,7 @@ const vaccinationRef = db.collection("vaccinations");
  */
 exports.addVaccination = async (req, res, next) => {
     try {
-        const { vaccineName, doseNumber, dateTaken, nextDueDate, hospitalName, status } = req.body;
+        const { vaccineName, doseNumber, dateTaken, nextDueDate, hospitalName, status, dependentName } = req.body;
         const userId = req.user.uid;
 
         // Validation
@@ -35,6 +35,7 @@ exports.addVaccination = async (req, res, next) => {
             nextDueDate: nextDueDate || null,
             hospitalName,
             status,
+            dependentName: dependentName || "Self",
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
         };
 
@@ -54,11 +55,15 @@ exports.addVaccination = async (req, res, next) => {
 exports.getVaccinations = async (req, res, next) => {
     try {
         const userId = req.user.uid;
+        const { dependentName } = req.query;
 
-        const snapshot = await vaccinationRef
-            .where("userId", "==", userId)
-            .orderBy("createdAt", "desc")
-            .get();
+        let query = vaccinationRef.where("userId", "==", userId);
+
+        if (dependentName) {
+            query = query.where("dependentName", "==", dependentName);
+        }
+
+        const snapshot = await query.orderBy("createdAt", "desc").get();
 
         const vaccinations = [];
         snapshot.forEach((doc) => {

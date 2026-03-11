@@ -19,7 +19,7 @@ import retrofit2.Response;
 
 public class AddVaccinationActivity extends AppCompatActivity {
 
-    private TextInputEditText etVaccineName, etDoseNumber, etDateTaken, etHospitalName;
+    private TextInputEditText etVaccineName, etDoseNumber, etDateTaken, etHospitalName, etDependentName;
     private AutoCompleteTextView spinnerStatus;
     private Button btnSave;
 
@@ -32,6 +32,7 @@ public class AddVaccinationActivity extends AppCompatActivity {
         etDoseNumber = findViewById(R.id.etDoseNumber);
         etDateTaken = findViewById(R.id.etDateTaken);
         etHospitalName = findViewById(R.id.etHospitalName);
+        etDependentName = findViewById(R.id.etDependentName);
         spinnerStatus = findViewById(R.id.spinnerStatus);
         btnSave = findViewById(R.id.btnSave);
 
@@ -64,15 +65,16 @@ public class AddVaccinationActivity extends AppCompatActivity {
         String doseStr = etDoseNumber.getText().toString();
         String date = etDateTaken.getText().toString();
         String hospital = etHospitalName.getText().toString();
+        String dependent = etDependentName.getText().toString();
         String status = spinnerStatus.getText().toString();
 
-        if (name.isEmpty() || doseStr.isEmpty() || date.isEmpty() || hospital.isEmpty() || status.isEmpty()) {
+        if (name.isEmpty() || doseStr.isEmpty() || date.isEmpty() || hospital.isEmpty() || status.isEmpty() || dependent.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
         int dose = Integer.parseInt(doseStr);
-        Vaccination vaccination = new Vaccination(name, dose, date, hospital, status);
+        Vaccination vaccination = new Vaccination(name, dose, date, hospital, status, dependent);
 
         RetrofitClient.getApiService().addVaccination(vaccination).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
