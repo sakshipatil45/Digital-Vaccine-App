@@ -18,7 +18,7 @@
             android:exported="true">
         </activity>
         <activity
-            android:name=".ui.VaccinationActivity"
+            android:name=".ui.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,8 +26,16 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".ui.VaccinationActivity"
+            android:exported="true">
+        </activity>
+        <activity
             android:name=".ui.AddVaccinationActivity"
             android:exported="true">
+        </activity>
+        <activity
+            android:name=".ui.ProfileActivity"
+            android:exported="false">
         </activity>
     </application>
 

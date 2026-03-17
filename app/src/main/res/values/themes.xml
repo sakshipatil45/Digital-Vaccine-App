@@ -14,6 +14,10 @@
         <!-- Status & Background -->
         <item name="android:windowBackground">@color/bg_light</item>
         <item name="android:statusBarColor">@color/primary_dark</item>
+        
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/text_main</item>
+        <item name="colorOutline">@color/primary_teal</item>
     </style>
 
     <style name="Theme.DigitalVaccineApp" parent="Base.Theme.DigitalVaccineApp" />

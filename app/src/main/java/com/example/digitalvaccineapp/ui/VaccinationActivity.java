@@ -22,12 +22,14 @@ public class VaccinationActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private VaccinationAdapter adapter;
     private List<Vaccination> vaccinationList = new ArrayList<>();
+    private VaccinationRepository repository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vaccination);
 
+        repository = new VaccinationRepository(this);
         recyclerView = findViewById(R.id.rvVaccinations);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new VaccinationAdapter(vaccinationList);
@@ -39,26 +41,53 @@ public class VaccinationActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        findViewById(R.id.btnProfile).setOnClickListener(v -> {
+            Intent intent = new Intent(this, ProfileActivity.class);
+            startActivity(intent);
+        });
+
         fetchVaccinations();
     }
 
     private void fetchVaccinations() {
-        RetrofitClient.getApiService().getVaccinations().enqueue(new Callback<ApiResponse<List<Vaccination>>>() {
+        repository.getVaccinations(new VaccinationRepository.DataCallback() {
             @Override
-            public void onResponse(Call<ApiResponse<List<Vaccination>>> call, Response<ApiResponse<List<Vaccination>>> response) {
-                if (response.isSuccessful() && response.body() != null) {
+            public void onDataLoaded(List<Vaccination> vaccinations) {
+                runOnUiThread(() -> {
                     vaccinationList.clear();
-                    vaccinationList.addAll(response.body().getData());
+                    vaccinationList.addAll(vaccinations);
                     adapter.notifyDataSetChanged();
-                } else {
-                    Toast.makeText(VaccinationActivity.this, "Failed to load vaccinations", Toast.LENGTH_SHORT).show();
-                }
+                    updateSummary();
+                });
             }
 
             @Override
-            public void onFailure(Call<ApiResponse<List<Vaccination>>> call, Throwable t) {
-                Toast.makeText(VaccinationActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            public void onError(String message) {
+                runOnUiThread(() -> Toast.makeText(VaccinationActivity.this, message, Toast.LENGTH_SHORT).show());
             }
+        });
+    }
+
+    private void updateSummary() {
+        int completed = 0;
+        int pending = 0;
+        for (Vaccination v : vaccinationList) {
+            String status = v.getStatus().toLowerCase();
+            if (status.contains("completed") || status.contains("done")) {
+                completed++;
+            } else {
+                pending++;
+            }
+        }
+        
+        TextView tvCompleted = findViewById(R.id.tvCompletedCount);
+        TextView tvPending = findViewById(R.id.tvPendingCount);
+        
+        int finalCompleted = completed;
+        int finalPending = pending;
+        runOnUiThread(() -> {
+            tvCompleted.setText(String.valueOf(finalCompleted));
+            tvPending.setText(String.valueOf(finalPending));
         });
     }
 

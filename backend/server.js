@@ -6,6 +6,7 @@ const { db } = require("./config/firebase");
 const vaccinationRoutes = require("./routes/vaccinationRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const certificateRoutes = require("./routes/certificateRoutes");
+const userRoutes = require("./routes/userRoutes");
 const errorMiddleware = require("./middleware/errorMiddleware");
 const cron = require("node-cron");
 const { checkAndSendReminders } = require("./services/reminderService");
@@ -26,6 +27,7 @@ app.get("/", (req, res) => {
 app.use("/api/vaccinations", vaccinationRoutes);
 app.use("/api/vaccinations", certificateRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/users", userRoutes);
 
 // Test Firestore route
 app.get("/test-firestore", async (req, res) => {
