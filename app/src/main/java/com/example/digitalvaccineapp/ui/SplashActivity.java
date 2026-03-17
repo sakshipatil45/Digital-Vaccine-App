@@ -36,9 +36,8 @@ public class SplashActivity extends AppCompatActivity {
             // Redirect to Dashboard
             intent = new Intent(SplashActivity.this, VaccinationActivity.class);
         } else {
-            // Redirect to Login (Assuming MainActivity is acting as the starting/login point, 
-            // since there is no explicit LoginActivity right now, or create a basic LoginActivity placeholder)
-            intent = new Intent(SplashActivity.this, com.example.digitalvaccineapp.MainActivity.class);
+            // Redirect to Welcome / Landing Screen
+            intent = new Intent(SplashActivity.this, WelcomeActivity.class);
         }
 
         startActivity(intent);

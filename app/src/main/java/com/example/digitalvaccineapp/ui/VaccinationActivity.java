@@ -17,11 +17,12 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import com.example.digitalvaccineapp.models.User;
+import com.google.firebase.auth.FirebaseAuth;
+import android.widget.TextView;
 
 public class VaccinationActivity extends AppCompatActivity {
-    private RecyclerView recyclerView;
-    private VaccinationAdapter adapter;
-    private List<Vaccination> vaccinationList = new ArrayList<>();
+    private TextView tvWelcomeName;
     private VaccinationRepository repository;
 
     @Override
@@ -30,45 +31,79 @@ public class VaccinationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_vaccination);
 
         repository = new VaccinationRepository(this);
-        recyclerView = findViewById(R.id.rvVaccinations);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new VaccinationAdapter(vaccinationList);
-        recyclerView.setAdapter(adapter);
+        tvWelcomeName = findViewById(R.id.tvWelcomeName);
 
-        ExtendedFloatingActionButton btnAdd = findViewById(R.id.btnAddVaccination);
-        btnAdd.setOnClickListener(v -> {
-            Intent intent = new Intent(this, AddVaccinationActivity.class);
-            startActivity(intent);
+        // Fetch user name and dashboard counts
+        loadDashboardData();
+
+        // 1. Add Vaccine Button
+        findViewById(R.id.btnDashAddVaccine).setOnClickListener(v -> {
+            startActivity(new Intent(this, AddVaccinationActivity.class));
         });
 
+        // 2. View Records Button
+        findViewById(R.id.btnDashViewRecords).setOnClickListener(v -> {
+            startActivity(new Intent(this, RecordsActivity.class));
+        });
+
+        // 3. Reminders Button (Placeholder - no explicit screen requested yet, could link to calendar or records)
+        findViewById(R.id.btnDashReminders).setOnClickListener(v -> {
+            Toast.makeText(this, "Reminders module opening...", Toast.LENGTH_SHORT).show();
+            // Optional: Start a RemindersActivity if it exists
+        });
+
+        // 4. Profile Button
+        findViewById(R.id.btnDashProfile).setOnClickListener(v -> {
+            startActivity(new Intent(this, ProfileActivity.class));
+        });
+
+        // Also wire up the top right icon to profile as well
         findViewById(R.id.btnProfile).setOnClickListener(v -> {
-            Intent intent = new Intent(this, ProfileActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ProfileActivity.class));
         });
 
-        fetchVaccinations();
+        // 5. Logout Button
+        findViewById(R.id.btnDashLogout).setOnClickListener(v -> {
+            logoutUser();
+        });
     }
 
-    private void fetchVaccinations() {
+    private void loadDashboardData() {
+        // Fetch Profile Name
+        RetrofitClient.getApiService().getProfile().enqueue(new Callback<ApiResponse<User>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    String name = response.body().getData().getName();
+                    if (name != null && !name.isEmpty()) {
+                        tvWelcomeName.setText("Hello, " + name);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                tvWelcomeName.setText("Hello, User");
+            }
+        });
+
+        // Fetch Vaccine counts
         repository.getVaccinations(new VaccinationRepository.DataCallback() {
             @Override
             public void onDataLoaded(List<Vaccination> vaccinations) {
                 runOnUiThread(() -> {
-                    vaccinationList.clear();
-                    vaccinationList.addAll(vaccinations);
-                    adapter.notifyDataSetChanged();
-                    updateSummary();
+                    updateSummary(vaccinations);
                 });
             }
 
             @Override
             public void onError(String message) {
-                runOnUiThread(() -> Toast.makeText(VaccinationActivity.this, message, Toast.LENGTH_SHORT).show());
+                // Handle error
             }
         });
     }
 
-    private void updateSummary() {
+    private void updateSummary(List<Vaccination> vaccinationList) {
         int completed = 0;
         int pending = 0;
         for (Vaccination v : vaccinationList) {
@@ -83,17 +118,27 @@ public class VaccinationActivity extends AppCompatActivity {
         TextView tvCompleted = findViewById(R.id.tvCompletedCount);
         TextView tvPending = findViewById(R.id.tvPendingCount);
         
-        int finalCompleted = completed;
-        int finalPending = pending;
-        runOnUiThread(() -> {
-            tvCompleted.setText(String.valueOf(finalCompleted));
-            tvPending.setText(String.valueOf(finalPending));
-        });
+        tvCompleted.setText(String.valueOf(completed));
+        tvPending.setText(String.valueOf(pending));
+    }
+
+    private void logoutUser() {
+        // Clear SharedPreferences
+        getSharedPreferences("AppPrefs", MODE_PRIVATE).edit().clear().apply();
+        
+        // Sign out of Firebase
+        FirebaseAuth.getInstance().signOut();
+        
+        // Redirect to Login/Welcome
+        Intent intent = new Intent(this, WelcomeActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        fetchVaccinations(); // Refresh list when returning from Add activity
+        loadDashboardData(); // Refresh counts from local Room DB
     }
 }
