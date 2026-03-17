@@ -199,6 +199,19 @@
                 android:textColor="@color/primary_teal" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDashCertificate"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginBottom="16dp"
+                android:text="📜 Certificate"
+                android:textAllCaps="false"
+                android:textSize="18sp"
+                app:cornerRadius="12dp"
+                app:strokeColor="@color/primary_teal"
+                android:textColor="@color/primary_teal" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDashLogout"
                 style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="match_parent"

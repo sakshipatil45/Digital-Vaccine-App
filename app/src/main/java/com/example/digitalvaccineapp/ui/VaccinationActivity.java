@@ -20,6 +20,7 @@ import retrofit2.Response;
 import com.example.digitalvaccineapp.models.User;
 import com.google.firebase.auth.FirebaseAuth;
 import android.widget.TextView;
+import com.example.digitalvaccineapp.network.VaccinationRepository;
 
 public class VaccinationActivity extends AppCompatActivity {
     private TextView tvWelcomeName;
@@ -46,10 +47,9 @@ public class VaccinationActivity extends AppCompatActivity {
             startActivity(new Intent(this, RecordsActivity.class));
         });
 
-        // 3. Reminders Button (Placeholder - no explicit screen requested yet, could link to calendar or records)
+        // 3. Reminders Button
         findViewById(R.id.btnDashReminders).setOnClickListener(v -> {
-            Toast.makeText(this, "Reminders module opening...", Toast.LENGTH_SHORT).show();
-            // Optional: Start a RemindersActivity if it exists
+            startActivity(new Intent(this, ReminderActivity.class));
         });
 
         // 4. Profile Button
@@ -57,12 +57,16 @@ public class VaccinationActivity extends AppCompatActivity {
             startActivity(new Intent(this, ProfileActivity.class));
         });
 
-        // Also wire up the top right icon to profile as well
         findViewById(R.id.btnProfile).setOnClickListener(v -> {
             startActivity(new Intent(this, ProfileActivity.class));
         });
+        
+        // 5. Certificate Button
+        findViewById(R.id.btnDashCertificate).setOnClickListener(v -> {
+            startActivity(new Intent(this, CertificateActivity.class));
+        });
 
-        // 5. Logout Button
+        // 6. Logout Button
         findViewById(R.id.btnDashLogout).setOnClickListener(v -> {
             logoutUser();
         });

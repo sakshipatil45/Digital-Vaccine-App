@@ -15,9 +15,18 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="My Profile"
-            app:titleTextColor="@color/text_main" />
+            app:title="Set Reminder"
+            app:titleTextColor="@color/text_main">
 
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="start"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_revert"
+                app:tint="@color/text_main" />
+        </com.google.android.material.appbar.MaterialToolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
@@ -33,78 +42,64 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center"
+                android:layout_marginBottom="24dp"
+                android:src="@drawable/ic_calendar"
+                app:tint="@color/primary_teal" />
+
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:hint="Full Name"
-                app:boxStrokeColor="@color/primary_teal">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etProfileName"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textPersonName" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:hint="Email Address"
-                app:boxStrokeColor="@color/primary_teal">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etProfileEmail"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textEmailAddress"
-                    android:focusable="false"
-                    android:clickable="false" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:hint="Age"
-                app:boxStrokeColor="@color/primary_teal">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etProfileAge"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="number" />
-            </com.google.android.material.textfield.TextInputLayout>
+                android:layout_marginBottom="24dp"
+                android:text="Never miss a dose! Schedule a reminder and we'll notify you."
+                android:textAlignment="center"
+                android:textColor="@color/text_sub"
+                android:textSize="14sp" />
 
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="32dp"
-                android:hint="Gender"
+                android:layout_marginBottom="16dp"
+                android:hint="Select Vaccine"
                 app:boxStrokeColor="@color/primary_teal">
 
                 <AutoCompleteTextView
-                    android:id="@+id/etProfileGender"
+                    android:id="@+id/spinnerReminderVaccine"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="32dp"
+                android:hint="Next Dose Date"
+                app:boxStrokeColor="@color/primary_teal"
+                app:startIconDrawable="@drawable/ic_calendar">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etReminderDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:inputType="none" />
+            </com.google.android.material.textfield.TextInputLayout>
+
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnUpdateProfile"
+                android:id="@+id/btnSetReminder"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
-                android:text="Update Profile"
+                android:text="Set Reminder"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:cornerRadius="16dp" />
 
         </LinearLayout>
     </ScrollView>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

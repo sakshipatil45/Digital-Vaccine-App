@@ -19,8 +19,8 @@ import retrofit2.Response;
 
 public class AddVaccinationActivity extends AppCompatActivity {
 
-    private TextInputEditText etVaccineName, etDoseNumber, etDateTaken, etHospitalName, etDependentName;
-    private AutoCompleteTextView spinnerStatus;
+    private TextInputEditText etDateTaken, etHospitalName, etNotes;
+    private AutoCompleteTextView spinnerVaccineName, spinnerDoseNumber;
     private Button btnSave;
 
     @Override
@@ -28,18 +28,22 @@ public class AddVaccinationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_vaccination);
 
-        etVaccineName = findViewById(R.id.etVaccineName);
-        etDoseNumber = findViewById(R.id.etDoseNumber);
+        spinnerVaccineName = findViewById(R.id.spinnerVaccineName);
+        spinnerDoseNumber = findViewById(R.id.spinnerDoseNumber);
         etDateTaken = findViewById(R.id.etDateTaken);
         etHospitalName = findViewById(R.id.etHospitalName);
-        etDependentName = findViewById(R.id.etDependentName);
-        spinnerStatus = findViewById(R.id.spinnerStatus);
+        etNotes = findViewById(R.id.etNotes);
         btnSave = findViewById(R.id.btnSave);
 
-        // Set up status dropdown
-        String[] statuses = {"Completed", "Pending", "Partially Completed"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, statuses);
-        spinnerStatus.setAdapter(adapter);
+        // Set up Vaccine Name dropdown
+        String[] vaccines = {"Covaxin", "Covishield", "Sputnik V", "Pfizer", "Moderna", "Johnson & Johnson", "Other"};
+        ArrayAdapter<String> vaccineAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, vaccines);
+        spinnerVaccineName.setAdapter(vaccineAdapter);
+
+        // Set up Dose Number dropdown
+        String[] doses = {"1st Dose", "2nd Dose", "Booster Dose", "Precautionary Dose"};
+        ArrayAdapter<String> doseAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, doses);
+        spinnerDoseNumber.setAdapter(doseAdapter);
 
         // Date picker
         etDateTaken.setOnClickListener(v -> showDatePicker());
@@ -61,26 +65,34 @@ public class AddVaccinationActivity extends AppCompatActivity {
     }
 
     private void saveVaccination() {
-        String name = etVaccineName.getText().toString();
-        String doseStr = etDoseNumber.getText().toString();
+        String name = spinnerVaccineName.getText().toString();
+        String doseStr = spinnerDoseNumber.getText().toString();
         String date = etDateTaken.getText().toString();
         String hospital = etHospitalName.getText().toString();
-        String dependent = etDependentName.getText().toString();
-        String status = spinnerStatus.getText().toString();
+        String notes = etNotes.getText().toString();
 
-        if (name.isEmpty() || doseStr.isEmpty() || date.isEmpty() || hospital.isEmpty() || status.isEmpty() || dependent.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+        if (name.isEmpty() || doseStr.isEmpty() || date.isEmpty() || hospital.isEmpty()) {
+            Toast.makeText(this, "Please fill all required fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        int dose = Integer.parseInt(doseStr);
-        Vaccination vaccination = new Vaccination(name, dose, date, hospital, status, dependent);
+        // Convert Dose String back to number representation for backend compatibility or change backend
+        int doseNum = 1;
+        if (doseStr.contains("2")) doseNum = 2;
+        if (doseStr.contains("Booster")) doseNum = 3;
+
+        // Using default fields for Dependent and Status if not specified in UI
+        Vaccination vaccination = new Vaccination(name, doseNum, date, hospital, "Completed", "Self");
+        // We might want to pass notes back, but keeping existing model for now to avoid breaking backend
 
         RetrofitClient.getApiService().addVaccination(vaccination).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
             public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                 if (response.isSuccessful()) {
-                    Toast.makeText(AddVaccinationActivity.this, "Vaccination added successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AddVaccinationActivity.this, "Vaccination saved securely", Toast.LENGTH_SHORT).show();
+                    // Redirect to view records
+                    Intent intent = new Intent(AddVaccinationActivity.this, RecordsActivity.class);
+                    startActivity(intent);
                     finish();
                 } else {
                     Toast.makeText(AddVaccinationActivity.this, "Failed to add vaccination", Toast.LENGTH_SHORT).show();

@@ -41,67 +41,48 @@
                 android:textColor="@color/text_sub"
                 android:textSize="14sp" />
 
+            <!-- Vaccine Name Dropdown -->
             <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:hint="Dependent Name (e.g. Self, Child)"
-                app:boxStrokeColor="@color/primary_teal"
-                app:boxBackgroundColor="@color/white"
-                app:boxCornerRadiusBottomEnd="12dp"
-                app:boxCornerRadiusBottomStart="12dp"
-                app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusTopStart="12dp"
-                app:startIconDrawable="@drawable/ic_vax">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etDependentName"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Self"
-                    android:inputType="text" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:hint="Vaccine Name"
                 app:boxStrokeColor="@color/primary_teal"
-                app:boxBackgroundColor="@color/white"
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusTopStart="12dp"
                 app:startIconDrawable="@drawable/ic_vax">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etVaccineName"
+                <AutoCompleteTextView
+                    android:id="@+id/spinnerVaccineName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text" />
+                    android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Dose Number Dropdown -->
             <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:hint="Dose Number"
+                app:boxStrokeColor="@color/primary_teal"
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusTopStart="12dp">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etDoseNumber"
+                <AutoCompleteTextView
+                    android:id="@+id/spinnerDoseNumber"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="number" />
+                    android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Date Taken -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
@@ -109,7 +90,6 @@
                 android:layout_marginBottom="16dp"
                 android:hint="Date Taken"
                 app:boxStrokeColor="@color/primary_teal"
-                app:boxBackgroundColor="@color/white"
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
@@ -124,12 +104,14 @@
                     android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Hospital Name -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:hint="Hospital Name"
+                app:boxStrokeColor="@color/primary_teal"
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
@@ -142,22 +124,26 @@
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Notes -->
             <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="32dp"
-                android:hint="Status"
+                android:hint="Notes (Optional)"
+                app:boxStrokeColor="@color/primary_teal"
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusTopStart="12dp">
 
-                <AutoCompleteTextView
-                    android:id="@+id/spinnerStatus"
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etNotes"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="none" />
+                    android:inputType="textMultiLine"
+                    android:minLines="3"
+                    android:gravity="top" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.button.MaterialButton

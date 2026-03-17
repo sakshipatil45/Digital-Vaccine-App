@@ -13,8 +13,13 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import android.widget.AutoCompleteTextView;
+import android.widget.ArrayAdapter;
+import com.google.firebase.auth.FirebaseAuth;
+
 public class ProfileActivity extends AppCompatActivity {
-    private TextInputEditText etName, etPhone, etAge, etAddress;
+    private TextInputEditText etName, etEmail, etAge;
+    private AutoCompleteTextView etGender;
     private MaterialButton btnUpdate;
 
     @Override
@@ -23,10 +28,20 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         etName = findViewById(R.id.etProfileName);
-        etPhone = findViewById(R.id.etProfilePhone);
+        etEmail = findViewById(R.id.etProfileEmail);
         etAge = findViewById(R.id.etProfileAge);
-        etAddress = findViewById(R.id.etProfileAddress);
+        etGender = findViewById(R.id.etProfileGender);
         btnUpdate = findViewById(R.id.btnUpdateProfile);
+        
+        // Setup Gender Dropdown
+        String[] genders = {"Male", "Female", "Other", "Prefer not to say"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, genders);
+        etGender.setAdapter(adapter);
+
+        // Fetch auth email for read-only display
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            etEmail.setText(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+        }
 
         fetchProfile();
 
@@ -41,9 +56,10 @@ public class ProfileActivity extends AppCompatActivity {
                     User user = response.body().getData();
                     if (user != null) {
                         etName.setText(user.getName());
-                        etPhone.setText(user.getPhone());
                         etAge.setText(user.getAge());
-                        etAddress.setText(user.getAddress());
+                        if (user.getGender() != null) {
+                            etGender.setText(user.getGender(), false); // false to not trigger filter
+                        }
                     }
                 }
             }
@@ -57,15 +73,13 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void updateProfile() {
         String name = etName.getText().toString();
-        String phone = etPhone.getText().toString();
         String age = etAge.getText().toString();
-        String address = etAddress.getText().toString();
+        String gender = etGender.getText().toString();
 
         User user = new User();
         user.setName(name);
-        user.setPhone(phone);
         user.setAge(age);
-        user.setAddress(address);
+        user.setGender(gender);
 
         RetrofitClient.getApiService().updateProfile(user).enqueue(new Callback<ApiResponse<User>>() {
             @Override

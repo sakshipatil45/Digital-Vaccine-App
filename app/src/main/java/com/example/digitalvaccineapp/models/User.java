@@ -7,16 +7,18 @@ public class User {
     private String phone;
     private String age;
     private String address;
+    private String gender;
 
     public User() {}
 
-    public User(String uid, String email, String name, String phone, String age, String address) {
+    public User(String uid, String email, String name, String phone, String age, String address, String gender) {
         this.uid = uid;
         this.email = email;
         this.name = name;
         this.phone = phone;
         this.age = age;
         this.address = address;
+        this.gender = gender;
     }
 
     // Getters and Setters
@@ -32,4 +34,6 @@ public class User {
     public void setAge(String age) { this.age = age; }
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
 }

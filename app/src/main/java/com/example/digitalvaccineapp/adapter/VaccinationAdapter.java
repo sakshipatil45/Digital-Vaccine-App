@@ -8,19 +8,27 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.digitalvaccineapp.R;
 import com.example.digitalvaccineapp.models.Vaccination;
+import android.widget.ImageButton;
 import java.util.List;
 
 public class VaccinationAdapter extends RecyclerView.Adapter<VaccinationAdapter.ViewHolder> {
     private List<Vaccination> vaccinationList;
+    private OnVaccinationClickListener listener;
 
-    public VaccinationAdapter(List<Vaccination> vaccinationList) {
+    public interface OnVaccinationClickListener {
+        void onEditClick(Vaccination vaccination);
+        void onDeleteClick(Vaccination vaccination);
+        void onItemClick(Vaccination vaccination);
+    }
+
+    public VaccinationAdapter(List<Vaccination> vaccinationList, OnVaccinationClickListener listener) {
         this.vaccinationList = vaccinationList;
+        this.listener = listener;
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Assuming a layout file item_vaccination.xml exists
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_vaccination, parent, false);
         return new ViewHolder(view);
     }
@@ -48,6 +56,12 @@ public class VaccinationAdapter extends RecyclerView.Adapter<VaccinationAdapter.
         }
         
         holder.vStatusBadge.setBackgroundTintList(android.content.res.ColorStateList.valueOf(statusColor));
+
+        if (listener != null) {
+            holder.itemView.setOnClickListener(v -> listener.onItemClick(vaccination));
+            holder.btnEdit.setOnClickListener(v -> listener.onEditClick(vaccination));
+            holder.btnDelete.setOnClickListener(v -> listener.onDeleteClick(vaccination));
+        }
     }
 
     @Override
@@ -58,6 +72,7 @@ public class VaccinationAdapter extends RecyclerView.Adapter<VaccinationAdapter.
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvDate, tvStatus, tvHospital, tvDose, tvDependent;
         View vStatusBadge;
+        ImageButton btnEdit, btnDelete;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -68,6 +83,8 @@ public class VaccinationAdapter extends RecyclerView.Adapter<VaccinationAdapter.
             tvStatus = itemView.findViewById(R.id.tvStatus);
             tvDose = itemView.findViewById(R.id.tvDoseInfo);
             vStatusBadge = itemView.findViewById(R.id.vStatusBadge);
+            btnEdit = itemView.findViewById(R.id.btnEditVax);
+            btnDelete = itemView.findViewById(R.id.btnDeleteVax);
         }
     }
 }
