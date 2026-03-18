@@ -108,10 +108,11 @@ public class VaccinationActivity extends AppCompatActivity {
     }
 
     private void updateSummary(List<Vaccination> vaccinationList) {
+        if (vaccinationList == null) return;
         int completed = 0;
         int pending = 0;
         for (Vaccination v : vaccinationList) {
-            String status = v.getStatus().toLowerCase();
+            String status = v.getStatus() != null ? v.getStatus().toLowerCase() : "pending";
             if (status.contains("completed") || status.contains("done")) {
                 completed++;
             } else {

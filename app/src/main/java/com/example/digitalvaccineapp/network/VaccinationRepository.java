@@ -71,7 +71,7 @@ public class VaccinationRepository {
 
         @Override
         protected void onPostExecute(List<Vaccination> vaccinations) {
-            if (!vaccinations.isEmpty()) {
+            if (vaccinations != null) {
                 callback.onDataLoaded(vaccinations);
             }
         }

@@ -96,9 +96,11 @@ public class RecordsActivity extends AppCompatActivity {
             @Override
             public void onDataLoaded(List<Vaccination> vaccinations) {
                 runOnUiThread(() -> {
-                    vaccinationList.clear();
-                    vaccinationList.addAll(vaccinations);
-                    adapter.notifyDataSetChanged();
+                    if (vaccinations != null) {
+                        vaccinationList.clear();
+                        vaccinationList.addAll(vaccinations);
+                        adapter.notifyDataSetChanged();
+                    }
                 });
             }
 
