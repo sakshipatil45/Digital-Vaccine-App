@@ -19,4 +19,7 @@ public interface ApiService {
 
     @PUT("api/users/profile")
     Call<ApiResponse<User>> updateProfile(@Body User user);
+
+    @DELETE("api/vaccinations/{id}")
+    Call<ApiResponse<Void>> deleteVaccination(@Path("id") String id);
 }
