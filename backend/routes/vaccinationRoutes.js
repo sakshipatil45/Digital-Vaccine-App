@@ -18,4 +18,7 @@ router.put("/update-vaccination/:id", vaccinationController.updateVaccination);
 // 4. DELETE /api/vaccinations/delete-vaccination/:id
 router.delete("/delete-vaccination/:id", vaccinationController.deleteVaccination);
 
+// 5. GET /api/vaccinations/certificate-summary
+router.get("/certificate-summary", vaccinationController.getCertificateSummary);
+
 module.exports = router;

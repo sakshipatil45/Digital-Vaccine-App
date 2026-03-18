@@ -38,6 +38,8 @@ public class ReminderActivity extends AppCompatActivity {
         etDate = findViewById(R.id.etReminderDate);
         btnSetReminder = findViewById(R.id.btnSetReminder);
         
+        requestNotificationPermission();
+
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         String[] vaccines = {"Covaxin", "Covishield", "Sputnik V", "Pfizer", "Moderna", "Other"};
@@ -113,6 +115,14 @@ public class ReminderActivity extends AppCompatActivity {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             if (notificationManager != null) {
                 notificationManager.createNotificationChannel(channel);
+            }
+        }
+    }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                androidx.core.app.ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
             }
         }
     }

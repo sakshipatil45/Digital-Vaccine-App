@@ -133,3 +133,47 @@ exports.deleteVaccination = async (req, res, next) => {
         next(error);
     }
 };
+
+/**
+ * 5. Get Certificate Summary for QR Code
+ */
+exports.getCertificateSummary = async (req, res, next) => {
+    try {
+        const userId = req.user.uid;
+        
+        // Fetch User Info
+        const userDoc = await db.collection("users").doc(userId).get();
+        const userName = userDoc.exists ? userDoc.data().name : "User";
+
+        // Fetch Vaccinations
+        const snapshot = await vaccinationRef.where("userId", "==", userId).get();
+        
+        let latestVaccine = "N/A";
+        let latestId = null;
+        let maxDose = 0;
+        let records = [];
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            records.push(data);
+            if (data.doseNumber > maxDose) {
+                maxDose = data.doseNumber;
+                latestVaccine = data.vaccineName;
+                latestId = doc.id;
+            }
+        });
+
+        const status = maxDose >= 2 ? "Fully Vaccinated" : (maxDose === 1 ? "Partially Vaccinated" : "Not Vaccinated");
+
+        return sendResponse(res, 200, true, "Certificate data retrieved", {
+            name: userName,
+            vaccine: latestVaccine,
+            dose: maxDose,
+            status: status,
+            vaccinationId: latestId,
+            verifiedOn: new Date().toLocaleDateString()
+        });
+    } catch (error) {
+        next(error);
+    }
+};

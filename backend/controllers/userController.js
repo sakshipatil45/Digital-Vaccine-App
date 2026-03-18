@@ -32,7 +32,7 @@ exports.getProfile = async (req, res, next) => {
 exports.updateProfile = async (req, res, next) => {
     try {
         const userId = req.user.uid;
-        const { name, phone, age, address } = req.body;
+        const { name, phone, age, address, gender } = req.body;
 
         const profileData = {
             uid: userId,
@@ -41,6 +41,7 @@ exports.updateProfile = async (req, res, next) => {
             phone: phone || "",
             age: age || "",
             address: address || "",
+            gender: req.body.gender || "",
             updatedAt: new Date().toISOString()
         };
 

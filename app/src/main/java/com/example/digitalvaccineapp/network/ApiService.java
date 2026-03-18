@@ -22,4 +22,7 @@ public interface ApiService {
 
     @DELETE("api/vaccinations/{id}")
     Call<ApiResponse<Void>> deleteVaccination(@Path("id") String id);
+
+    @GET("api/vaccinations/certificate-summary")
+    Call<ApiResponse<CertificateSummary>> getCertificateSummary();
 }
