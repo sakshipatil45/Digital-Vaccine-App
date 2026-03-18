@@ -28,7 +28,7 @@ public class CertificateActivity extends AppCompatActivity {
         TextView tvName = findViewById(R.id.tvCertName);
         TextView tvDetails = findViewById(R.id.tvCertDetails);
 
-        RetrofitClient.getApiService().getCertificateSummary().enqueue(new retrofit2.Callback<com.example.digitalvaccineapp.models.ApiResponse<com.example.digitalvaccineapp.models.CertificateSummary>>() {
+        com.example.digitalvaccineapp.network.RetrofitClient.getApiService().getCertificateSummary().enqueue(new retrofit2.Callback<com.example.digitalvaccineapp.models.ApiResponse<com.example.digitalvaccineapp.models.CertificateSummary>>() {
             @Override
             public void onResponse(retrofit2.Call<com.example.digitalvaccineapp.models.ApiResponse<com.example.digitalvaccineapp.models.CertificateSummary>> call, retrofit2.Response<com.example.digitalvaccineapp.models.ApiResponse<com.example.digitalvaccineapp.models.CertificateSummary>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
