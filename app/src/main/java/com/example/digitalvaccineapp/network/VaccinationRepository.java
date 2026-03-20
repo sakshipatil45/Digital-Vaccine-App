@@ -42,7 +42,6 @@ public class VaccinationRepository {
         String userId = mAuth.getCurrentUser().getUid();
         db.collection("vaccinations")
             .whereEqualTo("userId", userId)
-            .orderBy("createdAt", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener(queryDocumentSnapshots -> {
                 List<Vaccination> vaccinations = new ArrayList<>();
