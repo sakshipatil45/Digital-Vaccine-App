@@ -8,12 +8,17 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.digitalvaccineapp.R;
 import com.google.firebase.auth.FirebaseAuth;
-import com.example.digitalvaccineapp.network.RetrofitClient;
+import com.example.digitalvaccineapp.models.CertificateSummary;
+import com.example.digitalvaccineapp.models.Vaccination;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
+import java.util.List;
 
 public class CertificateActivity extends AppCompatActivity {
 
@@ -28,35 +33,54 @@ public class CertificateActivity extends AppCompatActivity {
         TextView tvName = findViewById(R.id.tvCertName);
         TextView tvDetails = findViewById(R.id.tvCertDetails);
 
-        com.example.digitalvaccineapp.network.RetrofitClient.getApiService().getCertificateSummary().enqueue(new retrofit2.Callback<com.example.digitalvaccineapp.models.ApiResponse<com.example.digitalvaccineapp.models.CertificateSummary>>() {
-            @Override
-            public void onResponse(retrofit2.Call<com.example.digitalvaccineapp.models.ApiResponse<com.example.digitalvaccineapp.models.CertificateSummary>> call, retrofit2.Response<com.example.digitalvaccineapp.models.ApiResponse<com.example.digitalvaccineapp.models.CertificateSummary>> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
-                    com.example.digitalvaccineapp.models.CertificateSummary summary = response.body().getData();
-                    
-                    tvName.setText("Name: " + summary.getName());
-                    String details = "Vaccine: " + summary.getVaccine() + "\nDose: " + summary.getDose() + "\nStatus: " + summary.getStatus() + "\nVerified on: " + summary.getVerifiedOn();
-                    tvDetails.setText(details);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        if (mAuth.getCurrentUser() == null) return;
+        String userId = mAuth.getCurrentUser().getUid();
 
-                    generateQr(summary.getName() + " | " + summary.getStatus() + " | " + summary.getVaccine(), ivQr);
-                    
-                    if (summary.getVaccinationId() != null) {
-                        findViewById(R.id.btnDownloadCert).setOnClickListener(v -> {
-                            String url = "http://10.95.27.238:5000/api/vaccinations/download-certificate/" + summary.getVaccinationId();
-                            android.content.Intent browserIntent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url));
-                            startActivity(browserIntent);
-                            Toast.makeText(CertificateActivity.this, "Opening certificate in browser...", Toast.LENGTH_SHORT).show();
-                        });
+        // Fetch User and Vaccinations in parallel/sequence
+        db.collection("users").document(userId).get().addOnSuccessListener(userDoc -> {
+            String userName = userDoc.exists() ? userDoc.getString("name") : "User";
+
+            db.collection("vaccinations").whereEqualTo("userId", userId).get().addOnSuccessListener(shots -> {
+                int maxDose = 0;
+                String latestVaccine = "N/A";
+                String latestId = null;
+
+                for (QueryDocumentSnapshot doc : shots) {
+                    Long doseL = doc.getLong("doseNumber");
+                    int dose = (doseL != null) ? doseL.intValue() : 0;
+                    if (dose > maxDose) {
+                        maxDose = dose;
+                        latestVaccine = doc.getString("vaccineName");
+                        latestId = doc.getId();
                     }
-                } else {
-                    Toast.makeText(CertificateActivity.this, "No vaccination records found for certificate", Toast.LENGTH_SHORT).show();
                 }
-            }
 
-            @Override
-            public void onFailure(retrofit2.Call<com.example.digitalvaccineapp.models.ApiResponse<com.example.digitalvaccineapp.models.CertificateSummary>> call, Throwable t) {
-                Toast.makeText(CertificateActivity.this, "Connection Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
+                String status = maxDose >= 2 ? "Fully Vaccinated" : (maxDose == 1 ? "Partially Vaccinated" : "Not Vaccinated");
+                
+                tvName.setText("Name: " + userName);
+                String verifiedOn = new java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.getDefault()).format(new java.util.Date());
+                String details = "Vaccine: " + latestVaccine + "\nDose: " + maxDose + "\nStatus: " + status + "\nVerified on: " + verifiedOn;
+                tvDetails.setText(details);
+
+                generateQr(userName + " | " + status + " | " + latestVaccine + " | Dose " + maxDose, ivQr);
+                
+                if (latestId != null) {
+                    final String vaccinationId = latestId;
+                    findViewById(R.id.btnDownloadCert).setOnClickListener(v -> {
+                        // Note: PDF generation still requires the backend server running
+                        String url = "http://192.168.47.16:5000/api/vaccinations/download-certificate/" + vaccinationId;
+                        android.content.Intent browserIntent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url));
+                        startActivity(browserIntent);
+                        Toast.makeText(CertificateActivity.this, "Connecting to local server for PDF...", Toast.LENGTH_SHORT).show();
+                    });
+                } else {
+                    findViewById(R.id.btnDownloadCert).setEnabled(false);
+                }
+            }).addOnFailureListener(e -> {
+                Toast.makeText(CertificateActivity.this, "Error fetching records: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            });
         });
 
         requestNotificationPermission();

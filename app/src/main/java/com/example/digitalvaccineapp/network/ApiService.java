@@ -8,10 +8,10 @@ import retrofit2.http.*;
 
 public interface ApiService {
 
-    @POST("api/vaccinations")
+    @POST("api/vaccinations/add-vaccination")
     Call<ApiResponse<Void>> addVaccination(@Body Vaccination vaccination);
 
-    @GET("api/vaccinations")
+    @GET("api/vaccinations/get-vaccinations")
     Call<ApiResponse<List<Vaccination>>> getVaccinations();
 
     @GET("api/users/profile")
@@ -20,7 +20,7 @@ public interface ApiService {
     @PUT("api/users/profile")
     Call<ApiResponse<User>> updateProfile(@Body User user);
 
-    @DELETE("api/vaccinations/{id}")
+    @DELETE("api/vaccinations/delete-vaccination/{id}")
     Call<ApiResponse<Void>> deleteVaccination(@Path("id") String id);
 
     @GET("api/vaccinations/certificate-summary")

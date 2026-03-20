@@ -9,20 +9,18 @@ import android.widget.Button;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.digitalvaccineapp.R;
-import com.example.digitalvaccineapp.models.ApiResponse;
 import com.example.digitalvaccineapp.models.Vaccination;
-import com.example.digitalvaccineapp.network.RetrofitClient;
+import com.example.digitalvaccineapp.network.VaccinationRepository;
 import com.google.android.material.textfield.TextInputEditText;
 import java.util.Calendar;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import java.util.List;
 
 public class AddVaccinationActivity extends AppCompatActivity {
 
     private TextInputEditText etDateTaken, etHospitalName, etNotes;
     private AutoCompleteTextView spinnerVaccineName, spinnerDoseNumber;
     private Button btnSave;
+    private VaccinationRepository repository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +33,7 @@ public class AddVaccinationActivity extends AppCompatActivity {
         etHospitalName = findViewById(R.id.etHospitalName);
         etNotes = findViewById(R.id.etNotes);
         btnSave = findViewById(R.id.btnSave);
+        repository = new VaccinationRepository(this);
 
         // Set up Vaccine Name dropdown
         String[] vaccines = {"Covaxin", "Covishield", "Sputnik V", "Pfizer", "Moderna", "Johnson & Johnson", "Other"};
@@ -84,25 +83,20 @@ public class AddVaccinationActivity extends AppCompatActivity {
 
         // Using default fields for Dependent and Status if not specified in UI
         Vaccination vaccination = new Vaccination(name, doseNum, date, hospital, "Completed", "Self");
-        // We might want to pass notes back, but keeping existing model for now to avoid breaking backend
 
-        RetrofitClient.getApiService().addVaccination(vaccination).enqueue(new Callback<ApiResponse<Void>>() {
+        repository.addVaccination(vaccination, new VaccinationRepository.DataCallback() {
             @Override
-            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(AddVaccinationActivity.this, "Vaccination saved securely", Toast.LENGTH_SHORT).show();
-                    // Redirect to view records
-                    Intent intent = new Intent(AddVaccinationActivity.this, RecordsActivity.class);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    Toast.makeText(AddVaccinationActivity.this, "Failed to add vaccination", Toast.LENGTH_SHORT).show();
-                }
+            public void onDataLoaded(List<Vaccination> vaccinations) {
+                Toast.makeText(AddVaccinationActivity.this, "Vaccination saved securely to Cloud", Toast.LENGTH_SHORT).show();
+                // Redirect to view records
+                Intent intent = new Intent(AddVaccinationActivity.this, RecordsActivity.class);
+                startActivity(intent);
+                finish();
             }
 
             @Override
-            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
-                Toast.makeText(AddVaccinationActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            public void onError(String message) {
+                Toast.makeText(AddVaccinationActivity.this, "Error: " + message, Toast.LENGTH_SHORT).show();
             }
         });
     }

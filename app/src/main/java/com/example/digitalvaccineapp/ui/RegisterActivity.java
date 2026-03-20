@@ -11,16 +11,13 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.digitalvaccineapp.R;
-import com.example.digitalvaccineapp.models.ApiResponse;
 import com.example.digitalvaccineapp.models.User;
-import com.example.digitalvaccineapp.network.RetrofitClient;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import com.google.firebase.firestore.FirebaseFirestore;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -29,6 +26,7 @@ public class RegisterActivity extends AppCompatActivity {
     private MaterialButton btnRegister;
     private TextView tvLogin;
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +34,7 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         etName = findViewById(R.id.etName);
         etEmail = findViewById(R.id.etEmail);
@@ -78,42 +77,45 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
+        RadioButton rbSelected = findViewById(rgGender.getCheckedRadioButtonId());
+        String gender = rbSelected.getText().toString();
+
         mAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this, task -> {
                 if (task.isSuccessful()) {
                     // Save user details to backend
-                    saveProfileToBackend(name, age);
+                    saveProfileToBackend(name, age, gender);
                 } else {
                     Toast.makeText(this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
     }
 
-    private void saveProfileToBackend(String name, String age) {
-        User user = new User();
-        user.setName(name);
-        user.setAge(age);
-        // Note: We'd add Gender to the User model if requested, for now we just process it.
+    private void saveProfileToBackend(String name, String age, String gender) {
+        if (mAuth.getCurrentUser() == null) return;
 
-        RetrofitClient.getApiService().updateProfile(user).enqueue(new Callback<ApiResponse<User>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
-                // Ignore failure/success details for now, redirect to Login
-                Toast.makeText(RegisterActivity.this, "Registration successful!", Toast.LENGTH_SHORT).show();
-                mAuth.signOut(); // Ensure they log in explicitly as per instructions
-                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                startActivity(intent);
-                finish();
-            }
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("name", name);
+        userData.put("age", age);
+        userData.put("gender", gender);
+        userData.put("email", mAuth.getCurrentUser().getEmail());
+        userData.put("createdAt", com.google.firebase.Timestamp.now());
 
-            @Override
-            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+        db.collection("users").document(mAuth.getCurrentUser().getUid())
+            .set(userData)
+            .addOnSuccessListener(aVoid -> {
                 Toast.makeText(RegisterActivity.this, "Registration successful!", Toast.LENGTH_SHORT).show();
                 mAuth.signOut();
                 Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                 startActivity(intent);
                 finish();
-            }
-        });
+            })
+            .addOnFailureListener(e -> {
+                Toast.makeText(RegisterActivity.this, "Profile sync failed but account created", Toast.LENGTH_SHORT).show();
+                mAuth.signOut();
+                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+            });
     }
 }

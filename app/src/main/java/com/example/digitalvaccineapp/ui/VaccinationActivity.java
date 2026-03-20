@@ -8,19 +8,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.digitalvaccineapp.R;
 import com.example.digitalvaccineapp.adapter.VaccinationAdapter;
-import com.example.digitalvaccineapp.models.ApiResponse;
 import com.example.digitalvaccineapp.models.Vaccination;
-import com.example.digitalvaccineapp.network.RetrofitClient;
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-import java.util.ArrayList;
-import java.util.List;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import com.example.digitalvaccineapp.network.VaccinationRepository;
 import com.example.digitalvaccineapp.models.User;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 import android.widget.TextView;
-import com.example.digitalvaccineapp.network.VaccinationRepository;
+import java.util.ArrayList;
+import java.util.List;
 
 public class VaccinationActivity extends AppCompatActivity {
     private TextView tvWelcomeName;
@@ -73,23 +68,24 @@ public class VaccinationActivity extends AppCompatActivity {
     }
 
     private void loadDashboardData() {
-        // Fetch Profile Name
-        RetrofitClient.getApiService().getProfile().enqueue(new Callback<ApiResponse<User>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
-                    String name = response.body().getData().getName();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        if (mAuth.getCurrentUser() == null) return;
+
+        // Fetch Profile Name from Firestore
+        db.collection("users").document(mAuth.getCurrentUser().getUid())
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    String name = documentSnapshot.getString("name");
                     if (name != null && !name.isEmpty()) {
                         tvWelcomeName.setText("Hello, " + name);
                     }
                 }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+            })
+            .addOnFailureListener(e -> {
                 tvWelcomeName.setText("Hello, User");
-            }
-        });
+            });
 
         // Fetch Vaccine counts
         repository.getVaccinations(new VaccinationRepository.DataCallback() {

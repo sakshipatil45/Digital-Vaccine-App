@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace 'com.example.digitalvaccineapp'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.example.digitalvaccineapp"
@@ -41,6 +41,7 @@ dependencies {
     implementation libs.okhttp
     implementation platform(libs.firebase.bom)
     implementation libs.firebase.auth
+    implementation libs.firebase.firestore
     
     // Room Database
     implementation "androidx.room:room-runtime:2.6.1"

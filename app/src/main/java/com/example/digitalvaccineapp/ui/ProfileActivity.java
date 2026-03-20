@@ -4,14 +4,13 @@ import android.os.Bundle;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.digitalvaccineapp.R;
-import com.example.digitalvaccineapp.models.ApiResponse;
 import com.example.digitalvaccineapp.models.User;
-import com.example.digitalvaccineapp.network.RetrofitClient;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.widget.AutoCompleteTextView;
 import android.widget.ArrayAdapter;
@@ -21,6 +20,8 @@ public class ProfileActivity extends AppCompatActivity {
     private TextInputEditText etName, etEmail, etAge;
     private AutoCompleteTextView etGender;
     private MaterialButton btnUpdate;
+    private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +33,8 @@ public class ProfileActivity extends AppCompatActivity {
         etAge = findViewById(R.id.etProfileAge);
         etGender = findViewById(R.id.etProfileGender);
         btnUpdate = findViewById(R.id.btnUpdateProfile);
+        db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
         
         // Setup Gender Dropdown
         String[] genders = {"Male", "Female", "Other", "Prefer not to say"};
@@ -49,51 +52,54 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void fetchProfile() {
-        RetrofitClient.getApiService().getProfile().enqueue(new Callback<ApiResponse<User>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    User user = response.body().getData();
+        if (mAuth.getCurrentUser() == null) return;
+        
+        db.collection("users").document(mAuth.getCurrentUser().getUid())
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    User user = documentSnapshot.toObject(User.class);
                     if (user != null) {
                         etName.setText(user.getName());
                         etAge.setText(user.getAge());
                         if (user.getGender() != null) {
-                            etGender.setText(user.getGender(), false); // false to not trigger filter
+                            etGender.setText(user.getGender(), false);
                         }
                     }
                 }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
-                Toast.makeText(ProfileActivity.this, "Error fetching profile", Toast.LENGTH_SHORT).show();
-            }
-        });
+            })
+            .addOnFailureListener(e -> {
+                Toast.makeText(ProfileActivity.this, "Error fetching profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            });
     }
 
     private void updateProfile() {
+        if (mAuth.getCurrentUser() == null) return;
+
         String name = etName.getText().toString();
         String age = etAge.getText().toString();
         String gender = etGender.getText().toString();
 
-        User user = new User();
-        user.setName(name);
-        user.setAge(age);
-        user.setGender(gender);
+        Map<String, Object> userUpdates = new HashMap<>();
+        userUpdates.put("name", name);
+        userUpdates.put("age", age);
+        userUpdates.put("gender", gender);
+        userUpdates.put("updatedAt", com.google.firebase.Timestamp.now());
 
-        RetrofitClient.getApiService().updateProfile(user).enqueue(new Callback<ApiResponse<User>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(ProfileActivity.this, "Profile updated", Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
-                Toast.makeText(ProfileActivity.this, "Update failed", Toast.LENGTH_SHORT).show();
-            }
-        });
+        db.collection("users").document(mAuth.getCurrentUser().getUid())
+            .update(userUpdates)
+            .addOnSuccessListener(aVoid -> {
+                Toast.makeText(ProfileActivity.this, "Profile updated successfully", Toast.LENGTH_SHORT).show();
+                finish();
+            })
+            .addOnFailureListener(e -> {
+                // If update fails because doc doesn't exist, try set
+                db.collection("users").document(mAuth.getCurrentUser().getUid())
+                    .set(userUpdates)
+                    .addOnSuccessListener(v -> {
+                        Toast.makeText(ProfileActivity.this, "Profile created", Toast.LENGTH_SHORT).show();
+                        finish();
+                    });
+            });
     }
 }
