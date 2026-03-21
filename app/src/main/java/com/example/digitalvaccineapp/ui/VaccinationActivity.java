@@ -77,19 +77,19 @@ public class VaccinationActivity extends AppCompatActivity {
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         if (mAuth.getCurrentUser() == null) return;
 
-        // Fetch Profile Name from Firestore
+        // Real-time listener for Profile Name
         db.collection("users").document(mAuth.getCurrentUser().getUid())
-            .get()
-            .addOnSuccessListener(documentSnapshot -> {
-                if (documentSnapshot.exists()) {
+            .addSnapshotListener((documentSnapshot, e) -> {
+                if (e != null) return;
+                
+                if (documentSnapshot != null && documentSnapshot.exists()) {
                     String name = documentSnapshot.getString("name");
                     if (name != null && !name.isEmpty()) {
                         tvWelcomeName.setText("Hello, " + name);
+                    } else {
+                        tvWelcomeName.setText("Hello, " + mAuth.getCurrentUser().getEmail().split("@")[0]);
                     }
                 }
-            })
-            .addOnFailureListener(e -> {
-                tvWelcomeName.setText("Hello, User");
             });
 
         // Fetch Vaccine counts
