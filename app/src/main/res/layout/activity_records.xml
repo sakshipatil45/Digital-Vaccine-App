@@ -31,6 +31,34 @@
         </com.google.android.material.appbar.MaterialToolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
+    
+    <android.widget.LinearLayout
+        android:id="@+id/llSearchContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@color/white"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Search vaccine or hospital..."
+            app:startIconDrawable="@android:drawable/ic_menu_search"
+            app:boxStrokeColor="@color/primary_blue"
+            app:hintTextColor="@color/primary_blue"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.SmallComponent">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSearchRecords"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+    </android.widget.LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvVaccinationsList"
@@ -38,6 +66,7 @@
         android:layout_height="match_parent"
         android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_marginTop="100dp"
         tools:listitem="@layout/item_vaccination" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

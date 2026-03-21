@@ -83,6 +83,26 @@ public class VaccinationRepository {
             });
     }
 
+    public void updateVaccination(String id, Vaccination vaccination, DataCallback callback) {
+        if (id == null) return;
+        
+        java.util.Map<String, Object> updates = new java.util.HashMap<>();
+        updates.put("vaccineName", vaccination.getVaccineName());
+        updates.put("doseNumber", vaccination.getDoseNumber());
+        updates.put("dateTaken", vaccination.getDateTaken());
+        updates.put("hospitalName", vaccination.getHospitalName());
+        updates.put("status", vaccination.getStatus());
+        updates.put("updatedAt", com.google.firebase.Timestamp.now());
+
+        db.collection("vaccinations").document(id).update(updates)
+            .addOnSuccessListener(aVoid -> {
+                if (callback != null) callback.onDataLoaded(null);
+            })
+            .addOnFailureListener(e -> {
+                if (callback != null) callback.onError(e.getMessage());
+            });
+    }
+
     public void deleteVaccination(String id, DataCallback callback) {
         db.collection("vaccinations").document(id).delete()
             .addOnSuccessListener(aVoid -> {

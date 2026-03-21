@@ -21,6 +21,8 @@ public class AddVaccinationActivity extends AppCompatActivity {
     private AutoCompleteTextView spinnerVaccineName, spinnerDoseNumber;
     private Button btnSave;
     private VaccinationRepository repository;
+    private boolean isEditMode = false;
+    private String vaxId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +36,21 @@ public class AddVaccinationActivity extends AppCompatActivity {
         etNotes = findViewById(R.id.etNotes);
         btnSave = findViewById(R.id.btnSave);
         repository = new VaccinationRepository(this);
+
+        // Check for Edit Mode
+        if (getIntent().hasExtra("edit_mode")) {
+            isEditMode = getIntent().getBooleanExtra("edit_mode", false);
+            vaxId = getIntent().getStringExtra("vax_id");
+            
+            spinnerVaccineName.setText(getIntent().getStringExtra("vax_name"), false);
+            int doseNum = getIntent().getIntExtra("vax_dose", 1);
+            String doseStr = doseNum == 1 ? "1st Dose" : (doseNum == 2 ? "2nd Dose" : "Booster Dose");
+            spinnerDoseNumber.setText(doseStr, false);
+            etDateTaken.setText(getIntent().getStringExtra("vax_date"));
+            etHospitalName.setText(getIntent().getStringExtra("vax_hospital"));
+            
+            btnSave.setText("Update Vaccination");
+        }
 
         // Set up Vaccine Name dropdown
         String[] vaccines = {"Covaxin", "Covishield", "Sputnik V", "Pfizer", "Moderna", "Johnson & Johnson", "Other"};
@@ -69,34 +86,51 @@ public class AddVaccinationActivity extends AppCompatActivity {
         String doseStr = spinnerDoseNumber.getText().toString();
         String date = etDateTaken.getText().toString();
         String hospital = etHospitalName.getText().toString();
-        String notes = etNotes.getText().toString();
 
         if (name.isEmpty() || doseStr.isEmpty() || date.isEmpty() || hospital.isEmpty()) {
             Toast.makeText(this, "Please fill all required fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Convert Dose String back to number representation for backend compatibility or change backend
         int doseNum = 1;
         if (doseStr.contains("2")) doseNum = 2;
         if (doseStr.contains("Booster")) doseNum = 3;
 
-        // Using default fields for Dependent and Status if not specified in UI
         Vaccination vaccination = new Vaccination(name, doseNum, date, hospital, "Completed", "Self");
 
+        if (isEditMode) {
+            updateVaccination(vaccination);
+        } else {
+            addVaccination(vaccination);
+        }
+    }
+
+    private void addVaccination(Vaccination vaccination) {
         repository.addVaccination(vaccination, new VaccinationRepository.DataCallback() {
             @Override
             public void onDataLoaded(List<Vaccination> vaccinations) {
                 Toast.makeText(AddVaccinationActivity.this, "Vaccination saved securely to Cloud", Toast.LENGTH_SHORT).show();
-                // Redirect to view records
-                Intent intent = new Intent(AddVaccinationActivity.this, RecordsActivity.class);
-                startActivity(intent);
                 finish();
             }
 
             @Override
             public void onError(String message) {
                 Toast.makeText(AddVaccinationActivity.this, "Error: " + message, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void updateVaccination(Vaccination vaccination) {
+        repository.updateVaccination(vaxId, vaccination, new VaccinationRepository.DataCallback() {
+            @Override
+            public void onDataLoaded(List<Vaccination> vaccinations) {
+                Toast.makeText(AddVaccinationActivity.this, "Record updated in Cloud", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+
+            @Override
+            public void onError(String message) {
+                Toast.makeText(AddVaccinationActivity.this, "Update failed: " + message, Toast.LENGTH_SHORT).show();
             }
         });
     }

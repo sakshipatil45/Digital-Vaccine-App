@@ -47,7 +47,12 @@ public class VaccinationActivity extends AppCompatActivity {
             startActivity(new Intent(this, ReminderActivity.class));
         });
 
-        // 4. Profile Button
+        // 4. Vaccine Info Button
+        findViewById(R.id.btnDashVaccineInfo).setOnClickListener(v -> {
+            startActivity(new Intent(this, VaccineInfoActivity.class));
+        });
+
+        // 5. Profile Button
         findViewById(R.id.btnDashProfile).setOnClickListener(v -> {
             startActivity(new Intent(this, ProfileActivity.class));
         });
@@ -118,9 +123,17 @@ public class VaccinationActivity extends AppCompatActivity {
         
         TextView tvCompleted = findViewById(R.id.tvCompletedCount);
         TextView tvPending = findViewById(R.id.tvPendingCount);
+        TextView tvProgressPercent = findViewById(R.id.tvProgressPercent);
+        com.google.android.material.progressindicator.LinearProgressIndicator pbProgress = findViewById(R.id.pbVaccinationProgress);
         
         tvCompleted.setText(String.valueOf(completed));
         tvPending.setText(String.valueOf(pending));
+
+        int total = completed + pending;
+        int progress = total > 0 ? (completed * 100) / total : 0;
+        
+        pbProgress.setProgress(progress, true);
+        tvProgressPercent.setText(progress + "%");
     }
 
     private void logoutUser() {

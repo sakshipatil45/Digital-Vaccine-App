@@ -1,18 +1,15 @@
 package com.example.digitalvaccineapp.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.digitalvaccineapp.R;
 import com.example.digitalvaccineapp.adapter.VaccinationAdapter;
 import com.example.digitalvaccineapp.models.Vaccination;
 import com.example.digitalvaccineapp.network.VaccinationRepository;
-import android.content.Intent;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +17,9 @@ public class RecordsActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private VaccinationAdapter adapter;
     private List<Vaccination> vaccinationList = new ArrayList<>();
+    private List<Vaccination> fullList = new ArrayList<>();
     private VaccinationRepository repository;
+    private com.google.android.material.textfield.TextInputEditText etSearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,10 +33,13 @@ public class RecordsActivity extends AppCompatActivity {
         adapter = new VaccinationAdapter(vaccinationList, new VaccinationAdapter.OnVaccinationClickListener() {
             @Override
             public void onEditClick(Vaccination vaccination) {
-                // Feature extension: Open AddVaccinationActivity with extras for editing
                 Intent intent = new Intent(RecordsActivity.this, AddVaccinationActivity.class);
-                // In a full implementation, you'd pass IDs to Edit, then use PUT API
-                Toast.makeText(RecordsActivity.this, "Edit Mode: " + vaccination.getVaccineName(), Toast.LENGTH_SHORT).show();
+                intent.putExtra("edit_mode", true);
+                intent.putExtra("vax_id", vaccination.getId());
+                intent.putExtra("vax_name", vaccination.getVaccineName());
+                intent.putExtra("vax_dose", vaccination.getDoseNumber());
+                intent.putExtra("vax_date", vaccination.getDateTaken());
+                intent.putExtra("vax_hospital", vaccination.getHospitalName());
                 startActivity(intent);
             }
 
@@ -59,6 +61,20 @@ public class RecordsActivity extends AppCompatActivity {
         
         recyclerView.setAdapter(adapter);
 
+        etSearch = findViewById(R.id.etSearchRecords);
+        etSearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterRecords(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
+        });
+
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         fetchVaccinations();
@@ -70,25 +86,34 @@ public class RecordsActivity extends AppCompatActivity {
             return;
         }
         
-        Toast.makeText(this, "Deleting " + vaccination.getVaccineName() + "...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Deleting from Cloud...", Toast.LENGTH_SHORT).show();
         
-        com.example.digitalvaccineapp.network.RetrofitClient.getApiService().deleteVaccination(vaccination.getId())
-            .enqueue(new retrofit2.Callback<com.example.digitalvaccineapp.models.ApiResponse<Void>>() {
-                @Override
-                public void onResponse(retrofit2.Call<com.example.digitalvaccineapp.models.ApiResponse<Void>> call, retrofit2.Response<com.example.digitalvaccineapp.models.ApiResponse<Void>> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(RecordsActivity.this, "Record deleted", Toast.LENGTH_SHORT).show();
-                        fetchVaccinations(); // Refresh list
-                    } else {
-                        Toast.makeText(RecordsActivity.this, "Failed to delete from server", Toast.LENGTH_SHORT).show();
-                    }
-                }
+        repository.deleteVaccination(vaccination.getId(), new VaccinationRepository.DataCallback() {
+            @Override
+            public void onDataLoaded(List<Vaccination> vaccinations) {
+                Toast.makeText(RecordsActivity.this, "Record deleted successfully", Toast.LENGTH_SHORT).show();
+                fetchVaccinations(); // Refresh list
+            }
 
-                @Override
-                public void onFailure(retrofit2.Call<com.example.digitalvaccineapp.models.ApiResponse<Void>> call, Throwable t) {
-                    Toast.makeText(RecordsActivity.this, "Error deleting: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+            @Override
+            public void onError(String message) {
+                Toast.makeText(RecordsActivity.this, "Error deleting: " + message, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void filterRecords(String query) {
+        List<Vaccination> filtered = new ArrayList<>();
+        for (Vaccination v : fullList) {
+            if (v.getVaccineName().toLowerCase().contains(query.toLowerCase()) ||
+                v.getHospitalName().toLowerCase().contains(query.toLowerCase()) ||
+                v.getDependentName().toLowerCase().contains(query.toLowerCase())) {
+                filtered.add(v);
+            }
+        }
+        vaccinationList.clear();
+        vaccinationList.addAll(filtered);
+        adapter.notifyDataSetChanged();
     }
 
     private void fetchVaccinations() {
@@ -97,6 +122,9 @@ public class RecordsActivity extends AppCompatActivity {
             public void onDataLoaded(List<Vaccination> vaccinations) {
                 runOnUiThread(() -> {
                     if (vaccinations != null) {
+                        fullList.clear();
+                        fullList.addAll(vaccinations);
+                        
                         vaccinationList.clear();
                         vaccinationList.addAll(vaccinations);
                         adapter.notifyDataSetChanged();

@@ -71,6 +71,10 @@
             android:name=".ui.CertificateActivity"
             android:exported="false">
         </activity>
+        <activity
+            android:name=".ui.VaccineInfoActivity"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>
