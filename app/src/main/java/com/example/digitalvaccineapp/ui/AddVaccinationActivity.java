@@ -12,13 +12,16 @@ import com.example.digitalvaccineapp.R;
 import com.example.digitalvaccineapp.models.Vaccination;
 import com.example.digitalvaccineapp.network.VaccinationRepository;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 public class AddVaccinationActivity extends AppCompatActivity {
 
     private TextInputEditText etDateTaken, etHospitalName, etNotes;
-    private AutoCompleteTextView spinnerVaccineName, spinnerDoseNumber;
+    private AutoCompleteTextView spinnerVaccineName, spinnerDoseNumber, spinnerDependentName;
     private Button btnSave;
     private VaccinationRepository repository;
     private boolean isEditMode = false;
@@ -31,6 +34,7 @@ public class AddVaccinationActivity extends AppCompatActivity {
 
         spinnerVaccineName = findViewById(R.id.spinnerVaccineName);
         spinnerDoseNumber = findViewById(R.id.spinnerDoseNumber);
+        spinnerDependentName = findViewById(R.id.spinnerDependentName);
         etDateTaken = findViewById(R.id.etDateTaken);
         etHospitalName = findViewById(R.id.etHospitalName);
         etNotes = findViewById(R.id.etNotes);
@@ -66,6 +70,32 @@ public class AddVaccinationActivity extends AppCompatActivity {
         etDateTaken.setOnClickListener(v -> showDatePicker());
 
         btnSave.setOnClickListener(v -> saveVaccination());
+
+        // Fetch Family Members for Dependent Dropdown
+        List<String> dependents = new ArrayList<>();
+        dependents.add("Self");
+        
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            FirebaseFirestore.getInstance().collection("users").document(uid).collection("familyMembers")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (com.google.firebase.firestore.QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        String depName = doc.getString("name");
+                        if (depName != null) dependents.add(depName);
+                    }
+                    ArrayAdapter<String> depAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, dependents);
+                    spinnerDependentName.setAdapter(depAdapter);
+                    
+                    if (isEditMode) {
+                        String currentDependent = getIntent().getStringExtra("vax_dependent");
+                        if (currentDependent == null || currentDependent.isEmpty()) currentDependent = "Self";
+                        spinnerDependentName.setText(currentDependent, false);
+                    } else {
+                        spinnerDependentName.setText("Self", false);
+                    }
+                });
+        }
     }
 
     private void showDatePicker() {
@@ -96,7 +126,10 @@ public class AddVaccinationActivity extends AppCompatActivity {
         if (doseStr.contains("2")) doseNum = 2;
         if (doseStr.contains("Booster")) doseNum = 3;
 
-        Vaccination vaccination = new Vaccination(name, doseNum, date, hospital, "Completed", "Self");
+        String dependent = spinnerDependentName.getText().toString().trim();
+        if (dependent.isEmpty()) dependent = "Self";
+
+        Vaccination vaccination = new Vaccination(name, doseNum, date, hospital, "Completed", dependent);
 
         if (isEditMode) {
             updateVaccination(vaccination);

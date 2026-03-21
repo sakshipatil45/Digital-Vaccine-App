@@ -63,7 +63,7 @@ public class VaccinationActivity extends AppCompatActivity {
         
         // 6. Family Members Button
         findViewById(R.id.btnDashFamily).setOnClickListener(v -> {
-            Toast.makeText(this, "Family Members module coming soon", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, FamilyMembersActivity.class));
         });
         
         // 7. Certificate Button

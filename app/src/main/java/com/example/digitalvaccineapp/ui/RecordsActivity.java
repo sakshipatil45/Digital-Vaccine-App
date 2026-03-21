@@ -40,6 +40,7 @@ public class RecordsActivity extends AppCompatActivity {
                 intent.putExtra("vax_dose", vaccination.getDoseNumber());
                 intent.putExtra("vax_date", vaccination.getDateTaken());
                 intent.putExtra("vax_hospital", vaccination.getHospitalName());
+                intent.putExtra("vax_dependent", vaccination.getDependentName());
                 startActivity(intent);
             }
 
@@ -125,8 +126,17 @@ public class RecordsActivity extends AppCompatActivity {
                         fullList.clear();
                         fullList.addAll(vaccinations);
                         
+                        String filterDependent = getIntent().getStringExtra("filterDependent");
                         vaccinationList.clear();
-                        vaccinationList.addAll(vaccinations);
+                        if (filterDependent != null && !filterDependent.isEmpty()) {
+                            for (Vaccination v : vaccinations) {
+                                if (filterDependent.equalsIgnoreCase(v.getDependentName())) {
+                                    vaccinationList.add(v);
+                                }
+                            }
+                        } else {
+                            vaccinationList.addAll(vaccinations);
+                        }
                         adapter.notifyDataSetChanged();
                     }
                 });
