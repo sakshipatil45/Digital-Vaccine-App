@@ -61,7 +61,12 @@ public class VaccinationActivity extends AppCompatActivity {
             startActivity(new Intent(this, ProfileActivity.class));
         });
         
-        // 5. Certificate Button
+        // 6. Family Members Button
+        findViewById(R.id.btnDashFamily).setOnClickListener(v -> {
+            Toast.makeText(this, "Family Members module coming soon", Toast.LENGTH_SHORT).show();
+        });
+        
+        // 7. Certificate Button
         findViewById(R.id.btnDashCertificate).setOnClickListener(v -> {
             startActivity(new Intent(this, CertificateActivity.class));
         });
@@ -85,9 +90,9 @@ public class VaccinationActivity extends AppCompatActivity {
                 if (documentSnapshot != null && documentSnapshot.exists()) {
                     String name = documentSnapshot.getString("name");
                     if (name != null && !name.isEmpty()) {
-                        tvWelcomeName.setText("Hello, " + name);
+                        tvWelcomeName.setText("Hello, " + name + " 👋");
                     } else {
-                        tvWelcomeName.setText("Hello, " + mAuth.getCurrentUser().getEmail().split("@")[0]);
+                        tvWelcomeName.setText("Hello, " + mAuth.getCurrentUser().getEmail().split("@")[0] + " 👋");
                     }
                 }
             });

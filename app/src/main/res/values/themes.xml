@@ -1,16 +1,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Theme.DigitalVaccineApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Primary brand color. -->
+    <!-- Force Light Theme for plain white look as requested by user -->
+    <style name="Theme.DigitalVaccineApp" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Primary brand color -->
         <item name="colorPrimary">@color/primary_teal</item>
         <item name="colorPrimaryVariant">@color/primary_dark</item>
         <item name="colorOnPrimary">@color/white</item>
         
-        <!-- Status & Background -->
-        <item name="android:statusBarColor">@color/primary_dark</item>
+        <!-- Background and Surface colors (FORCED WHITE) -->
+        <item name="android:windowBackground">@color/white</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/text_main</item>
+        
+        <!-- Explicit text colors to ensure visibility -->
+        <item name="android:textColorPrimary">@color/text_main</item>
+        <item name="android:textColorSecondary">@color/text_sub</item>
+        
+        <item name="android:statusBarColor">@color/white</item>
         <item name="android:windowLightStatusBar">true</item>
         
-        <!-- Let system handle surfaces and backgrounds for DayNight compatibility -->
         <item name="colorOutline">@color/primary_teal</item>
     </style>
 

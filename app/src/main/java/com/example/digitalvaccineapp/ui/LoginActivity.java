@@ -13,6 +13,9 @@ import com.example.digitalvaccineapp.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import android.util.Log;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -20,6 +23,7 @@ public class LoginActivity extends AppCompatActivity {
     private MaterialButton btnLogin;
     private TextView tvRegister;
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +31,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
@@ -53,18 +58,35 @@ public class LoginActivity extends AppCompatActivity {
         mAuth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this, task -> {
                 if (task.isSuccessful()) {
-                    // Save login session (SharedPreferences)
-                    SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-                    SharedPreferences.Editor editor = prefs.edit();
-                    editor.putBoolean("isLoggedIn", true);
-                    editor.apply();
+                    String userId = mAuth.getCurrentUser().getUid();
+                    db.collection("users").document(userId).get()
+                        .addOnCompleteListener(roleTask -> {
+                            if (roleTask.isSuccessful() && roleTask.getResult() != null) {
+                                DocumentSnapshot document = roleTask.getResult();
+                                String role = document.getString("role");
 
-                    Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(LoginActivity.this, VaccinationActivity.class);
-                    // Clear the backstack so user can't go back to login screen
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    finish();
+                                // Save login session (SharedPreferences)
+                                SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                                SharedPreferences.Editor editor = prefs.edit();
+                                editor.putBoolean("isLoggedIn", true);
+                                editor.putString("userRole", role != null ? role : "citizen");
+                                editor.apply();
+
+                                Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
+                                Intent intent;
+                                if ("asha".equals(role)) {
+                                    intent = new Intent(LoginActivity.this, AshaDashboardActivity.class);
+                                } else {
+                                    intent = new Intent(LoginActivity.this, VaccinationActivity.class);
+                                }
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
+                                finish();
+                            } else {
+                                Toast.makeText(LoginActivity.this, "Failed to load profile data", Toast.LENGTH_SHORT).show();
+                                mAuth.signOut();
+                            }
+                        });
                 } else {
                     Toast.makeText(LoginActivity.this, "Authentication Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                 }

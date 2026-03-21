@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light">
+    android:background="@color/white">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/bg_light"
+        android:background="@color/white"
         app:elevation="0dp">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
@@ -28,17 +27,17 @@
                     android:layout_height="wrap_content">
 
                     <TextView
-                        android:id="@+id/tvWelcomeName"
+                        android:id="@+id/tvWelcomeAsha"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
-                        android:text="Hello, Citizen 👋"
-                        android:textColor="@color/primary_dark"
-                        android:textSize="24sp"
+                        android:text="Welcome, Health Worker 👩‍⚕️"
+                        android:textColor="#2E7D32" <!-- Medical Green -->
+                        android:textSize="22sp"
                         android:textStyle="bold" />
 
                     <ImageButton
-                        android:id="@+id/btnProfile"
+                        android:id="@+id/btnProfileAsha"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_alignParentEnd="true"
@@ -46,18 +45,18 @@
                         android:padding="12dp"
                         android:scaleType="centerInside"
                         android:src="@drawable/ic_profile"
-                        app:tint="@color/primary_teal" />
+                        app:tint="#4CAF50" />
                 </RelativeLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Track personal &amp; family vaccines"
+                    android:text="Manage Village Vaccinations"
                     android:textColor="@color/text_sub"
-                    android:textSize="16sp" />
+                    android:textSize="14sp" />
 
-                <!-- Overview Section -->
+                <!-- ASHA Overview Section -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -69,7 +68,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
                         android:layout_weight="1"
-                        app:cardBackgroundColor="@color/primary_light"
+                        app:cardBackgroundColor="#E8F5E9"
                         app:cardCornerRadius="16dp"
                         app:strokeWidth="0dp">
 
@@ -80,18 +79,18 @@
                             android:padding="16dp">
 
                             <TextView
-                                android:id="@+id/tvCompletedCount"
+                                android:id="@+id/tvTotalBeneficiaries"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="0"
-                                android:textColor="@color/primary_dark"
+                                android:textColor="#2E7D32"
                                 android:textSize="24sp"
                                 android:textStyle="bold" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Completed"
+                                android:text="Patients"
                                 android:textColor="@color/text_sub"
                                 android:textSize="12sp" />
                         </LinearLayout>
@@ -102,7 +101,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
-                        app:cardBackgroundColor="#FFF8E1"
+                        app:cardBackgroundColor="#FFEBEE"
                         app:cardCornerRadius="16dp"
                         app:strokeWidth="0dp">
 
@@ -113,18 +112,18 @@
                             android:padding="16dp">
 
                             <TextView
-                                android:id="@+id/tvPendingCount"
+                                android:id="@+id/tvOverdueAlerts"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="0"
-                                android:textColor="#F57F17"
+                                android:textColor="#C62828"
                                 android:textSize="24sp"
                                 android:textStyle="bold" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Pending"
+                                android:text="Due / Missed"
                                 android:textColor="@color/text_sub"
                                 android:textSize="12sp" />
                         </LinearLayout>
@@ -132,60 +131,8 @@
 
                 </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:orientation="vertical"
-                    android:padding="16dp"
-                    android:background="@drawable/bg_card_white"
-                    android:elevation="2dp">
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Overall Progress"
-                            android:textColor="@color/primary_dark"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tvProgressPercent"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:text="0%"
-                            android:textColor="@color/primary_teal"
-                            android:textStyle="bold" />
-                    </RelativeLayout>
-
-                    <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/pbVaccinationProgress"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:trackColor="@color/bg_light"
-                        app:indicatorColor="@color/primary_teal"
-                        app:trackThickness="8dp"
-                        app:trackCornerRadius="4dp"
-                        android:progress="0" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Keep track of your health journey"
-                        android:textColor="@color/text_sub"
-                        android:textSize="12sp" />
-
-                </LinearLayout>
             </LinearLayout>
-
         </com.google.android.material.appbar.CollapsingToolbarLayout>
-
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -200,96 +147,70 @@
             android:padding="24dp">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDashAddVaccine"
+                android:id="@+id/btnAshaAddBeneficiary"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:layout_marginBottom="16dp"
-                android:text="➕ Add Record"
+                android:text="➕ Add Beneficiary"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:cornerRadius="12dp"
-                app:backgroundTint="@color/primary_teal" />
+                app:backgroundTint="#4CAF50" /> <!-- Green dominant action -->
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDashViewRecords"
+                android:id="@+id/btnAshaViewRecords"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:layout_marginBottom="16dp"
-                android:text="💉 My Vaccines"
+                android:text="📋 View All Records"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:cornerRadius="12dp"
-                app:strokeColor="@color/primary_teal"
-                android:textColor="@color/primary_teal" />
+                app:strokeColor="#4CAF50"
+                android:textColor="#388E3C" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDashReminders"
+                android:id="@+id/btnAshaSchedule"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:layout_marginBottom="16dp"
-                android:text="⏰ Reminders"
+                android:text="⏰ Vaccination Schedule"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:cornerRadius="12dp"
-                app:strokeColor="@color/primary_teal"
-                android:textColor="@color/primary_teal" />
+                app:strokeColor="#4CAF50"
+                android:textColor="#388E3C" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDashFamily"
+                android:id="@+id/btnAshaAlerts"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:layout_marginBottom="16dp"
-                android:text="👨‍👩‍👧 Family Members"
+                android:text="🚨 Due / Missed Vaccines"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:cornerRadius="12dp"
-                app:strokeColor="@color/primary_teal"
-                android:textColor="@color/primary_teal" />
+                app:strokeColor="#E53935"
+                android:textColor="#D32F2F" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDashVaccineInfo"
+                android:id="@+id/btnAshaReports"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:layout_marginBottom="16dp"
-                android:text="🧠 Vaccine Intelligence"
+                android:text="📊 Reports"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:cornerRadius="12dp"
-                app:strokeColor="@color/primary_teal"
-                android:textColor="@color/primary_teal" />
+                app:strokeColor="#4CAF50"
+                android:textColor="#388E3C" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDashProfile"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginBottom="16dp"
-                android:text="👤 Profile"
-                android:textAllCaps="false"
-                android:textSize="18sp"
-                app:cornerRadius="12dp"
-                app:strokeColor="@color/primary_teal"
-                android:textColor="@color/primary_teal" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDashCertificate"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginBottom="16dp"
-                android:text="📜 Certificate"
-                android:textAllCaps="false"
-                android:textSize="18sp"
-                app:cornerRadius="12dp"
-                app:strokeColor="@color/primary_teal"
-                android:textColor="@color/primary_teal" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDashLogout"
+                android:id="@+id/btnAshaLogout"
                 style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
@@ -299,7 +220,6 @@
                 android:textColor="#D32F2F" />
 
         </LinearLayout>
-
     </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

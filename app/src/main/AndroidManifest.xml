@@ -75,6 +75,10 @@
             android:name=".ui.VaccineInfoActivity"
             android:exported="false">
         </activity>
+        <activity
+            android:name=".ui.AshaDashboardActivity"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>

@@ -33,8 +33,12 @@ public class SplashActivity extends AppCompatActivity {
 
         Intent intent;
         if (isLoggedInSharedPrefs || user != null) {
-            // Redirect to Dashboard
-            intent = new Intent(SplashActivity.this, VaccinationActivity.class);
+            String role = prefs.getString("userRole", "citizen");
+            if ("asha".equals(role)) {
+                intent = new Intent(SplashActivity.this, AshaDashboardActivity.class);
+            } else {
+                intent = new Intent(SplashActivity.this, VaccinationActivity.class);
+            }
         } else {
             // Redirect to Welcome / Landing Screen
             intent = new Intent(SplashActivity.this, WelcomeActivity.class);
