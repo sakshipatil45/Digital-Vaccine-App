@@ -32,7 +32,7 @@
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
                         android:text="Welcome, Health Worker 👩‍⚕️"
-                        android:textColor="#2E7D32" <!-- Medical Green -->
+                        android:textColor="#2E7D32" 
                         android:textSize="22sp"
                         android:textStyle="bold" />
 
