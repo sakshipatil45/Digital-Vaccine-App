@@ -65,6 +65,12 @@ public class LoginActivity extends AppCompatActivity {
                                 DocumentSnapshot document = roleTask.getResult();
                                 String role = document.getString("role");
 
+                                // Save FCM Token for Cloud Push Notifications
+                                com.google.firebase.messaging.FirebaseMessaging.getInstance().getToken()
+                                    .addOnSuccessListener(token -> {
+                                        db.collection("users").document(userId).update("fcmToken", token);
+                                    });
+
                                 // Save login session (SharedPreferences)
                                 SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
                                 SharedPreferences.Editor editor = prefs.edit();

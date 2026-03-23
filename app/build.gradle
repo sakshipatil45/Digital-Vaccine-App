@@ -42,6 +42,7 @@ dependencies {
     implementation platform(libs.firebase.bom)
     implementation libs.firebase.auth
     implementation libs.firebase.firestore
+    implementation 'com.google.firebase:firebase-messaging'
     
     // Room Database
     implementation "androidx.room:room-runtime:2.6.1"

@@ -75,24 +75,38 @@ public class AddVaccinationActivity extends AppCompatActivity {
         List<String> dependents = new ArrayList<>();
         dependents.add("Self");
         
+        // Immediate initialization so "Self" is always present instantly
+        ArrayAdapter<String> initialAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, dependents);
+        spinnerDependentName.setAdapter(initialAdapter);
+        
+        if (isEditMode) {
+            String currentDependent = getIntent().getStringExtra("vax_dependent");
+            if (currentDependent == null || currentDependent.isEmpty()) currentDependent = "Self";
+            spinnerDependentName.setText(currentDependent, false);
+        } else {
+            spinnerDependentName.setText("Self", false);
+        }
+        
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
             FirebaseFirestore.getInstance().collection("users").document(uid).collection("familyMembers")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    boolean addedNew = false;
                     for (com.google.firebase.firestore.QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         String depName = doc.getString("name");
-                        if (depName != null) dependents.add(depName);
+                        if (depName != null) {
+                            dependents.add(depName);
+                            addedNew = true;
+                        }
                     }
-                    ArrayAdapter<String> depAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, dependents);
-                    spinnerDependentName.setAdapter(depAdapter);
-                    
-                    if (isEditMode) {
-                        String currentDependent = getIntent().getStringExtra("vax_dependent");
-                        if (currentDependent == null || currentDependent.isEmpty()) currentDependent = "Self";
-                        spinnerDependentName.setText(currentDependent, false);
-                    } else {
-                        spinnerDependentName.setText("Self", false);
+                    // Only re-bind adapter if we actually found external dependents
+                    if (addedNew) {
+                        ArrayAdapter<String> depAdapter = new ArrayAdapter<>(AddVaccinationActivity.this, android.R.layout.simple_dropdown_item_1line, dependents);
+                        spinnerDependentName.setAdapter(depAdapter);
+                        // Maintain whatever the user (or the initial load) currently has typed/selected
+                        String currentText = spinnerDependentName.getText().toString();
+                        spinnerDependentName.setText(currentText, false);
                     }
                 });
         }

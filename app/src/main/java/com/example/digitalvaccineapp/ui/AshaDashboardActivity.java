@@ -64,7 +64,7 @@ public class AshaDashboardActivity extends AppCompatActivity {
         });
 
         btnAlerts.setOnClickListener(v -> {
-            Toast.makeText(this, "Due/Missed Alerts module coming soon", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(AshaDashboardActivity.this, AshaAlertsActivity.class));
         });
 
         btnReports.setOnClickListener(v -> {
