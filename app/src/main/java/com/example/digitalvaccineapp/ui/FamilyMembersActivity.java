@@ -27,6 +27,7 @@ public class FamilyMembersActivity extends AppCompatActivity {
     private RecyclerView rvFamilyMembers;
     private LinearLayout llEmptyState;
     private ExtendedFloatingActionButton fabAddFamilyMember;
+    private android.widget.ProgressBar progressBar;
     private FamilyMemberAdapter adapter;
     private List<FamilyMember> memberList;
 
@@ -52,6 +53,7 @@ public class FamilyMembersActivity extends AppCompatActivity {
         rvFamilyMembers = findViewById(R.id.rvFamilyMembers);
         llEmptyState = findViewById(R.id.llEmptyState);
         fabAddFamilyMember = findViewById(R.id.fabAddFamilyMember);
+        progressBar = findViewById(R.id.progressBar);
 
         rvFamilyMembers.setLayoutManager(new LinearLayoutManager(this));
         memberList = new ArrayList<>();
@@ -78,6 +80,7 @@ public class FamilyMembersActivity extends AppCompatActivity {
         db.collection("users").document(userId).collection("familyMembers")
             .get()
             .addOnCompleteListener(task -> {
+                progressBar.setVisibility(View.GONE);
                 if (task.isSuccessful()) {
                     memberList.clear();
                     for (QueryDocumentSnapshot document : task.getResult()) {
@@ -95,7 +98,7 @@ public class FamilyMembersActivity extends AppCompatActivity {
                         llEmptyState.setVisibility(View.GONE);
                     }
                 } else {
-                    Toast.makeText(this, "Failed to load family members", Toast.LENGTH_SHORT).show();
+                        com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content), "Failed to load family members", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
                 }
             });
     }

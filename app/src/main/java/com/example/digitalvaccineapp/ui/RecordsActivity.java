@@ -20,6 +20,7 @@ public class RecordsActivity extends AppCompatActivity {
     private List<Vaccination> fullList = new ArrayList<>();
     private VaccinationRepository repository;
     private com.google.android.material.textfield.TextInputEditText etSearch;
+    private android.widget.ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +29,7 @@ public class RecordsActivity extends AppCompatActivity {
 
         repository = new VaccinationRepository(this);
         recyclerView = findViewById(R.id.rvVaccinationsList);
+        progressBar = findViewById(R.id.progressBar);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         
         adapter = new VaccinationAdapter(vaccinationList, new VaccinationAdapter.OnVaccinationClickListener() {
@@ -83,22 +85,22 @@ public class RecordsActivity extends AppCompatActivity {
     
     private void deleteRecord(Vaccination vaccination) {
         if (vaccination.getId() == null) {
-            Toast.makeText(this, "Cannot delete un-synced record.", Toast.LENGTH_SHORT).show();
+            com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content), "Cannot delete un-synced record.", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
             return;
         }
         
-        Toast.makeText(this, "Deleting from Cloud...", Toast.LENGTH_SHORT).show();
+        com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content), "Deleting from Cloud...", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
         
         repository.deleteVaccination(vaccination.getId(), new VaccinationRepository.DataCallback() {
             @Override
             public void onDataLoaded(List<Vaccination> vaccinations) {
-                Toast.makeText(RecordsActivity.this, "Record deleted successfully", Toast.LENGTH_SHORT).show();
+                com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content), "Record deleted successfully", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
                 fetchVaccinations(); // Refresh list
             }
 
             @Override
             public void onError(String message) {
-                Toast.makeText(RecordsActivity.this, "Error deleting: " + message, Toast.LENGTH_SHORT).show();
+                com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content), "Error deleting: " + message, com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
             }
         });
     }
@@ -122,6 +124,7 @@ public class RecordsActivity extends AppCompatActivity {
             @Override
             public void onDataLoaded(List<Vaccination> vaccinations) {
                 runOnUiThread(() -> {
+                    progressBar.setVisibility(android.view.View.GONE);
                     if (vaccinations != null) {
                         fullList.clear();
                         fullList.addAll(vaccinations);
@@ -144,7 +147,10 @@ public class RecordsActivity extends AppCompatActivity {
 
             @Override
             public void onError(String message) {
-                runOnUiThread(() -> Toast.makeText(RecordsActivity.this, message, Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+                    progressBar.setVisibility(android.view.View.GONE);
+                    com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content), message, com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
+                });
             }
         });
     }

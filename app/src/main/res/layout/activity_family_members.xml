@@ -25,13 +25,22 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+        <!-- Loading Indicator -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="visible" />
+
         <!-- RecyclerView for Data -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvFamilyMembers"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="16dp"
-            android:clipToPadding="false" />
+            android:clipToPadding="false"
+            android:layoutAnimation="@anim/layout_animation_slide_up" />
 
         <!-- Empty State -->
         <LinearLayout

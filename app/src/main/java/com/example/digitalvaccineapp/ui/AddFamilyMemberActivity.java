@@ -17,6 +17,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.UUID;
 
@@ -66,13 +67,13 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
         String relationship = spFamilyRelationship.getSelectedItem().toString();
 
         if (TextUtils.isEmpty(name) || TextUtils.isEmpty(age)) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            Snackbar.make(findViewById(android.R.id.content), "Please fill all fields", Snackbar.LENGTH_SHORT).show();
             return;
         }
 
         int selectedGenderId = rgFamilyGender.getCheckedRadioButtonId();
         if (selectedGenderId == -1) {
-            Toast.makeText(this, "Please select a gender", Toast.LENGTH_SHORT).show();
+            Snackbar.make(findViewById(android.R.id.content), "Please select a gender", Snackbar.LENGTH_SHORT).show();
             return;
         }
         RadioButton selectedGender = findViewById(selectedGenderId);
@@ -89,12 +90,12 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
         db.collection("users").document(userId).collection("familyMembers")
             .document(newId).set(member)
             .addOnSuccessListener(aVoid -> {
-                Toast.makeText(this, "Family member added successfully", Toast.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(android.R.id.content), "Family member added successfully", Snackbar.LENGTH_LONG).show();
                 finish();
             })
             .addOnFailureListener(e -> {
                 btnSaveFamilyMember.setEnabled(true);
-                Toast.makeText(this, "Failed to add member: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(android.R.id.content), "Failed to add member: " + e.getMessage(), Snackbar.LENGTH_LONG).show();
             });
     }
 }

@@ -60,6 +60,15 @@
         </com.google.android.material.textfield.TextInputLayout>
     </android.widget.LinearLayout>
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="200dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:visibility="visible" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvVaccinationsList"
         android:layout_width="match_parent"
@@ -67,6 +76,7 @@
         android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:layout_marginTop="100dp"
+        android:layoutAnimation="@anim/layout_animation_slide_up"
         tools:listitem="@layout/item_vaccination" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -14,6 +14,7 @@ import com.example.digitalvaccineapp.network.VaccinationRepository;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.android.material.snackbar.Snackbar;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -132,7 +133,7 @@ public class AddVaccinationActivity extends AppCompatActivity {
         String hospital = etHospitalName.getText().toString();
 
         if (name.isEmpty() || doseStr.isEmpty() || date.isEmpty() || hospital.isEmpty()) {
-            Toast.makeText(this, "Please fill all required fields", Toast.LENGTH_SHORT).show();
+            Snackbar.make(findViewById(android.R.id.content), "Please fill all required fields", Snackbar.LENGTH_SHORT).show();
             return;
         }
 
@@ -156,13 +157,14 @@ public class AddVaccinationActivity extends AppCompatActivity {
         repository.addVaccination(vaccination, new VaccinationRepository.DataCallback() {
             @Override
             public void onDataLoaded(List<Vaccination> vaccinations) {
-                Toast.makeText(AddVaccinationActivity.this, "Vaccination saved securely to Cloud", Toast.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(android.R.id.content), "Vaccination saved securely to Cloud", Snackbar.LENGTH_LONG).show();
                 finish();
             }
 
             @Override
             public void onError(String message) {
-                Toast.makeText(AddVaccinationActivity.this, "Error: " + message, Toast.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(android.R.id.content), "Error: " + message, Snackbar.LENGTH_LONG)
+                        .setAction("Retry", v -> saveVaccination()).show();
             }
         });
     }
@@ -171,13 +173,13 @@ public class AddVaccinationActivity extends AppCompatActivity {
         repository.updateVaccination(vaxId, vaccination, new VaccinationRepository.DataCallback() {
             @Override
             public void onDataLoaded(List<Vaccination> vaccinations) {
-                Toast.makeText(AddVaccinationActivity.this, "Record updated in Cloud", Toast.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(android.R.id.content), "Record updated in Cloud", Snackbar.LENGTH_LONG).show();
                 finish();
             }
 
             @Override
             public void onError(String message) {
-                Toast.makeText(AddVaccinationActivity.this, "Update failed: " + message, Toast.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(android.R.id.content), "Update failed: " + message, Snackbar.LENGTH_LONG).show();
             }
         });
     }
