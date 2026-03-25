@@ -67,7 +67,7 @@ public class AshaDashboardActivity extends AppCompatActivity {
         });
 
         btnReports.setOnClickListener(v -> {
-            Toast.makeText(this, "Reports & Analytics module coming soon", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(AshaDashboardActivity.this, AshaReportsActivity.class));
         });
 
         btnLogout.setOnClickListener(v -> logout());
