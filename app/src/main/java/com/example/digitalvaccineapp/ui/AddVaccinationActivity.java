@@ -154,6 +154,24 @@ public class AddVaccinationActivity extends AppCompatActivity {
     }
 
     private void addVaccination(Vaccination vaccination) {
+        if (getIntent().getBooleanExtra("asha_beneficiary_mode", false)) {
+            String beneficiaryId = getIntent().getStringExtra("beneficiary_id");
+            if (FirebaseAuth.getInstance().getCurrentUser() == null || beneficiaryId == null) return;
+            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            
+            FirebaseFirestore.getInstance().collection("users").document(uid)
+                .collection("beneficiaries").document(beneficiaryId)
+                .collection("vaccinations").add(vaccination)
+                .addOnSuccessListener(documentReference -> {
+                    Snackbar.make(findViewById(android.R.id.content), "Vaccination securely linked to Patient", Snackbar.LENGTH_LONG).show();
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                     Snackbar.make(findViewById(android.R.id.content), "Error: " + e.getMessage(), Snackbar.LENGTH_LONG).show();
+                });
+            return;
+        }
+
         repository.addVaccination(vaccination, new VaccinationRepository.DataCallback() {
             @Override
             public void onDataLoaded(List<Vaccination> vaccinations) {

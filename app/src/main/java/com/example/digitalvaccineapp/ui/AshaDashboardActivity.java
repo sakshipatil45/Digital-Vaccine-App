@@ -51,12 +51,11 @@ public class AshaDashboardActivity extends AppCompatActivity {
         });
 
         btnAddBeneficiary.setOnClickListener(v -> {
-            Toast.makeText(this, "Add Beneficiary module coming soon", Toast.LENGTH_SHORT).show();
-            // Link to Add Beneficiary screen in future iterations
+            startActivity(new Intent(AshaDashboardActivity.this, AddBeneficiaryActivity.class));
         });
 
         btnViewRecords.setOnClickListener(v -> {
-            startActivity(new Intent(AshaDashboardActivity.this, RecordsActivity.class));
+            startActivity(new Intent(AshaDashboardActivity.this, BeneficiaryListActivity.class));
         });
 
         btnSchedule.setOnClickListener(v -> {

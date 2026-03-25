@@ -92,6 +92,21 @@
             android:name=".ui.AshaAlertsActivity"
             android:exported="false">
         </activity>
+        
+        <activity
+            android:name=".ui.BeneficiaryListActivity"
+            android:exported="false">
+        </activity>
+        
+        <activity
+            android:name=".ui.AddBeneficiaryActivity"
+            android:exported="false">
+        </activity>
+        
+        <activity
+            android:name=".ui.BeneficiaryDetailActivity"
+            android:exported="false">
+        </activity>
 
         <service
             android:name=".service.MyFirebaseMessagingService"

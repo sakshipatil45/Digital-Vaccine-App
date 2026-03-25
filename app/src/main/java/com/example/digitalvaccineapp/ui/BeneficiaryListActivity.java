@@ -1,0 +1,117 @@
+package com.example.digitalvaccineapp.ui;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.digitalvaccineapp.R;
+import com.example.digitalvaccineapp.adapter.BeneficiaryAdapter;
+import com.example.digitalvaccineapp.models.Beneficiary;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class BeneficiaryListActivity extends AppCompatActivity {
+
+    private RecyclerView rvBeneficiaries;
+    private LinearLayout llEmptyState;
+    private ProgressBar progressBar;
+    private ExtendedFloatingActionButton fabAddBeneficiary;
+    
+    private BeneficiaryAdapter adapter;
+    private List<Beneficiary> beneficiaryList;
+
+    private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_beneficiary_list);
+
+        db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
+
+        Toolbar toolbar = findViewById(R.id.toolbarBeneficiary);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
+
+        rvBeneficiaries = findViewById(R.id.rvBeneficiaries);
+        llEmptyState = findViewById(R.id.llEmptyState);
+        progressBar = findViewById(R.id.progressBar);
+        fabAddBeneficiary = findViewById(R.id.fabAddBeneficiary);
+
+        rvBeneficiaries.setLayoutManager(new LinearLayoutManager(this));
+        beneficiaryList = new ArrayList<>();
+        
+        adapter = new BeneficiaryAdapter(beneficiaryList, beneficiary -> {
+            Intent intent = new Intent(BeneficiaryListActivity.this, BeneficiaryDetailActivity.class);
+            intent.putExtra("beneficiaryId", beneficiary.getId());
+            intent.putExtra("beneficiaryName", beneficiary.getName());
+            intent.putExtra("beneficiaryVillage", beneficiary.getVillage());
+            intent.putExtra("beneficiaryAge", beneficiary.getAge());
+            startActivity(intent);
+        });
+        
+        rvBeneficiaries.setAdapter(adapter);
+
+        fabAddBeneficiary.setOnClickListener(v -> {
+            startActivity(new Intent(BeneficiaryListActivity.this, AddBeneficiaryActivity.class));
+        });
+
+        loadBeneficiaries();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadBeneficiaries();
+    }
+
+    private void loadBeneficiaries() {
+        if (mAuth.getCurrentUser() == null) return;
+        
+        String userId = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(userId).collection("beneficiaries")
+            .get()
+            .addOnCompleteListener(task -> {
+                progressBar.setVisibility(View.GONE);
+                if (task.isSuccessful()) {
+                    beneficiaryList.clear();
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        Beneficiary beneficiary = document.toObject(Beneficiary.class);
+                        beneficiary.setId(document.getId());
+                        beneficiaryList.add(beneficiary);
+                    }
+                    adapter.notifyDataSetChanged();
+
+                    if (beneficiaryList.isEmpty()) {
+                        rvBeneficiaries.setVisibility(View.GONE);
+                        llEmptyState.setVisibility(View.VISIBLE);
+                    } else {
+                        rvBeneficiaries.setVisibility(View.VISIBLE);
+                        llEmptyState.setVisibility(View.GONE);
+                        rvBeneficiaries.scheduleLayoutAnimation();
+                    }
+                } else {
+                    Snackbar.make(findViewById(android.R.id.content), "Failed to load beneficiaries", Snackbar.LENGTH_SHORT).show();
+                }
+            });
+    }
+}
