@@ -29,6 +29,8 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+    private boolean isEditMode = false;
+    private String editBeneficiaryId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,10 +57,50 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSaveBeneficiary);
 
         String[] categories = {"Child", "Pregnant Woman", "Adult"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, categories);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, categories);
         spCategory.setAdapter(adapter);
 
         btnSave.setOnClickListener(v -> saveBeneficiary());
+
+        if (getIntent().hasExtra("edit_mode")) {
+            isEditMode = getIntent().getBooleanExtra("edit_mode", false);
+            editBeneficiaryId = getIntent().getStringExtra("beneficiaryId");
+            btnSave.setText("Update Patient Data");
+            loadExistingData();
+        }
+    }
+
+    private void loadExistingData() {
+        if (mAuth.getCurrentUser() == null || editBeneficiaryId == null) return;
+        String userId = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(userId).collection("beneficiaries").document(editBeneficiaryId)
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    etName.setText(documentSnapshot.getString("name"));
+                    etAge.setText(documentSnapshot.getString("age"));
+                    etVillage.setText(documentSnapshot.getString("village"));
+                    etMobile.setText(documentSnapshot.getString("mobileNumber"));
+                    
+                    String gender = documentSnapshot.getString("gender");
+                    if ("Male".equalsIgnoreCase(gender)) rgGender.check(R.id.rbMale);
+                    else if ("Female".equalsIgnoreCase(gender)) rgGender.check(R.id.rbFemale);
+                    
+                    String category = documentSnapshot.getString("category");
+                    if (category != null) {
+                        String[] categories = {"Child", "Pregnant Woman", "Adult"};
+                        for (int i = 0; i < categories.length; i++) {
+                            if (categories[i].equals(category)) {
+                                spCategory.setSelection(i);
+                                break;
+                            }
+                        }
+                    }
+                }
+            })
+            .addOnFailureListener(e -> {
+                Snackbar.make(findViewById(android.R.id.content), "Error loading data: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
+            });
     }
 
     private void saveBeneficiary() {
@@ -68,14 +110,19 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
         String mobile = etMobile.getText().toString().trim();
         String category = spCategory.getSelectedItem().toString();
 
-        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(age) || TextUtils.isEmpty(village)) {
-            Snackbar.make(findViewById(android.R.id.content), "Please fill all essential fields (Name, Age, Village)", Snackbar.LENGTH_SHORT).show();
+        if (name.isEmpty() || age.isEmpty() || village.isEmpty() || mobile.isEmpty() || category.isEmpty()) {
+            Snackbar.make(findViewById(android.R.id.content), "All fields must be filled.", Snackbar.LENGTH_SHORT).show();
+            return;
+        }
+        
+        if (mobile.length() < 10) {
+            Snackbar.make(findViewById(android.R.id.content), "Enter a valid 10-digit mobile number.", Snackbar.LENGTH_SHORT).show();
             return;
         }
 
         int selectedGenderId = rgGender.getCheckedRadioButtonId();
         if (selectedGenderId == -1) {
-            Snackbar.make(findViewById(android.R.id.content), "Please select a gender", Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(findViewById(android.R.id.content), "Please select a gender.", Snackbar.LENGTH_SHORT).show();
             return;
         }
         RadioButton selectedGender = findViewById(selectedGenderId);
@@ -85,18 +132,41 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
         String ashaId = mAuth.getCurrentUser().getUid();
 
         btnSave.setEnabled(false);
-        String newId = UUID.randomUUID().toString();
-        Beneficiary beneficiary = new Beneficiary(newId, name, age, gender, village, mobile, category, ashaId);
+        
+        String beneficiaryId;
+        if (isEditMode) {
+            beneficiaryId = editBeneficiaryId;
+        } else {
+            beneficiaryId = UUID.randomUUID().toString();
+        }
 
-        db.collection("users").document(ashaId).collection("beneficiaries")
-            .document(newId).set(beneficiary)
-            .addOnSuccessListener(aVoid -> {
-                Snackbar.make(findViewById(android.R.id.content), "Beneficiary securely onboarded", Snackbar.LENGTH_LONG).show();
-                finish();
-            })
-            .addOnFailureListener(e -> {
-                btnSave.setEnabled(true);
-                Snackbar.make(findViewById(android.R.id.content), "Error: " + e.getMessage(), Snackbar.LENGTH_LONG).show();
-            });
+        Beneficiary beneficiary = new Beneficiary(beneficiaryId, name, age, gender, village, mobile, category, ashaId);
+
+        String userId = mAuth.getCurrentUser().getUid();
+        
+        if (isEditMode) {
+            db.collection("users").document(userId).collection("beneficiaries").document(editBeneficiaryId)
+                .set(beneficiary)
+                .addOnSuccessListener(aVoid -> {
+                    Snackbar.make(findViewById(android.R.id.content), "Patient data updated", Snackbar.LENGTH_SHORT).show();
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    btnSave.setEnabled(true);
+                    Snackbar.make(findViewById(android.R.id.content), "Update failed: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                });
+        } else {
+            db.collection("users").document(userId).collection("beneficiaries")
+                .document(beneficiaryId) // Use the generated ID for new beneficiary
+                .set(beneficiary) // Use set() to create with specific ID
+                .addOnSuccessListener(aVoid -> {
+                    Snackbar.make(findViewById(android.R.id.content), "Beneficiary successfully registered", Snackbar.LENGTH_SHORT).show();
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    btnSave.setEnabled(true);
+                    Snackbar.make(findViewById(android.R.id.content), "Error: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                });
+        }
     }
 }

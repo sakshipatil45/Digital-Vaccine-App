@@ -3,6 +3,8 @@ package com.example.digitalvaccineapp.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -10,11 +12,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.digitalvaccineapp.R;
 import com.example.digitalvaccineapp.models.Beneficiary;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class BeneficiaryAdapter extends RecyclerView.Adapter<BeneficiaryAdapter.BeneficiaryViewHolder> {
+public class BeneficiaryAdapter extends RecyclerView.Adapter<BeneficiaryAdapter.BeneficiaryViewHolder> implements Filterable {
 
     private List<Beneficiary> beneficiaryList;
+    private List<Beneficiary> beneficiaryListFull;
     private OnBeneficiaryClickListener listener;
 
     public interface OnBeneficiaryClickListener {
@@ -23,7 +27,14 @@ public class BeneficiaryAdapter extends RecyclerView.Adapter<BeneficiaryAdapter.
 
     public BeneficiaryAdapter(List<Beneficiary> beneficiaryList, OnBeneficiaryClickListener listener) {
         this.beneficiaryList = beneficiaryList;
+        this.beneficiaryListFull = new ArrayList<>(beneficiaryList);
         this.listener = listener;
+    }
+
+    public void updateData(List<Beneficiary> newData) {
+        this.beneficiaryList = newData;
+        this.beneficiaryListFull = new ArrayList<>(newData);
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -56,6 +67,42 @@ public class BeneficiaryAdapter extends RecyclerView.Adapter<BeneficiaryAdapter.
     public int getItemCount() {
         return beneficiaryList.size();
     }
+
+    @Override
+    public Filter getFilter() {
+        return beneficiaryFilter;
+    }
+
+    private Filter beneficiaryFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            List<Beneficiary> filteredList = new ArrayList<>();
+
+            if (constraint == null || constraint.length() == 0) {
+                filteredList.addAll(beneficiaryListFull);
+            } else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+
+                for (Beneficiary item : beneficiaryListFull) {
+                    if (item.getName().toLowerCase().contains(filterPattern) || 
+                        item.getVillage().toLowerCase().contains(filterPattern)) {
+                        filteredList.add(item);
+                    }
+                }
+            }
+
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            beneficiaryList.clear();
+            beneficiaryList.addAll((List) results.values);
+            notifyDataSetChanged();
+        }
+    };
 
     public static class BeneficiaryViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvDetails, tvCategoryIcon, tvCategoryBadge;

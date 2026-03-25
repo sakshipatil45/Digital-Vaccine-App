@@ -30,7 +30,7 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
     private RecyclerView rvVaccinations;
     private LinearLayout llEmptyState;
     private ProgressBar progressBar;
-    private ImageButton btnAddRecord;
+    private ImageButton btnAddRecord, btnEditProfile, btnDeleteProfile;
 
     private VaccinationAdapter adapter;
     private List<Vaccination> vaccinationList;
@@ -66,6 +66,17 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
         llEmptyState = findViewById(R.id.llEmptyState);
         progressBar = findViewById(R.id.progressBar);
         btnAddRecord = findViewById(R.id.btnAddRecord);
+        btnEditProfile = findViewById(R.id.btnEditProfile);
+        btnDeleteProfile = findViewById(R.id.btnDeleteProfile);
+
+        btnEditProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(BeneficiaryDetailActivity.this, AddBeneficiaryActivity.class);
+            intent.putExtra("edit_mode", true);
+            intent.putExtra("beneficiaryId", beneficiaryId);
+            startActivity(intent);
+        });
+
+        btnDeleteProfile.setOnClickListener(v -> deleteBeneficiary());
 
         tvProfileName.setText(beneficiaryName != null ? beneficiaryName : "Unknown Patient");
         tvProfileDetails.setText(beneficiaryVillage + " • " + beneficiaryAge + " yrs");
@@ -141,6 +152,22 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
                 } else {
                     Snackbar.make(findViewById(android.R.id.content), "Error pulling records", Snackbar.LENGTH_SHORT).show();
                 }
+            });
+    }
+
+    private void deleteBeneficiary() {
+        if (mAuth.getCurrentUser() == null || beneficiaryId == null) return;
+        String userId = mAuth.getCurrentUser().getUid();
+        
+        db.collection("users").document(userId)
+            .collection("beneficiaries").document(beneficiaryId)
+            .delete()
+            .addOnSuccessListener(aVoid -> {
+                Snackbar.make(findViewById(android.R.id.content), "Beneficiary record removed", Snackbar.LENGTH_SHORT).show();
+                finish();
+            })
+            .addOnFailureListener(e -> {
+                Snackbar.make(findViewById(android.R.id.content), "Delete failed: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
             });
     }
 

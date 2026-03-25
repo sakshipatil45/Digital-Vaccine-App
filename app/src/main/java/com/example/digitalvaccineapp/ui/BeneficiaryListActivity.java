@@ -4,7 +4,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import androidx.appcompat.widget.SearchView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -29,6 +32,7 @@ public class BeneficiaryListActivity extends AppCompatActivity {
     private LinearLayout llEmptyState;
     private ProgressBar progressBar;
     private ExtendedFloatingActionButton fabAddBeneficiary;
+    private SearchView svBeneficiaries;
     
     private BeneficiaryAdapter adapter;
     private List<Beneficiary> beneficiaryList;
@@ -71,6 +75,18 @@ public class BeneficiaryListActivity extends AppCompatActivity {
         
         rvBeneficiaries.setAdapter(adapter);
 
+        svBeneficiaries = findViewById(R.id.svBeneficiaries);
+        svBeneficiaries.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) { return false; }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.getFilter().filter(newText);
+                return false;
+            }
+        });
+
         fabAddBeneficiary.setOnClickListener(v -> {
             startActivity(new Intent(BeneficiaryListActivity.this, AddBeneficiaryActivity.class));
         });
@@ -99,7 +115,7 @@ public class BeneficiaryListActivity extends AppCompatActivity {
                         beneficiary.setId(document.getId());
                         beneficiaryList.add(beneficiary);
                     }
-                    adapter.notifyDataSetChanged();
+                    adapter.updateData(beneficiaryList); // Triggers filter refresh naturally
 
                     if (beneficiaryList.isEmpty()) {
                         rvBeneficiaries.setVisibility(View.GONE);
