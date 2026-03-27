@@ -20,10 +20,10 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         
-        <receiver android:name=".receiver.ReminderReceiver" android:exported="false" />
+        <receiver android:name=".citizen.ReminderReceiver" android:exported="false" />
 
         <activity
-            android:name=".ui.SplashActivity"
+            android:name=".auth.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,89 +32,89 @@
         </activity>
         
         <activity
-            android:name=".ui.WelcomeActivity"
+            android:name=".auth.WelcomeActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".ui.LoginActivity"
+            android:name=".auth.LoginActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".ui.RegisterActivity"
+            android:name=".auth.RegisterActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".ui.VaccinationActivity"
+            android:name=".citizen.VaccinationActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".ui.AddVaccinationActivity"
+            android:name=".shared.AddVaccinationActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".ui.ProfileActivity"
+            android:name=".shared.ProfileActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".ui.RecordsActivity"
+            android:name=".shared.RecordsActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".ui.VaccineDetailActivity"
+            android:name=".shared.VaccineDetailActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".ui.ReminderActivity"
+            android:name=".citizen.ReminderActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".ui.CertificateActivity"
+            android:name=".shared.CertificateActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".ui.VaccineInfoActivity"
+            android:name=".shared.VaccineInfoActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".ui.AshaDashboardActivity"
+            android:name=".asha.AshaDashboardActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".ui.FamilyMembersActivity"
+            android:name=".citizen.FamilyMembersActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".ui.AddFamilyMemberActivity"
-            android:exported="false">
-        </activity>
-        
-        <activity
-            android:name=".ui.AshaAlertsActivity"
+            android:name=".citizen.AddFamilyMemberActivity"
             android:exported="false">
         </activity>
         
         <activity
-            android:name=".ui.BeneficiaryListActivity"
+            android:name=".asha.AshaAlertsActivity"
             android:exported="false">
         </activity>
         
         <activity
-            android:name=".ui.AddBeneficiaryActivity"
+            android:name=".asha.BeneficiaryListActivity"
             android:exported="false">
         </activity>
         
         <activity
-            android:name=".ui.BeneficiaryDetailActivity"
+            android:name=".asha.AddBeneficiaryActivity"
             android:exported="false">
         </activity>
         
         <activity
-            android:name=".ui.AshaReportsActivity"
+            android:name=".asha.BeneficiaryDetailActivity"
+            android:exported="false">
+        </activity>
+        
+        <activity
+            android:name=".asha.AshaReportsActivity"
             android:exported="false">
         </activity>
 
         <service
-            android:name=".service.MyFirebaseMessagingService"
+            android:name=".core.MyFirebaseMessagingService"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

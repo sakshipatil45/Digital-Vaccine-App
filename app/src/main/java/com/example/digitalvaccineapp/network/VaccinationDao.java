@@ -4,7 +4,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import com.example.digitalvaccineapp.models.VaccinationEntity;
+import com.example.digitalvaccineapp.shared.VaccinationEntity;
 import java.util.List;
 
 @Dao

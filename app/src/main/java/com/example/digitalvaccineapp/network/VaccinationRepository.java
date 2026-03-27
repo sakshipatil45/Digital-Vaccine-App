@@ -1,9 +1,10 @@
 package com.example.digitalvaccineapp.network;
+import com.example.digitalvaccineapp.shared.User;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import com.example.digitalvaccineapp.models.Vaccination;
-import com.example.digitalvaccineapp.models.VaccinationEntity;
+import com.example.digitalvaccineapp.shared.Vaccination;
+import com.example.digitalvaccineapp.shared.VaccinationEntity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
