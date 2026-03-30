@@ -170,11 +170,11 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSave"
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
+                android:layout_height="60dp"
                 android:text="Save Record"
                 android:textAllCaps="false"
                 android:textSize="18sp"
-                app:cornerRadius="16dp" />
+                app:cornerRadius="30dp" />
 
         </LinearLayout>
     </ScrollView>

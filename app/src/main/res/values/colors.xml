@@ -3,20 +3,25 @@
     <color name="black">#FF1A1A1A</color>
     <color name="white">#FFFFFFFF</color>
     
-    <!-- Primary Theme Colors -->
-    <color name="primary_teal">#26A69A</color>
-    <color name="primary_dark">#00796B</color>
+    <!-- Primary Theme Colors (Modern Medical Teal/Blue) -->
+    <color name="primary_teal">#009688</color> <!-- Keep teal reference but refresh it -->
+    <color name="primary_dark">#00695C</color>
     <color name="primary_light">#E0F2F1</color>
+    <color name="primary_gradient_start">#00B4D8</color>
+    <color name="primary_gradient_end">#0077B6</color>
     
     <!-- Accent & Status -->
-    <color name="accent_gold">#FFD54F</color>
-    <color name="status_done">#4CAF50</color>
-    <color name="status_pending">#FFB300</color>
-    <color name="status_upcoming">#42A5F5</color>
+    <color name="accent_gold">#FFCA28</color>
+    <color name="status_done">#38B000</color>
+    <color name="status_pending">#FFB703</color>
+    <color name="status_upcoming">#00B4D8</color>
     
     <!-- Neutral Colors -->
-    <color name="bg_light">#F8F9FA</color>
-    <color name="text_main">#212121</color>
-    <color name="text_sub">#757575</color>
-    <color name="primary_blue">#007BFF</color>
+    <color name="bg_light">#F5F7FA</color>
+    <color name="text_main">#2B2D42</color>
+    <color name="text_sub">#6C757D</color>
+    <color name="primary_blue">#4361EE</color>
+    
+    <!-- Forms -->
+    <color name="stroke_color">#E9ECEF</color>
 </resources>

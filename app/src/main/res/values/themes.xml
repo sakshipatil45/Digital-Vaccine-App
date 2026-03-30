@@ -1,28 +1,42 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Force Light Theme for plain white look as requested by user -->
     <style name="Theme.DigitalVaccineApp" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Primary brand color -->
         <item name="colorPrimary">@color/primary_teal</item>
         <item name="colorPrimaryVariant">@color/primary_dark</item>
         <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/primary_blue</item>
         
-        <!-- Background and Surface colors (FORCED WHITE) -->
-        <item name="android:windowBackground">@color/white</item>
+        <!-- Background and Surface colors -->
+        <item name="android:windowBackground">@color/bg_light</item>
         <item name="colorSurface">@color/white</item>
         <item name="colorOnSurface">@color/text_main</item>
         
-        <!-- Explicit text colors to ensure visibility -->
+        <!-- Explicit text colors -->
         <item name="android:textColorPrimary">@color/text_main</item>
         <item name="android:textColorSecondary">@color/text_sub</item>
         
         <item name="android:statusBarColor">@color/white</item>
         <item name="android:windowLightStatusBar">true</item>
         
-        <item name="colorOutline">@color/primary_teal</item>
+        <item name="colorOutline">@color/stroke_color</item>
+        
+        <!-- Global Rounded Corner Shape for Small Components (Buttons, Text Inputs) -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearanceOverlay.App.SmallComponent</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearanceOverlay.App.MediumComponent</item>
+        
+        <!-- Typography -->
+        <item name="fontFamily">sans-serif</item>
     </style>
 
+    <!-- Component Corners -->
     <style name="ShapeAppearanceOverlay.App.SmallComponent" parent="">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">12dp</item>
     </style>
+    <style name="ShapeAppearanceOverlay.App.MediumComponent" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+    
+    <!-- Splash Screen specific theme if needed later -->
 </resources>

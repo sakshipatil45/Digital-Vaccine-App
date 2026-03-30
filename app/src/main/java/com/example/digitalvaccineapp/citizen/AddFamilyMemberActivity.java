@@ -5,7 +5,7 @@ import android.text.TextUtils;
 import android.widget.ArrayAdapter;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.Spinner;
+import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,7 +25,7 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
 
     private TextInputEditText etFamilyName, etFamilyAge;
     private RadioGroup rgFamilyGender;
-    private Spinner spFamilyRelationship;
+    private AutoCompleteTextView spFamilyRelationship;
     private MaterialButton btnSaveFamilyMember;
 
     private FirebaseFirestore db;
@@ -53,9 +53,9 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
         spFamilyRelationship = findViewById(R.id.spFamilyRelationship);
         btnSaveFamilyMember = findViewById(R.id.btnSaveFamilyMember);
 
-        // Setup Spinner
+        // Setup AutoCompleteTextView
         String[] relationships = {"Son", "Daughter", "Father", "Mother", "Spouse", "Other"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, relationships);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, relationships);
         spFamilyRelationship.setAdapter(adapter);
 
         btnSaveFamilyMember.setOnClickListener(v -> saveFamilyMember());
@@ -64,7 +64,7 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
     private void saveFamilyMember() {
         String name = etFamilyName.getText().toString().trim();
         String age = etFamilyAge.getText().toString().trim();
-        String relationship = spFamilyRelationship.getSelectedItem().toString();
+        String relationship = spFamilyRelationship.getText().toString().trim();
 
         if (TextUtils.isEmpty(name) || TextUtils.isEmpty(age)) {
             Snackbar.make(findViewById(android.R.id.content), "Please fill all fields", Snackbar.LENGTH_SHORT).show();
