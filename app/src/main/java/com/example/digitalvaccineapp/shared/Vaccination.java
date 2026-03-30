@@ -44,4 +44,6 @@ public class Vaccination {
     public void setStatus(String status) { this.status = status; }
     public String getDependentName() { return dependentName; }
     public void setDependentName(String dependentName) { this.dependentName = dependentName; }
+    public Object getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Object createdAt) { this.createdAt = createdAt; }
 }
