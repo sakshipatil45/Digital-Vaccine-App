@@ -1,4 +1,4 @@
-package com.example.digitalvaccineapp.citizen;
+package com.example.digitalvaccineapp.shared;
 
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
@@ -14,7 +14,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.digitalvaccineapp.R;
-import com.example.digitalvaccineapp.citizen.ReminderReceiver;
+import com.example.digitalvaccineapp.shared.ReminderReceiver;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 

@@ -1,4 +1,4 @@
-package com.example.digitalvaccineapp.citizen;
+package com.example.digitalvaccineapp.shared;
 import com.example.digitalvaccineapp.shared.Vaccination;
 
 import android.app.NotificationManager;

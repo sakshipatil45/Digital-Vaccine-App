@@ -1,25 +1,18 @@
 package com.example.digitalvaccineapp.shared;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.digitalvaccineapp.R;
-import com.example.digitalvaccineapp.shared.User;
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import java.util.HashMap;
-import java.util.Map;
-
-import android.widget.AutoCompleteTextView;
-import android.widget.ArrayAdapter;
-import com.google.firebase.auth.FirebaseAuth;
 
 public class ProfileActivity extends AppCompatActivity {
-    private TextInputEditText etName, etEmail, etAge;
-    private AutoCompleteTextView etGender;
-    private MaterialButton btnUpdate;
+    private TextView tvName, tvEmail, tvAge, tvGender;
+    private MaterialCardView cardEditProfile, cardLogout;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
 
@@ -28,27 +21,40 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        etName = findViewById(R.id.etProfileName);
-        etEmail = findViewById(R.id.etProfileEmail);
-        etAge = findViewById(R.id.etProfileAge);
-        etGender = findViewById(R.id.etProfileGender);
-        btnUpdate = findViewById(R.id.btnUpdateProfile);
+        tvName = findViewById(R.id.tvProfileName);
+        tvEmail = findViewById(R.id.tvProfileEmail);
+        tvAge = findViewById(R.id.tvProfileAge);
+        tvGender = findViewById(R.id.tvProfileGender);
+        cardEditProfile = findViewById(R.id.cardEditProfile);
+        cardLogout = findViewById(R.id.cardLogout);
+
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
-        
-        // Setup Gender Dropdown
-        String[] genders = {"Male", "Female", "Other", "Prefer not to say"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, genders);
-        etGender.setAdapter(adapter);
 
-        // Fetch auth email for read-only display
-        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-            etEmail.setText(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+        if (mAuth.getCurrentUser() != null) {
+            tvEmail.setText(mAuth.getCurrentUser().getEmail());
         }
 
-        fetchProfile();
+        cardEditProfile.setOnClickListener(v -> {
+            startActivity(new Intent(ProfileActivity.this, EditProfileActivity.class));
+        });
 
-        btnUpdate.setOnClickListener(v -> updateProfile());
+        cardLogout.setOnClickListener(v -> {
+            mAuth.signOut();
+            Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
+            // We should ideally navigate to LoginActivity and clear the top
+            Intent intent = new Intent(ProfileActivity.this, com.example.digitalvaccineapp.auth.LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Fetch profile every time user comes back to this screen
+        fetchProfile();
     }
 
     private void fetchProfile() {
@@ -60,46 +66,14 @@ public class ProfileActivity extends AppCompatActivity {
                 if (documentSnapshot.exists()) {
                     User user = documentSnapshot.toObject(User.class);
                     if (user != null) {
-                        etName.setText(user.getName());
-                        etAge.setText(user.getAge());
-                        if (user.getGender() != null) {
-                            etGender.setText(user.getGender(), false);
-                        }
+                        tvName.setText(user.getName() != null && !user.getName().isEmpty() ? user.getName() : "User");
+                        tvAge.setText(user.getAge() != null && !user.getAge().isEmpty() ? user.getAge() : "Not specified");
+                        tvGender.setText(user.getGender() != null && !user.getGender().isEmpty() ? user.getGender() : "Not specified");
                     }
                 }
             })
             .addOnFailureListener(e -> {
                 Toast.makeText(ProfileActivity.this, "Error fetching profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            });
-    }
-
-    private void updateProfile() {
-        if (mAuth.getCurrentUser() == null) return;
-
-        String name = etName.getText().toString();
-        String age = etAge.getText().toString();
-        String gender = etGender.getText().toString();
-
-        Map<String, Object> userUpdates = new HashMap<>();
-        userUpdates.put("name", name);
-        userUpdates.put("age", age);
-        userUpdates.put("gender", gender);
-        userUpdates.put("updatedAt", com.google.firebase.Timestamp.now());
-
-        db.collection("users").document(mAuth.getCurrentUser().getUid())
-            .update(userUpdates)
-            .addOnSuccessListener(aVoid -> {
-                Toast.makeText(ProfileActivity.this, "Profile updated successfully", Toast.LENGTH_SHORT).show();
-                finish();
-            })
-            .addOnFailureListener(e -> {
-                // If update fails because doc doesn't exist, try set
-                db.collection("users").document(mAuth.getCurrentUser().getUid())
-                    .set(userUpdates)
-                    .addOnSuccessListener(v -> {
-                        Toast.makeText(ProfileActivity.this, "Profile created", Toast.LENGTH_SHORT).show();
-                        finish();
-                    });
             });
     }
 }
