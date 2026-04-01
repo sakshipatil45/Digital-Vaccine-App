@@ -1,4 +1,5 @@
 package com.example.digitalvaccineapp.asha;
+import com.example.digitalvaccineapp.shared.ReminderActivity;
 import com.example.digitalvaccineapp.shared.VaccineInfoActivity;
 import com.example.digitalvaccineapp.shared.ProfileActivity;
 import com.example.digitalvaccineapp.auth.LoginActivity;
@@ -22,7 +23,7 @@ public class AshaDashboardActivity extends AppCompatActivity {
 
     private TextView tvWelcomeAsha, tvTotalBeneficiaries, tvOverdueAlerts;
     private ImageButton btnProfileAsha;
-    private MaterialButton btnAddBeneficiary, btnViewRecords, btnSchedule, btnAlerts, btnReports, btnLogout;
+    private MaterialButton btnAddBeneficiary, btnViewRecords, btnSchedule, btnReminders, btnAlerts, btnReports, btnLogout;
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
@@ -44,6 +45,7 @@ public class AshaDashboardActivity extends AppCompatActivity {
         btnViewRecords = findViewById(R.id.btnAshaViewRecords);
         btnSchedule = findViewById(R.id.btnAshaSchedule);
         btnAlerts = findViewById(R.id.btnAshaAlerts);
+        btnReminders = findViewById(R.id.btnAshaReminders);
         btnReports = findViewById(R.id.btnAshaReports);
         btnLogout = findViewById(R.id.btnAshaLogout);
 
@@ -63,6 +65,10 @@ public class AshaDashboardActivity extends AppCompatActivity {
 
         btnSchedule.setOnClickListener(v -> {
             startActivity(new Intent(AshaDashboardActivity.this, VaccineInfoActivity.class)); // Can reuse Intelligence Center as stub
+        });
+
+        btnReminders.setOnClickListener(v -> {
+            startActivity(new Intent(AshaDashboardActivity.this, ReminderActivity.class));
         });
 
         btnAlerts.setOnClickListener(v -> {

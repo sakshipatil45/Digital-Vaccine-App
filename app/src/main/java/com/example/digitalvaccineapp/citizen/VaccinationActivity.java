@@ -5,6 +5,7 @@ import com.example.digitalvaccineapp.shared.ProfileActivity;
 import com.example.digitalvaccineapp.shared.AddVaccinationActivity;
 import com.example.digitalvaccineapp.shared.RecordsActivity;
 import com.example.digitalvaccineapp.auth.WelcomeActivity;
+import com.example.digitalvaccineapp.shared.ReminderActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
