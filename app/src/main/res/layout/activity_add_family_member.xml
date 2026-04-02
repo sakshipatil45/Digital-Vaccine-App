@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light"
-    android:orientation="vertical">
+    android:background="@color/bg_light">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
+        android:layout_alignParentTop="true"
         app:elevation="2dp">
 
         <androidx.appcompat.widget.Toolbar
@@ -21,9 +22,12 @@
             app:titleTextColor="@color/text_main" />
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Form container -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/appBarLayout"
+        android:layout_above="@+id/bottomActionContainer"
         android:clipToPadding="false"
         android:padding="24dp">
 
@@ -112,8 +116,6 @@
                 app:boxCornerRadiusBottomEnd="12dp"
                 android:hint="Relationship">
 
-                <!-- Need to change Java code to handle this if they used spFamilyRelationship as a Spinner, 
-                     but we'll keep the ID to compile initially, BUT it must be AutoCompleteTextView now -->
                 <AutoCompleteTextView
                     android:id="@+id/spFamilyRelationship"
                     android:layout_width="match_parent"
@@ -123,15 +125,28 @@
                     android:paddingBottom="16dp"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSaveFamilyMember"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:text="Save Member"
-                android:textSize="18sp"
-                app:cornerRadius="30dp"
-                app:backgroundTint="@color/primary_teal" />
-                
         </LinearLayout>
     </ScrollView>
-</LinearLayout>
+
+    <!-- Always Visible Bottom Container -->
+    <LinearLayout
+        android:id="@+id/bottomActionContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/bg_light"
+        android:elevation="8dp"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="16dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSaveFamilyMember"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Save Member"
+            android:textSize="18sp"
+            app:cornerRadius="30dp"
+            app:backgroundTint="@color/primary_teal" />
+            
+    </LinearLayout>
+</RelativeLayout>
