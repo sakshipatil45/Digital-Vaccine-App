@@ -94,6 +94,14 @@ public class ReminderActivity extends AppCompatActivity {
         );
 
         if (alarmManager != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (!alarmManager.canScheduleExactAlarms()) {
+                    Intent settingsIntent = new Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                    startActivity(settingsIntent);
+                    Toast.makeText(this, "Please allow exact alarms in Settings and try again.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
             try {
                 // SCHEDULE EXACT ALARM logic (Needs permission in manifest for Android 12+)
                 alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, selectedCalendar.getTimeInMillis(), pendingIntent);
