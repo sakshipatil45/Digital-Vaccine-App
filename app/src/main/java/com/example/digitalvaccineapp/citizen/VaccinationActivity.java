@@ -58,7 +58,7 @@ public class VaccinationActivity extends AppCompatActivity {
         findViewById(R.id.btnDashVaccineInfo).setOnClickListener(v -> {
             startActivity(new Intent(this, VaccineInfoActivity.class));
         });
-
+        
         // 5. Profile Button
         findViewById(R.id.btnDashProfile).setOnClickListener(v -> {
             startActivity(new Intent(this, ProfileActivity.class));
@@ -66,6 +66,10 @@ public class VaccinationActivity extends AppCompatActivity {
 
         findViewById(R.id.btnProfile).setOnClickListener(v -> {
             startActivity(new Intent(this, ProfileActivity.class));
+        });
+        
+        findViewById(R.id.btnNotifications).setOnClickListener(v -> {
+            startActivity(new Intent(this, com.example.digitalvaccineapp.shared.NotificationsActivity.class));
         });
         
         // 6. Family Members Button

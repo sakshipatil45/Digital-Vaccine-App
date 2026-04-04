@@ -24,7 +24,7 @@
             android:layout_height="150dp"
             android:layout_marginBottom="24dp"
             android:scaleType="fitCenter"
-            android:src="@mipmap/ic_launcher"
+            android:src="@drawable/logo"
             android:contentDescription="Welcome Logo" />
 
         <TextView

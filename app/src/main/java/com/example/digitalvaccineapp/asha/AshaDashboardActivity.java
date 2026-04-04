@@ -54,6 +54,10 @@ public class AshaDashboardActivity extends AppCompatActivity {
         btnProfileAsha.setOnClickListener(v -> {
             startActivity(new Intent(AshaDashboardActivity.this, ProfileActivity.class));
         });
+        
+        findViewById(R.id.btnNotificationsAsha).setOnClickListener(v -> {
+            startActivity(new Intent(AshaDashboardActivity.this, com.example.digitalvaccineapp.shared.NotificationsActivity.class));
+        });
 
         btnAddBeneficiary.setOnClickListener(v -> {
             startActivity(new Intent(AshaDashboardActivity.this, AddBeneficiaryActivity.class));

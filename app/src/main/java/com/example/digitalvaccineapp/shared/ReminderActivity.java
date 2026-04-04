@@ -105,6 +105,14 @@ public class ReminderActivity extends AppCompatActivity {
             try {
                 // SCHEDULE EXACT ALARM logic (Needs permission in manifest for Android 12+)
                 alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, selectedCalendar.getTimeInMillis(), pendingIntent);
+                
+                // Save to local notifications
+                NotificationPrefs.saveReminder(this, 
+                    "Vaccine Reminder Scheduled", 
+                    "Reminder set for " + vaccine + " at 9:00 AM", 
+                    etDate.getText().toString()
+                );
+                
                 Toast.makeText(this, "Reminder set for " + etDate.getText().toString() + " at 9:00 AM", Toast.LENGTH_LONG).show();
                 finish();
             } catch (SecurityException e) {
