@@ -1,6 +1,5 @@
 package com.example.digitalvaccineapp.citizen;
 import com.example.digitalvaccineapp.shared.VaccineInfoActivity;
-import com.example.digitalvaccineapp.shared.CertificateActivity;
 import com.example.digitalvaccineapp.shared.ProfileActivity;
 import com.example.digitalvaccineapp.shared.AddVaccinationActivity;
 import com.example.digitalvaccineapp.shared.RecordsActivity;
@@ -77,11 +76,6 @@ public class VaccinationActivity extends AppCompatActivity {
             startActivity(new Intent(this, FamilyMembersActivity.class));
         });
         
-        // 7. Certificate Button
-        findViewById(R.id.btnDashCertificate).setOnClickListener(v -> {
-            startActivity(new Intent(this, CertificateActivity.class));
-        });
-
         // 6. Logout Button
         findViewById(R.id.btnDashLogout).setOnClickListener(v -> {
             logoutUser();

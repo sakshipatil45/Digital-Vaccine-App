@@ -72,10 +72,6 @@
             android:exported="false">
         </activity>
         <activity
-            android:name=".shared.CertificateActivity"
-            android:exported="false">
-        </activity>
-        <activity
             android:name=".shared.VaccineInfoActivity"
             android:exported="false">
         </activity>
