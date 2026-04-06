@@ -93,6 +93,7 @@ public class VaccinationRepository {
         updates.put("dateTaken", vaccination.getDateTaken());
         updates.put("hospitalName", vaccination.getHospitalName());
         updates.put("status", vaccination.getStatus());
+        updates.put("dependentName", vaccination.getDependentName());
         updates.put("updatedAt", com.google.firebase.Timestamp.now());
 
         db.collection("vaccinations").document(id).update(updates)

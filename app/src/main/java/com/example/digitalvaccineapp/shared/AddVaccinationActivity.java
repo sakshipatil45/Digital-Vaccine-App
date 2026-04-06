@@ -97,7 +97,9 @@ public class AddVaccinationActivity extends AppCompatActivity {
                     for (com.google.firebase.firestore.QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         String depName = doc.getString("name");
                         if (depName != null) {
-                            dependents.add(depName);
+                            if (!dependents.contains(depName)) {
+                                dependents.add(depName);
+                            }
                             addedNew = true;
                         }
                     }

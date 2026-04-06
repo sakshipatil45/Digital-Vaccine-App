@@ -54,7 +54,7 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
         btnSaveFamilyMember = findViewById(R.id.btnSaveFamilyMember);
 
         // Setup AutoCompleteTextView
-        String[] relationships = {"Son", "Daughter", "Father", "Mother", "Spouse", "Other"};
+        String[] relationships = {"Child", "Self", "Son", "Daughter", "Father", "Mother", "Spouse", "Other"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, relationships);
         spFamilyRelationship.setAdapter(adapter);
 
