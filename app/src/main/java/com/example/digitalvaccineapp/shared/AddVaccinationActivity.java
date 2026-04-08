@@ -14,6 +14,7 @@ import com.example.digitalvaccineapp.network.VaccinationRepository;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.digitalvaccineapp.core.MockUserManager;
 import com.google.android.material.snackbar.Snackbar;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -99,8 +100,8 @@ public class AddVaccinationActivity extends AppCompatActivity {
             spinnerDependentName.setText("Self", false);
         }
         
-        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        if (MockUserManager.isLoggedIn()) {
+            String uid = MockUserManager.getUserId();
             FirebaseFirestore.getInstance().collection("users").document(uid).collection("familyMembers")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -172,8 +173,9 @@ public class AddVaccinationActivity extends AppCompatActivity {
     private void addVaccination(Vaccination vaccination) {
         if (getIntent().getBooleanExtra("asha_beneficiary_mode", false)) {
             String beneficiaryId = getIntent().getStringExtra("beneficiary_id");
-            if (FirebaseAuth.getInstance().getCurrentUser() == null || beneficiaryId == null) return;
-            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            String uid = MockUserManager.getUserId();
+            
+            if (uid == null || beneficiaryId == null) return;
             
             FirebaseFirestore.getInstance().collection("users").document(uid)
                 .collection("beneficiaries").document(beneficiaryId)

@@ -54,7 +54,7 @@ public class VaccinationRepository {
                 }
                 callback.onDataLoaded(vaccinations);
                 // Update Local Room DB
-                new UpdateLocalTask(vaccinations).execute();
+                new SyncLocalTask(vaccinations).execute();
             })
             .addOnFailureListener(e -> {
                 callback.onError("Cloud sync failed: " + e.getMessage());
@@ -79,7 +79,7 @@ public class VaccinationRepository {
             // In mock mode, save only to local Room DB
             java.util.List<Vaccination> list = new java.util.ArrayList<>();
             list.add(vaccination);
-            new UpdateLocalTask(list).execute();
+            new InsertLocalTask(list).execute();
             if (callback != null) callback.onDataLoaded(null);
             return;
         }
@@ -150,15 +150,33 @@ public class VaccinationRepository {
         }
     }
 
-    private class UpdateLocalTask extends AsyncTask<Void, Void, Void> {
+    private class SyncLocalTask extends AsyncTask<Void, Void, Void> {
         private List<Vaccination> vaccinations;
-        UpdateLocalTask(List<Vaccination> vaccinations) { this.vaccinations = vaccinations; }
+        SyncLocalTask(List<Vaccination> vaccinations) { this.vaccinations = vaccinations; }
 
         @Override
         protected Void doInBackground(Void... voids) {
             vaccinationDao.deleteAll();
             List<VaccinationEntity> entities = new ArrayList<>();
             for (Vaccination v : vaccinations) {
+                entities.add(new VaccinationEntity(v.getId(), v.getVaccineName(), v.getDoseNumber(),
+                        v.getDateTaken(), v.getNextDueDate(), v.getHospitalName(), v.getStatus(), v.getDependentName()));
+            }
+            vaccinationDao.insertAll(entities);
+            return null;
+        }
+    }
+
+    private class InsertLocalTask extends AsyncTask<Void, Void, Void> {
+        private List<Vaccination> vaccinations;
+        InsertLocalTask(List<Vaccination> vaccinations) { this.vaccinations = vaccinations; }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            // APPEND mode: Don't delete all records, just insert the new ones
+            List<VaccinationEntity> entities = new ArrayList<>();
+            for (Vaccination v : vaccinations) {
+                if (v.getId() == null) v.setId(java.util.UUID.randomUUID().toString());
                 entities.add(new VaccinationEntity(v.getId(), v.getVaccineName(), v.getDoseNumber(),
                         v.getDateTaken(), v.getNextDueDate(), v.getHospitalName(), v.getStatus(), v.getDependentName()));
             }
