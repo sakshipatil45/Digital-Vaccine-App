@@ -14,7 +14,6 @@ import com.example.digitalvaccineapp.network.VaccinationRepository;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.example.digitalvaccineapp.core.MockUserManager;
 import com.google.android.material.snackbar.Snackbar;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -61,12 +60,12 @@ public class AddVaccinationActivity extends AppCompatActivity {
 
         // Set up Vaccine Name dropdown
         String[] vaccines = {"Covaxin", "Covishield", "Sputnik V", "Pfizer", "Moderna", "Johnson & Johnson", "Other"};
-        ArrayAdapter<String> vaccineAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, vaccines);
+        ArrayAdapter<String> vaccineAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_line, vaccines);
         spinnerVaccineName.setAdapter(vaccineAdapter);
 
         // Set up Dose Number dropdown
         String[] doses = {"1st Dose", "2nd Dose", "Booster Dose", "Precautionary Dose"};
-        ArrayAdapter<String> doseAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, doses);
+        ArrayAdapter<String> doseAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_line, doses);
         spinnerDoseNumber.setAdapter(doseAdapter);
 
         // Date picker
@@ -76,7 +75,7 @@ public class AddVaccinationActivity extends AppCompatActivity {
 
         // Set up Status dropdown
         String[] statuses = {"Completed", "Pending"};
-        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, statuses);
+        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_line, statuses);
         spinnerStatus.setAdapter(statusAdapter);
         if (isEditMode) {
              spinnerStatus.setText(getIntent().getStringExtra("vax_status") != null ? getIntent().getStringExtra("vax_status") : "Completed", false);
@@ -88,8 +87,7 @@ public class AddVaccinationActivity extends AppCompatActivity {
         List<String> dependents = new ArrayList<>();
         dependents.add("Self");
         
-        // Immediate initialization so "Self" is always present instantly
-        ArrayAdapter<String> initialAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, dependents);
+        ArrayAdapter<String> initialAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_line, dependents);
         spinnerDependentName.setAdapter(initialAdapter);
         
         if (isEditMode) {
@@ -100,8 +98,8 @@ public class AddVaccinationActivity extends AppCompatActivity {
             spinnerDependentName.setText("Self", false);
         }
         
-        if (MockUserManager.isLoggedIn()) {
-            String uid = MockUserManager.getUserId();
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
             FirebaseFirestore.getInstance().collection("users").document(uid).collection("familyMembers")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -115,11 +113,9 @@ public class AddVaccinationActivity extends AppCompatActivity {
                             addedNew = true;
                         }
                     }
-                    // Only re-bind adapter if we actually found external dependents
                     if (addedNew) {
-                        ArrayAdapter<String> depAdapter = new ArrayAdapter<>(AddVaccinationActivity.this, android.R.layout.simple_dropdown_item_1line, dependents);
+                        ArrayAdapter<String> depAdapter = new ArrayAdapter<>(AddVaccinationActivity.this, android.R.layout.simple_dropdown_item_line, dependents);
                         spinnerDependentName.setAdapter(depAdapter);
-                        // Maintain whatever the user (or the initial load) currently has typed/selected
                         String currentText = spinnerDependentName.getText().toString();
                         spinnerDependentName.setText(currentText, false);
                     }
@@ -171,28 +167,7 @@ public class AddVaccinationActivity extends AppCompatActivity {
     }
 
     private void addVaccination(Vaccination vaccination) {
-        if (getIntent().getBooleanExtra("asha_beneficiary_mode", false)) {
-            String beneficiaryId = getIntent().getStringExtra("beneficiary_id");
-            String uid = MockUserManager.getUserId();
-            
-            if (uid == null || beneficiaryId == null) return;
-            
-            FirebaseFirestore.getInstance().collection("users").document(uid)
-                .collection("beneficiaries").document(beneficiaryId)
-                .collection("vaccinations").add(vaccination)
-                .addOnSuccessListener(documentReference -> {
-                    // Sync with local repository so it shows up on Citizen Dashboard immediately (Mock Connection)
-                    repository.addVaccination(vaccination, null);
-                    
-                    Snackbar.make(findViewById(android.R.id.content), "Vaccination securely linked to Patient", Snackbar.LENGTH_LONG).show();
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                     Snackbar.make(findViewById(android.R.id.content), "Error: " + e.getMessage(), Snackbar.LENGTH_LONG).show();
-                });
-            return;
-        }
-
+        btnSave.setEnabled(false);
         repository.addVaccination(vaccination, new VaccinationRepository.DataCallback() {
             @Override
             public void onDataLoaded(List<Vaccination> vaccinations) {
@@ -202,6 +177,7 @@ public class AddVaccinationActivity extends AppCompatActivity {
 
             @Override
             public void onError(String message) {
+                btnSave.setEnabled(true);
                 Snackbar.make(findViewById(android.R.id.content), "Error: " + message, Snackbar.LENGTH_LONG)
                         .setAction("Retry", v -> saveVaccination()).show();
             }
@@ -209,6 +185,7 @@ public class AddVaccinationActivity extends AppCompatActivity {
     }
 
     private void updateVaccination(Vaccination vaccination) {
+        btnSave.setEnabled(false);
         repository.updateVaccination(vaxId, vaccination, new VaccinationRepository.DataCallback() {
             @Override
             public void onDataLoaded(List<Vaccination> vaccinations) {
@@ -218,6 +195,7 @@ public class AddVaccinationActivity extends AppCompatActivity {
 
             @Override
             public void onError(String message) {
+                btnSave.setEnabled(true);
                 Snackbar.make(findViewById(android.R.id.content), "Update failed: " + message, Snackbar.LENGTH_LONG).show();
             }
         });

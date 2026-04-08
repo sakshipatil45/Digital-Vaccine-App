@@ -18,7 +18,6 @@ import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.example.digitalvaccineapp.core.MockUserManager;
 
 public class AshaDashboardActivity extends AppCompatActivity {
 
@@ -86,13 +85,10 @@ public class AshaDashboardActivity extends AppCompatActivity {
     }
 
     private void loadAshaProfile() {
-        if (MockUserManager.USE_MOCK) {
-            tvWelcomeAsha.setText("Welcome, Guest Health Worker 👩‍⚕️");
-        }
-
-        String userId = MockUserManager.getUserId();
-        if (userId == null) return;
-
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return;
+        
+        String userId = user.getUid();
         db.collection("users").document(userId).get()
             .addOnCompleteListener(task -> {
                 if (task.isSuccessful() && task.getResult() != null) {

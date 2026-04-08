@@ -16,9 +16,9 @@ import com.example.digitalvaccineapp.citizen.FamilyMemberAdapter;
 import com.example.digitalvaccineapp.citizen.FamilyMember;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.example.digitalvaccineapp.core.MockUserManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,10 +75,10 @@ public class FamilyMembersActivity extends AppCompatActivity {
     }
 
     private void loadFamilyMembers() {
-
-        if (!MockUserManager.isLoggedIn()) return;
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return;
         
-        String userId = MockUserManager.getUserId();
+        String userId = user.getUid();
         db.collection("users").document(userId).collection("familyMembers")
             .get()
             .addOnCompleteListener(task -> {

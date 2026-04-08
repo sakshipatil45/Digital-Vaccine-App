@@ -17,8 +17,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.example.digitalvaccineapp.core.MockUserManager;
-import com.example.digitalvaccineapp.citizen.FamilyMember;
 
 import java.util.UUID;
 
@@ -130,8 +128,9 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
         RadioButton selectedGender = findViewById(selectedGenderId);
         String gender = selectedGender.getText().toString();
 
-        String userId = MockUserManager.getUserId();
-        if (userId == null) return;
+        if (mAuth.getCurrentUser() == null) return;
+        String userId = mAuth.getCurrentUser().getUid();
+        String ashaId = userId;
 
         btnSave.setEnabled(false);
         
@@ -142,8 +141,8 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
             beneficiaryId = UUID.randomUUID().toString();
         }
 
-        Beneficiary beneficiary = new Beneficiary(beneficiaryId, name, age, gender, village, mobile, category, userId);
-        
+        Beneficiary beneficiary = new Beneficiary(beneficiaryId, name, age, gender, village, mobile, category, ashaId);
+
         if (isEditMode) {
             db.collection("users").document(userId).collection("beneficiaries").document(editBeneficiaryId)
                 .set(beneficiary)
@@ -160,13 +159,6 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
                 .document(beneficiaryId)
                 .set(beneficiary)
                 .addOnSuccessListener(aVoid -> {
-                    // Sync: Automatically create a Family Member for the Citizen (Mock Collaboration)
-                    if (MockUserManager.USE_MOCK) {
-                        FamilyMember citizenFamilyMember = new FamilyMember(beneficiaryId, name, age, gender, category);
-                        db.collection("users").document(userId).collection("familyMembers")
-                                .document(beneficiaryId).set(citizenFamilyMember);
-                    }
-                    
                     Snackbar.make(findViewById(android.R.id.content), "Beneficiary successfully registered", Snackbar.LENGTH_SHORT).show();
                     finish();
                 })

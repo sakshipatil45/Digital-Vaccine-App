@@ -16,11 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.digitalvaccineapp.R;
 import com.example.digitalvaccineapp.shared.VaccinationAdapter;
 import com.example.digitalvaccineapp.shared.Vaccination;
-import com.example.digitalvaccineapp.network.VaccinationRepository;
-import com.example.digitalvaccineapp.shared.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.example.digitalvaccineapp.core.MockUserManager;
 import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,30 +77,29 @@ public class VaccinationActivity extends AppCompatActivity {
     }
 
     private void loadDashboardData() {
-        if (MockUserManager.USE_MOCK) {
-            tvWelcomeName.setText("Hello, " + MockUserManager.GUEST_NAME);
-            // In mock mode, we still fetch local vaccine counts below
-        } else {
-            String userId = MockUserManager.getUserId();
-            if (userId == null) return;
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return;
+        
+        String userId = user.getUid();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        
+        // Real-time listener for Profile Name
+        db.collection("users").document(userId)
+                .addSnapshotListener((documentSnapshot, e) -> {
+                    if (e != null)
+                        return;
 
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            // Real-time listener for Profile Name
-            db.collection("users").document(userId)
-                    .addSnapshotListener((documentSnapshot, e) -> {
-                        if (e != null)
-                            return;
-
-                        if (documentSnapshot != null && documentSnapshot.exists()) {
-                            String name = documentSnapshot.getString("name");
-                            if (name != null && !name.isEmpty()) {
-                                tvWelcomeName.setText("Hello, " + name);
-                            } else {
-                                tvWelcomeName.setText("Hello, User");
-                            }
+                    if (documentSnapshot != null && documentSnapshot.exists()) {
+                        String name = documentSnapshot.getString("name");
+                        if (name != null && !name.isEmpty()) {
+                            tvWelcomeName.setText("Hello, " + name);
+                        } else {
+                            tvWelcomeName.setText("Hello, User");
                         }
-                    });
-        }
+                    } else if (user.getEmail() != null) {
+                        tvWelcomeName.setText("Hello, " + user.getEmail().split("@")[0]);
+                    }
+                });
 
         // Fetch Vaccine counts (handles mock mode inside repository)
         repository.getVaccinations(new VaccinationRepository.DataCallback() {

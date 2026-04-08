@@ -1,27 +1,19 @@
 package com.example.digitalvaccineapp.network;
-import com.example.digitalvaccineapp.shared.User;
-import com.example.digitalvaccineapp.core.MockUserManager;
 
-import android.content.Context;
-import android.os.AsyncTask;
 import com.example.digitalvaccineapp.shared.Vaccination;
-import com.example.digitalvaccineapp.shared.VaccinationEntity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import android.content.Context;
 import java.util.ArrayList;
 import java.util.List;
 
 public class VaccinationRepository {
-    private VaccinationDao vaccinationDao;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
 
     public VaccinationRepository(Context context) {
-        AppDatabase database = AppDatabase.getInstance(context);
-        vaccinationDao = database.vaccinationDao();
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
     }
@@ -32,16 +24,12 @@ public class VaccinationRepository {
     }
 
     public void getVaccinations(DataCallback callback) {
-        if (!MockUserManager.isLoggedIn()) {
+        if (mAuth.getCurrentUser() == null) {
             callback.onError("User not logged in");
             return;
         }
 
-        // 1. Fetch from Local DB first for instant response (Offline-First)
-        new GetLocalTask(callback).execute();
-
-        if (MockUserManager.USE_MOCK) return; // Skip cloud sync in mock mode
-        String userId = MockUserManager.getUserId();
+        String userId = mAuth.getCurrentUser().getUid();
         db.collection("vaccinations")
             .whereEqualTo("userId", userId)
             .get()
@@ -53,18 +41,16 @@ public class VaccinationRepository {
                     vaccinations.add(v);
                 }
                 callback.onDataLoaded(vaccinations);
-                // Update Local Room DB
-                new SyncLocalTask(vaccinations).execute();
             })
             .addOnFailureListener(e -> {
-                callback.onError("Cloud sync failed: " + e.getMessage());
+                callback.onError("Failed to fetch vaccinations: " + e.getMessage());
             });
     }
 
     public void addVaccination(Vaccination vaccination, DataCallback callback) {
-        String userId = MockUserManager.getUserId();
-        if (userId == null) return;
-        // Prepare map or ensure POJO has userId
+        if (mAuth.getCurrentUser() == null) return;
+        
+        String userId = mAuth.getCurrentUser().getUid();
         java.util.Map<String, Object> data = new java.util.HashMap<>();
         data.put("userId", userId);
         data.put("vaccineName", vaccination.getVaccineName());
@@ -74,15 +60,6 @@ public class VaccinationRepository {
         data.put("status", vaccination.getStatus());
         data.put("dependentName", vaccination.getDependentName());
         data.put("createdAt", com.google.firebase.Timestamp.now());
-
-        if (MockUserManager.USE_MOCK) {
-            // In mock mode, save only to local Room DB
-            java.util.List<Vaccination> list = new java.util.ArrayList<>();
-            list.add(vaccination);
-            new InsertLocalTask(list).execute();
-            if (callback != null) callback.onDataLoaded(null);
-            return;
-        }
 
         db.collection("vaccinations").add(data)
             .addOnSuccessListener(documentReference -> {
@@ -115,6 +92,7 @@ public class VaccinationRepository {
     }
 
     public void deleteVaccination(String id, DataCallback callback) {
+        if (id == null) return;
         db.collection("vaccinations").document(id).delete()
             .addOnSuccessListener(aVoid -> {
                 if (callback != null) callback.onDataLoaded(null);
@@ -122,66 +100,5 @@ public class VaccinationRepository {
             .addOnFailureListener(e -> {
                 if (callback != null) callback.onError(e.getMessage());
             });
-    }
-
-    private class GetLocalTask extends AsyncTask<Void, Void, List<Vaccination>> {
-        private DataCallback callback;
-        GetLocalTask(DataCallback callback) { this.callback = callback; }
-
-        @Override
-        protected List<Vaccination> doInBackground(Void... voids) {
-            List<VaccinationEntity> entities = vaccinationDao.getAllVaccinations();
-            List<Vaccination> vaccinations = new ArrayList<>();
-            for (VaccinationEntity entity : entities) {
-                Vaccination v = new Vaccination(entity.getVaccineName(), entity.getDoseNumber(),
-                        entity.getDateTaken(), entity.getHospitalName(), entity.getStatus(), entity.getDependentName());
-                v.setId(entity.getId());
-                v.setNextDueDate(entity.getNextDueDate());
-                vaccinations.add(v);
-            }
-            return vaccinations;
-        }
-
-        @Override
-        protected void onPostExecute(List<Vaccination> vaccinations) {
-            if (vaccinations != null) {
-                callback.onDataLoaded(vaccinations);
-            }
-        }
-    }
-
-    private class SyncLocalTask extends AsyncTask<Void, Void, Void> {
-        private List<Vaccination> vaccinations;
-        SyncLocalTask(List<Vaccination> vaccinations) { this.vaccinations = vaccinations; }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            vaccinationDao.deleteAll();
-            List<VaccinationEntity> entities = new ArrayList<>();
-            for (Vaccination v : vaccinations) {
-                entities.add(new VaccinationEntity(v.getId(), v.getVaccineName(), v.getDoseNumber(),
-                        v.getDateTaken(), v.getNextDueDate(), v.getHospitalName(), v.getStatus(), v.getDependentName()));
-            }
-            vaccinationDao.insertAll(entities);
-            return null;
-        }
-    }
-
-    private class InsertLocalTask extends AsyncTask<Void, Void, Void> {
-        private List<Vaccination> vaccinations;
-        InsertLocalTask(List<Vaccination> vaccinations) { this.vaccinations = vaccinations; }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            // APPEND mode: Don't delete all records, just insert the new ones
-            List<VaccinationEntity> entities = new ArrayList<>();
-            for (Vaccination v : vaccinations) {
-                if (v.getId() == null) v.setId(java.util.UUID.randomUUID().toString());
-                entities.add(new VaccinationEntity(v.getId(), v.getVaccineName(), v.getDoseNumber(),
-                        v.getDateTaken(), v.getNextDueDate(), v.getHospitalName(), v.getStatus(), v.getDependentName()));
-            }
-            vaccinationDao.insertAll(entities);
-            return null;
-        }
     }
 }
