@@ -22,7 +22,7 @@ import java.util.List;
 public class AddVaccinationActivity extends AppCompatActivity {
 
     private TextInputEditText etDateTaken, etHospitalName, etNotes;
-    private AutoCompleteTextView spinnerVaccineName, spinnerDoseNumber, spinnerDependentName;
+    private AutoCompleteTextView spinnerVaccineName, spinnerDoseNumber, spinnerDependentName, spinnerStatus;
     private Button btnSave;
     private VaccinationRepository repository;
     private boolean isEditMode = false;
@@ -36,6 +36,7 @@ public class AddVaccinationActivity extends AppCompatActivity {
         spinnerVaccineName = findViewById(R.id.spinnerVaccineName);
         spinnerDoseNumber = findViewById(R.id.spinnerDoseNumber);
         spinnerDependentName = findViewById(R.id.spinnerDependentName);
+        spinnerStatus = findViewById(R.id.spinnerStatus);
         etDateTaken = findViewById(R.id.etDateTaken);
         etHospitalName = findViewById(R.id.etHospitalName);
         etNotes = findViewById(R.id.etNotes);
@@ -71,6 +72,16 @@ public class AddVaccinationActivity extends AppCompatActivity {
         etDateTaken.setOnClickListener(v -> showDatePicker());
 
         btnSave.setOnClickListener(v -> saveVaccination());
+
+        // Set up Status dropdown
+        String[] statuses = {"Completed", "Pending"};
+        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, statuses);
+        spinnerStatus.setAdapter(statusAdapter);
+        if (isEditMode) {
+             spinnerStatus.setText(getIntent().getStringExtra("vax_status") != null ? getIntent().getStringExtra("vax_status") : "Completed", false);
+        } else {
+             spinnerStatus.setText("Completed", false);
+        }
 
         // Fetch Family Members for Dependent Dropdown
         List<String> dependents = new ArrayList<>();
@@ -146,7 +157,10 @@ public class AddVaccinationActivity extends AppCompatActivity {
         String dependent = spinnerDependentName.getText().toString().trim();
         if (dependent.isEmpty()) dependent = "Self";
 
-        Vaccination vaccination = new Vaccination(name, doseNum, date, hospital, "Completed", dependent);
+        String status = spinnerStatus.getText().toString();
+        if (status.isEmpty()) status = "Completed";
+
+        Vaccination vaccination = new Vaccination(name, doseNum, date, hospital, status, dependent);
 
         if (isEditMode) {
             updateVaccination(vaccination);
@@ -165,6 +179,9 @@ public class AddVaccinationActivity extends AppCompatActivity {
                 .collection("beneficiaries").document(beneficiaryId)
                 .collection("vaccinations").add(vaccination)
                 .addOnSuccessListener(documentReference -> {
+                    // Sync with local repository so it shows up on Citizen Dashboard immediately (Mock Connection)
+                    repository.addVaccination(vaccination, null);
+                    
                     Snackbar.make(findViewById(android.R.id.content), "Vaccination securely linked to Patient", Snackbar.LENGTH_LONG).show();
                     finish();
                 })

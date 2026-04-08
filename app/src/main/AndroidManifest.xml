@@ -71,10 +71,7 @@
             android:name=".shared.ReminderActivity"
             android:exported="false">
         </activity>
-        <activity
-            android:name=".shared.VaccineInfoActivity"
-            android:exported="false">
-        </activity>
+
         <activity
             android:name=".asha.AshaDashboardActivity"
             android:exported="false">

@@ -17,6 +17,8 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.digitalvaccineapp.core.MockUserManager;
+import com.example.digitalvaccineapp.asha.Beneficiary;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.UUID;
@@ -79,8 +81,8 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
         RadioButton selectedGender = findViewById(selectedGenderId);
         String gender = selectedGender.getText().toString();
 
-        if (mAuth.getCurrentUser() == null) return;
-        String userId = mAuth.getCurrentUser().getUid();
+        String userId = MockUserManager.getUserId();
+        if (userId == null) return;
 
         // Save to Firestore
         btnSaveFamilyMember.setEnabled(false);
@@ -90,6 +92,13 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
         db.collection("users").document(userId).collection("familyMembers")
             .document(newId).set(member)
             .addOnSuccessListener(aVoid -> {
+                // Sync: Automatically create a Beneficiary for the ASHA Health Worker (Mock Collaboration)
+                if (MockUserManager.USE_MOCK) {
+                    Beneficiary ashaBeneficiary = new Beneficiary(newId, name, age, gender, "Guest Village", "9999999999", relationship, userId);
+                    db.collection("users").document(userId).collection("beneficiaries")
+                            .document(newId).set(ashaBeneficiary);
+                }
+
                 Snackbar.make(findViewById(android.R.id.content), "Family member added successfully", Snackbar.LENGTH_LONG).show();
                 finish();
             })

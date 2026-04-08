@@ -101,9 +101,9 @@ public class BeneficiaryListActivity extends AppCompatActivity {
     }
 
     private void loadBeneficiaries() {
-        if (mAuth.getCurrentUser() == null) return;
+        String userId = com.example.digitalvaccineapp.core.MockUserManager.getUserId();
+        if (userId == null) return;
         
-        String userId = mAuth.getCurrentUser().getUid();
         db.collection("users").document(userId).collection("beneficiaries")
             .get()
             .addOnCompleteListener(task -> {

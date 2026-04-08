@@ -32,7 +32,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
-                        android:text="Hello, Citizen 👋"
+                        android:text="Hello, Citizen"
                         android:textColor="@color/primary_dark"
                         android:textSize="24sp"
                         android:textStyle="bold" />
@@ -215,16 +215,7 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDashAddVaccine"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginBottom="16dp"
-                android:text="➕ Add Record"
-                android:textAllCaps="false"
-                android:textSize="18sp"
-                app:cornerRadius="12dp"
-                app:backgroundTint="@color/primary_teal" />
+
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDashViewRecords"
@@ -265,18 +256,7 @@
                 app:strokeColor="@color/primary_teal"
                 android:textColor="@color/primary_teal" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDashVaccineInfo"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginBottom="16dp"
-                android:text="🧠 Vaccine Intelligence"
-                android:textAllCaps="false"
-                android:textSize="18sp"
-                app:cornerRadius="12dp"
-                app:strokeColor="@color/primary_teal"
-                android:textColor="@color/primary_teal" />
+
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDashProfile"

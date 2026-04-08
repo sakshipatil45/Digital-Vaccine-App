@@ -60,7 +60,7 @@ public class RecordsActivity extends AppCompatActivity {
                 intent.putExtra("hospital", vaccination.getHospitalName());
                 startActivity(intent);
             }
-        });
+        }, true);
         
         recyclerView.setAdapter(adapter);
 

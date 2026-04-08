@@ -1,6 +1,6 @@
 package com.example.digitalvaccineapp.asha;
 import com.example.digitalvaccineapp.shared.ReminderActivity;
-import com.example.digitalvaccineapp.shared.VaccineInfoActivity;
+
 import com.example.digitalvaccineapp.shared.ProfileActivity;
 import com.example.digitalvaccineapp.auth.LoginActivity;
 
@@ -18,12 +18,13 @@ import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.digitalvaccineapp.core.MockUserManager;
 
 public class AshaDashboardActivity extends AppCompatActivity {
 
     private TextView tvWelcomeAsha, tvTotalBeneficiaries, tvOverdueAlerts;
     private ImageButton btnProfileAsha;
-    private MaterialButton btnAddBeneficiary, btnViewRecords, btnSchedule, btnReminders, btnAlerts, btnReports, btnLogout;
+    private MaterialButton btnAddBeneficiary, btnViewRecords, btnReminders, btnAlerts, btnReports, btnLogout;
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
@@ -43,7 +44,7 @@ public class AshaDashboardActivity extends AppCompatActivity {
 
         btnAddBeneficiary = findViewById(R.id.btnAshaAddBeneficiary);
         btnViewRecords = findViewById(R.id.btnAshaViewRecords);
-        btnSchedule = findViewById(R.id.btnAshaSchedule);
+
         btnAlerts = findViewById(R.id.btnAshaAlerts);
         btnReminders = findViewById(R.id.btnAshaReminders);
         btnReports = findViewById(R.id.btnAshaReports);
@@ -67,9 +68,7 @@ public class AshaDashboardActivity extends AppCompatActivity {
             startActivity(new Intent(AshaDashboardActivity.this, BeneficiaryListActivity.class));
         });
 
-        btnSchedule.setOnClickListener(v -> {
-            startActivity(new Intent(AshaDashboardActivity.this, VaccineInfoActivity.class)); // Can reuse Intelligence Center as stub
-        });
+
 
         btnReminders.setOnClickListener(v -> {
             startActivity(new Intent(AshaDashboardActivity.this, ReminderActivity.class));
@@ -87,19 +86,23 @@ public class AshaDashboardActivity extends AppCompatActivity {
     }
 
     private void loadAshaProfile() {
-        if (mAuth.getCurrentUser() != null) {
-            String userId = mAuth.getCurrentUser().getUid();
-            db.collection("users").document(userId).get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        DocumentSnapshot document = task.getResult();
-                        String name = document.getString("name");
-                        if (name != null) {
-                            tvWelcomeAsha.setText("Welcome, " + name + " 👩‍⚕️");
-                        }
-                    }
-                });
+        if (MockUserManager.USE_MOCK) {
+            tvWelcomeAsha.setText("Welcome, Guest Health Worker 👩‍⚕️");
         }
+
+        String userId = MockUserManager.getUserId();
+        if (userId == null) return;
+
+        db.collection("users").document(userId).get()
+            .addOnCompleteListener(task -> {
+                if (task.isSuccessful() && task.getResult() != null) {
+                    DocumentSnapshot document = task.getResult();
+                    String name = document.getString("name");
+                    if (name != null) {
+                        tvWelcomeAsha.setText("Welcome, " + name + " 👩‍⚕️");
+                    }
+                }
+            });
     }
 
     private void logout() {

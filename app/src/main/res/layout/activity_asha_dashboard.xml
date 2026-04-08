@@ -186,18 +186,7 @@
                 app:strokeColor="#4CAF50"
                 android:textColor="#388E3C" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAshaSchedule"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginBottom="16dp"
-                android:text="⏰ Vaccination Schedule"
-                android:textAllCaps="false"
-                android:textSize="18sp"
-                app:cornerRadius="12dp"
-                app:strokeColor="#4CAF50"
-                android:textColor="#388E3C" />
+
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAshaReminders"

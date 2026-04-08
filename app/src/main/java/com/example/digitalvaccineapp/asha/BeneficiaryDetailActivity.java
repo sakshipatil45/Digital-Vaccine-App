@@ -102,7 +102,7 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
             public void onItemClick(Vaccination vaccination) {
                 // Ignore for now
             }
-        });
+        }, false);
         rvVaccinations.setAdapter(adapter);
 
         btnAddRecord.setOnClickListener(v -> {

@@ -17,6 +17,8 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.digitalvaccineapp.core.MockUserManager;
+import com.example.digitalvaccineapp.citizen.FamilyMember;
 
 import java.util.UUID;
 
@@ -128,8 +130,8 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
         RadioButton selectedGender = findViewById(selectedGenderId);
         String gender = selectedGender.getText().toString();
 
-        if (mAuth.getCurrentUser() == null) return;
-        String ashaId = mAuth.getCurrentUser().getUid();
+        String userId = MockUserManager.getUserId();
+        if (userId == null) return;
 
         btnSave.setEnabled(false);
         
@@ -140,9 +142,7 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
             beneficiaryId = UUID.randomUUID().toString();
         }
 
-        Beneficiary beneficiary = new Beneficiary(beneficiaryId, name, age, gender, village, mobile, category, ashaId);
-
-        String userId = mAuth.getCurrentUser().getUid();
+        Beneficiary beneficiary = new Beneficiary(beneficiaryId, name, age, gender, village, mobile, category, userId);
         
         if (isEditMode) {
             db.collection("users").document(userId).collection("beneficiaries").document(editBeneficiaryId)
@@ -157,9 +157,16 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
                 });
         } else {
             db.collection("users").document(userId).collection("beneficiaries")
-                .document(beneficiaryId) // Use the generated ID for new beneficiary
-                .set(beneficiary) // Use set() to create with specific ID
+                .document(beneficiaryId)
+                .set(beneficiary)
                 .addOnSuccessListener(aVoid -> {
+                    // Sync: Automatically create a Family Member for the Citizen (Mock Collaboration)
+                    if (MockUserManager.USE_MOCK) {
+                        FamilyMember citizenFamilyMember = new FamilyMember(beneficiaryId, name, age, gender, category);
+                        db.collection("users").document(userId).collection("familyMembers")
+                                .document(beneficiaryId).set(citizenFamilyMember);
+                    }
+                    
                     Snackbar.make(findViewById(android.R.id.content), "Beneficiary successfully registered", Snackbar.LENGTH_SHORT).show();
                     finish();
                 })

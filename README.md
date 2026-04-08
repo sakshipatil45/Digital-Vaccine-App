@@ -24,9 +24,8 @@ The Digital Vaccine Administration System (DVAS) is a dual-persona mobile archit
 ### 👤 Citizen Capabilities
 *   **Family Health Tracking:** Seamlessly add "Dependents" (children, parents) to a master account.
 *   **Intuitive Dashboards:** View dynamic progress indicators and visual vaccination timelines.
-*   **Automated Reminders:** A background Node.js `cron` job triangulates overdue doses and broadcasts FCM (Firebase Cloud Messaging) Push Notifications straight to the device.
-*   **Vaccine Intelligence Center:** Natively browse a built-in encyclopedia of critical developmental vaccines (e.g., BCG, Polio, Pentavalent), complete with designated administration routes and medical timelines.
-*   **Official PDF Certificates:** Trigger a secure backend endpoint to dynamically render and download verifiable PDF documents stamped with QR Codes via `pdfkit`.
+*   **Automated Reminders:** (In Development) A background system designed to track overdue doses and broadcast notifications.
+*   **Intuitive Dashboards:** View dynamic progress indicators and visual vaccination timelines.
 
 ### 🏥 ASHA Worker CRM (Enterprise Layer)
 *   **Isolated Workspace Framework:** Health workers operate on an entirely separate UI layout and data ledger.
@@ -44,8 +43,7 @@ The Digital Vaccine Administration System (DVAS) is a dual-persona mobile archit
 *   **Framework:** Node.js + Express.js
 *   **Database Integration:** Serverless Google Firestore via the Admin SDK
 *   **Auth / Messaging:** Firebase Authentication & Firebase Cloud Messaging (FCM)
-*   **PDF Generation:** `pdfkit`
-*   **Task Scheduling:** `node-cron`
+*   **Task Scheduling:** `node-cron` (Planned)
 
 ### 📱 Android Client Structure
 *   **SDK Base:** Android SDK 36+ (Java natively)
@@ -57,7 +55,7 @@ app/src/main/java/com/example/digitalvaccineapp/
 ├── auth/           # Login, Registration, Splash verification
 ├── asha/           # The exclusive Health Worker tracker module
 ├── citizen/        # Standard Dashboard, Reminders, Dependents
-├── shared/         # Cross-entity logic (Certificates, Profile, Vaccine Info)
+├── shared/         # Cross-entity logic (Profile, Global Models)
 └── core/           # System networks (Retrofit, Firebase Services)
 ```
 

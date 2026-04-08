@@ -1,6 +1,7 @@
 package com.example.digitalvaccineapp.auth;
 import com.example.digitalvaccineapp.citizen.VaccinationActivity;
 import com.example.digitalvaccineapp.asha.AshaDashboardActivity;
+import com.example.digitalvaccineapp.core.MockUserManager;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -27,6 +28,19 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void checkLoginAndRedirect() {
+        if (MockUserManager.USE_MOCK) {
+            String role = MockUserManager.GUEST_ROLE;
+            Intent intent;
+            if ("asha".equals(role)) {
+                intent = new Intent(SplashActivity.this, AshaDashboardActivity.class);
+            } else {
+                intent = new Intent(SplashActivity.this, VaccinationActivity.class);
+            }
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         boolean isLoggedInSharedPrefs = prefs.getBoolean("isLoggedIn", false);
         

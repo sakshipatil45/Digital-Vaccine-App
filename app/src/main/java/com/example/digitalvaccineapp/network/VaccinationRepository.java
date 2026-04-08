@@ -1,5 +1,6 @@
 package com.example.digitalvaccineapp.network;
 import com.example.digitalvaccineapp.shared.User;
+import com.example.digitalvaccineapp.core.MockUserManager;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -31,7 +32,7 @@ public class VaccinationRepository {
     }
 
     public void getVaccinations(DataCallback callback) {
-        if (mAuth.getCurrentUser() == null) {
+        if (!MockUserManager.isLoggedIn()) {
             callback.onError("User not logged in");
             return;
         }
@@ -39,8 +40,8 @@ public class VaccinationRepository {
         // 1. Fetch from Local DB first for instant response (Offline-First)
         new GetLocalTask(callback).execute();
 
-        // 2. Then fetch from Firestore to update
-        String userId = mAuth.getCurrentUser().getUid();
+        if (MockUserManager.USE_MOCK) return; // Skip cloud sync in mock mode
+        String userId = MockUserManager.getUserId();
         db.collection("vaccinations")
             .whereEqualTo("userId", userId)
             .get()
@@ -61,9 +62,8 @@ public class VaccinationRepository {
     }
 
     public void addVaccination(Vaccination vaccination, DataCallback callback) {
-        if (mAuth.getCurrentUser() == null) return;
-        
-        String userId = mAuth.getCurrentUser().getUid();
+        String userId = MockUserManager.getUserId();
+        if (userId == null) return;
         // Prepare map or ensure POJO has userId
         java.util.Map<String, Object> data = new java.util.HashMap<>();
         data.put("userId", userId);
@@ -74,6 +74,15 @@ public class VaccinationRepository {
         data.put("status", vaccination.getStatus());
         data.put("dependentName", vaccination.getDependentName());
         data.put("createdAt", com.google.firebase.Timestamp.now());
+
+        if (MockUserManager.USE_MOCK) {
+            // In mock mode, save only to local Room DB
+            java.util.List<Vaccination> list = new java.util.ArrayList<>();
+            list.add(vaccination);
+            new UpdateLocalTask(list).execute();
+            if (callback != null) callback.onDataLoaded(null);
+            return;
+        }
 
         db.collection("vaccinations").add(data)
             .addOnSuccessListener(documentReference -> {

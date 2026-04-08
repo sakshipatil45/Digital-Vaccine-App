@@ -18,6 +18,7 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.example.digitalvaccineapp.core.MockUserManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,9 +75,10 @@ public class FamilyMembersActivity extends AppCompatActivity {
     }
 
     private void loadFamilyMembers() {
-        if (mAuth.getCurrentUser() == null) return;
+
+        if (!MockUserManager.isLoggedIn()) return;
         
-        String userId = mAuth.getCurrentUser().getUid();
+        String userId = MockUserManager.getUserId();
         db.collection("users").document(userId).collection("familyMembers")
             .get()
             .addOnCompleteListener(task -> {

@@ -14,6 +14,7 @@ import java.util.List;
 public class VaccinationAdapter extends RecyclerView.Adapter<VaccinationAdapter.ViewHolder> {
     private List<Vaccination> vaccinationList;
     private OnVaccinationClickListener listener;
+    private boolean isReadOnly;
 
     public interface OnVaccinationClickListener {
         void onEditClick(Vaccination vaccination);
@@ -22,8 +23,13 @@ public class VaccinationAdapter extends RecyclerView.Adapter<VaccinationAdapter.
     }
 
     public VaccinationAdapter(List<Vaccination> vaccinationList, OnVaccinationClickListener listener) {
+        this(vaccinationList, listener, false);
+    }
+
+    public VaccinationAdapter(List<Vaccination> vaccinationList, OnVaccinationClickListener listener, boolean isReadOnly) {
         this.vaccinationList = vaccinationList;
         this.listener = listener;
+        this.isReadOnly = isReadOnly;
     }
 
     @NonNull
@@ -56,6 +62,15 @@ public class VaccinationAdapter extends RecyclerView.Adapter<VaccinationAdapter.
         }
         
         holder.vStatusBadge.setBackgroundTintList(android.content.res.ColorStateList.valueOf(statusColor));
+
+        // Manage Read-Only Mode
+        if (isReadOnly) {
+            holder.btnEdit.setVisibility(View.GONE);
+            holder.btnDelete.setVisibility(View.GONE);
+        } else {
+            holder.btnEdit.setVisibility(View.VISIBLE);
+            holder.btnDelete.setVisibility(View.VISIBLE);
+        }
 
         if (listener != null) {
             holder.itemView.setOnClickListener(v -> listener.onItemClick(vaccination));
