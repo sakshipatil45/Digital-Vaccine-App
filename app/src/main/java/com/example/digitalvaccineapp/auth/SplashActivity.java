@@ -1,7 +1,6 @@
 package com.example.digitalvaccineapp.auth;
 import com.example.digitalvaccineapp.citizen.VaccinationActivity;
 import com.example.digitalvaccineapp.asha.AshaDashboardActivity;
-import com.example.digitalvaccineapp.core.MockUserManager;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
