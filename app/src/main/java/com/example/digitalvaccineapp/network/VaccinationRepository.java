@@ -9,6 +9,10 @@ import android.content.Context;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Repository to handle vaccination data storage and retrieval from Firestore.
+ * Updated for Smooth Sync: Vaccinations are now stored under beneficiaries/{patientId}/vaccinations
+ */
 public class VaccinationRepository {
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
@@ -23,15 +27,16 @@ public class VaccinationRepository {
         void onError(String message);
     }
 
-    public void getVaccinations(DataCallback callback) {
-        if (mAuth.getCurrentUser() == null) {
-            callback.onError("User not logged in");
+    /**
+     * Fetch vaccinations for a specific beneficiary/patient.
+     */
+    public void getVaccinationsForPatient(String patientId, DataCallback callback) {
+        if (mAuth.getCurrentUser() == null || patientId == null) {
+            callback.onError("User not logged in or invalid patient ID");
             return;
         }
 
-        String userId = mAuth.getCurrentUser().getUid();
-        db.collection("vaccinations")
-            .whereEqualTo("userId", userId)
+        db.collection("beneficiaries").document(patientId).collection("vaccinations")
             .get()
             .addOnSuccessListener(queryDocumentSnapshots -> {
                 List<Vaccination> vaccinations = new ArrayList<>();
@@ -47,12 +52,19 @@ public class VaccinationRepository {
             });
     }
 
-    public void addVaccination(Vaccination vaccination, DataCallback callback) {
-        if (mAuth.getCurrentUser() == null) return;
+    /**
+     * LEGACY - Keeping signature for compatibility but it should be avoided in favor of patient-specific fetch
+     */
+    public void getVaccinations(DataCallback callback) {
+        callback.onError("Global fetch deprecated. Use getVaccinationsForPatient().");
+    }
+
+    public void addVaccination(String beneficiaryId, Vaccination vaccination, DataCallback callback) {
+        if (mAuth.getCurrentUser() == null || beneficiaryId == null) return;
         
         String userId = mAuth.getCurrentUser().getUid();
         java.util.Map<String, Object> data = new java.util.HashMap<>();
-        data.put("userId", userId);
+        data.put("userId", userId); // Who added it
         data.put("vaccineName", vaccination.getVaccineName());
         data.put("doseNumber", vaccination.getDoseNumber());
         data.put("dateTaken", vaccination.getDateTaken());
@@ -61,7 +73,7 @@ public class VaccinationRepository {
         data.put("dependentName", vaccination.getDependentName());
         data.put("createdAt", com.google.firebase.Timestamp.now());
 
-        db.collection("vaccinations").add(data)
+        db.collection("beneficiaries").document(beneficiaryId).collection("vaccinations").add(data)
             .addOnSuccessListener(documentReference -> {
                 if (callback != null) callback.onDataLoaded(null);
             })
@@ -70,8 +82,8 @@ public class VaccinationRepository {
             });
     }
 
-    public void updateVaccination(String id, Vaccination vaccination, DataCallback callback) {
-        if (id == null) return;
+    public void updateVaccination(String beneficiaryId, String vaxId, Vaccination vaccination, DataCallback callback) {
+        if (beneficiaryId == null || vaxId == null) return;
         
         java.util.Map<String, Object> updates = new java.util.HashMap<>();
         updates.put("vaccineName", vaccination.getVaccineName());
@@ -82,7 +94,7 @@ public class VaccinationRepository {
         updates.put("dependentName", vaccination.getDependentName());
         updates.put("updatedAt", com.google.firebase.Timestamp.now());
 
-        db.collection("vaccinations").document(id).update(updates)
+        db.collection("beneficiaries").document(beneficiaryId).collection("vaccinations").document(vaxId).update(updates)
             .addOnSuccessListener(aVoid -> {
                 if (callback != null) callback.onDataLoaded(null);
             })
@@ -91,9 +103,9 @@ public class VaccinationRepository {
             });
     }
 
-    public void deleteVaccination(String id, DataCallback callback) {
-        if (id == null) return;
-        db.collection("vaccinations").document(id).delete()
+    public void deleteVaccination(String beneficiaryId, String vaxId, DataCallback callback) {
+        if (beneficiaryId == null || vaxId == null) return;
+        db.collection("beneficiaries").document(beneficiaryId).collection("vaccinations").document(vaxId).delete()
             .addOnSuccessListener(aVoid -> {
                 if (callback != null) callback.onDataLoaded(null);
             })

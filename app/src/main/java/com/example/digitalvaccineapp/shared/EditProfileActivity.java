@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EditProfileActivity extends AppCompatActivity {
-    private TextInputEditText etName, etAge;
+    private TextInputEditText etName, etAge, etPhone;
     private AutoCompleteTextView etGender;
     private MaterialButton btnSave;
     private MaterialToolbar toolbar;
@@ -29,6 +29,7 @@ public class EditProfileActivity extends AppCompatActivity {
 
         etName = findViewById(R.id.etEditProfileName);
         etAge = findViewById(R.id.etEditProfileAge);
+        etPhone = findViewById(R.id.etEditProfilePhone);
         etGender = findViewById(R.id.etEditProfileGender);
         btnSave = findViewById(R.id.btnSaveProfile);
         toolbar = findViewById(R.id.toolbarEditProfile);
@@ -60,6 +61,7 @@ public class EditProfileActivity extends AppCompatActivity {
                     if (user != null) {
                         etName.setText(user.getName());
                         etAge.setText(user.getAge());
+                        etPhone.setText(user.getPhone());
                         if (user.getGender() != null) {
                             etGender.setText(user.getGender(), false);
                         }
@@ -76,11 +78,18 @@ public class EditProfileActivity extends AppCompatActivity {
 
         String name = etName.getText().toString();
         String age = etAge.getText().toString();
+        String phone = etPhone.getText().toString();
         String gender = etGender.getText().toString();
+
+        if (phone.isEmpty()) {
+            Toast.makeText(this, "Phone number is required for synchronization", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         Map<String, Object> userUpdates = new HashMap<>();
         userUpdates.put("name", name);
         userUpdates.put("age", age);
+        userUpdates.put("phone", phone);
         userUpdates.put("gender", gender);
         userUpdates.put("updatedAt", com.google.firebase.Timestamp.now());
 

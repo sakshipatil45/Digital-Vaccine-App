@@ -104,7 +104,10 @@ public class BeneficiaryListActivity extends AppCompatActivity {
         if (mAuth.getCurrentUser() == null) return;
         
         String userId = mAuth.getCurrentUser().getUid();
-        db.collection("users").document(userId).collection("beneficiaries")
+        
+        // Path changed to global "beneficiaries" collection filtered by ashaId
+        db.collection("beneficiaries")
+            .whereEqualTo("ashaId", userId)
             .get()
             .addOnCompleteListener(task -> {
                 progressBar.setVisibility(View.GONE);
@@ -115,7 +118,7 @@ public class BeneficiaryListActivity extends AppCompatActivity {
                         beneficiary.setId(document.getId());
                         beneficiaryList.add(beneficiary);
                     }
-                    adapter.updateData(beneficiaryList); // Triggers filter refresh naturally
+                    adapter.updateData(beneficiaryList);
 
                     if (beneficiaryList.isEmpty()) {
                         rvBeneficiaries.setVisibility(View.GONE);
@@ -123,7 +126,6 @@ public class BeneficiaryListActivity extends AppCompatActivity {
                     } else {
                         rvBeneficiaries.setVisibility(View.VISIBLE);
                         llEmptyState.setVisibility(View.GONE);
-                        rvBeneficiaries.scheduleLayoutAnimation();
                     }
                 } else {
                     Snackbar.make(findViewById(android.R.id.content), "Failed to load beneficiaries", Snackbar.LENGTH_SHORT).show();

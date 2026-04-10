@@ -71,9 +71,9 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
     }
 
     private void loadExistingData() {
-        if (mAuth.getCurrentUser() == null || editBeneficiaryId == null) return;
-        String userId = mAuth.getCurrentUser().getUid();
-        db.collection("users").document(userId).collection("beneficiaries").document(editBeneficiaryId)
+        if (editBeneficiaryId == null) return;
+        
+        db.collection("beneficiaries").document(editBeneficiaryId)
             .get()
             .addOnSuccessListener(documentSnapshot -> {
                 if (documentSnapshot.exists()) {
@@ -129,8 +129,7 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
         String gender = selectedGender.getText().toString();
 
         if (mAuth.getCurrentUser() == null) return;
-        String userId = mAuth.getCurrentUser().getUid();
-        String ashaId = userId;
+        String ashaId = mAuth.getCurrentUser().getUid();
 
         btnSave.setEnabled(false);
         
@@ -143,29 +142,16 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
 
         Beneficiary beneficiary = new Beneficiary(beneficiaryId, name, age, gender, village, mobile, category, ashaId);
 
-        if (isEditMode) {
-            db.collection("users").document(userId).collection("beneficiaries").document(editBeneficiaryId)
-                .set(beneficiary)
-                .addOnSuccessListener(aVoid -> {
-                    Snackbar.make(findViewById(android.R.id.content), "Patient data updated", Snackbar.LENGTH_SHORT).show();
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    btnSave.setEnabled(true);
-                    Snackbar.make(findViewById(android.R.id.content), "Update failed: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
-                });
-        } else {
-            db.collection("users").document(userId).collection("beneficiaries")
-                .document(beneficiaryId)
-                .set(beneficiary)
-                .addOnSuccessListener(aVoid -> {
-                    Snackbar.make(findViewById(android.R.id.content), "Beneficiary successfully registered", Snackbar.LENGTH_SHORT).show();
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    btnSave.setEnabled(true);
-                    Snackbar.make(findViewById(android.R.id.content), "Error: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
-                });
-        }
+        // Path changed to global "beneficiaries" for smooth sync across roles
+        db.collection("beneficiaries").document(beneficiaryId)
+            .set(beneficiary)
+            .addOnSuccessListener(aVoid -> {
+                Snackbar.make(findViewById(android.R.id.content), isEditMode ? "Patient data updated" : "Beneficiary successfully registered", Snackbar.LENGTH_SHORT).show();
+                finish();
+            })
+            .addOnFailureListener(e -> {
+                btnSave.setEnabled(true);
+                Snackbar.make(findViewById(android.R.id.content), "Operation failed: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
+            });
     }
 }
