@@ -20,9 +20,11 @@ import com.example.digitalvaccineapp.network.VaccinationRepository;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class VaccinationActivity extends AppCompatActivity {
     private TextView tvWelcomeName;
@@ -39,20 +41,15 @@ public class VaccinationActivity extends AppCompatActivity {
         // Fetch user name and dashboard counts
         loadDashboardData();
 
-
-
         // 2. View Records Button
         findViewById(R.id.btnDashViewRecords).setOnClickListener(v -> {
             startActivity(new Intent(this, RecordsActivity.class));
         });
 
-        // 3. Reminders Button (Temporarily Disabled - Coming Soon)
+        // 3. Reminders Button
         findViewById(R.id.btnDashReminders).setOnClickListener(v -> {
-            // startActivity(new Intent(this, ReminderActivity.class));
-            Toast.makeText(this, "Reminders feature coming soon!", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, ReminderActivity.class));
         });
-
-
 
         // 5. Profile Button
         findViewById(R.id.btnDashProfile).setOnClickListener(v -> {
@@ -88,40 +85,53 @@ public class VaccinationActivity extends AppCompatActivity {
         // Real-time listener for Profile Name
         db.collection("users").document(userId)
                 .addSnapshotListener((documentSnapshot, e) -> {
-                    if (e != null)
-                        return;
+                    if (e != null) return;
 
                     if (documentSnapshot != null && documentSnapshot.exists()) {
                         String name = documentSnapshot.getString("name");
-                        if (name != null && !name.isEmpty()) {
-                            tvWelcomeName.setText("Hello, " + name);
-                        } else {
-                            tvWelcomeName.setText("Hello, User");
+                        tvWelcomeName.setText("Hello, " + (name != null ? name : "User"));
+                        
+                        String phone = documentSnapshot.getString("phone");
+                        if (phone != null && !phone.isEmpty()) {
+                            aggregateVaccinationsForFamily(phone);
                         }
-                    } else if (user.getEmail() != null) {
-                        tvWelcomeName.setText("Hello, " + user.getEmail().split("@")[0]);
                     }
                 });
+    }
 
-        // Fetch Vaccine counts (handles mock mode inside repository)
-        repository.getVaccinations(new VaccinationRepository.DataCallback() {
-            @Override
-            public void onDataLoaded(List<Vaccination> vaccinations) {
-                runOnUiThread(() -> {
-                    updateSummary(vaccinations);
-                });
-            }
+    private void aggregateVaccinationsForFamily(String phone) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        List<Vaccination> allVaccinations = new ArrayList<>();
+        
+        // 1. Find all beneficiaries linked by phone
+        db.collection("beneficiaries").whereEqualTo("mobileNumber", phone).get()
+            .addOnSuccessListener(queryDocumentSnapshots -> {
+                if (queryDocumentSnapshots.isEmpty()) {
+                    updateSummary(allVaccinations);
+                    return;
+                }
 
-            @Override
-            public void onError(String message) {
-                // Handle error
-            }
-        });
+                int totalMembers = queryDocumentSnapshots.size();
+                AtomicInteger processed = new AtomicInteger(0);
+
+                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                    // 2. For each member, fetch their sub-collection vaccinations
+                    db.collection("beneficiaries").document(doc.getId()).collection("vaccinations").get()
+                        .addOnSuccessListener(vaxSnapshots -> {
+                            for (QueryDocumentSnapshot vaxDoc : vaxSnapshots) {
+                                Vaccination v = vaxDoc.toObject(Vaccination.class);
+                                allVaccinations.add(v);
+                            }
+                            
+                            if (processed.incrementAndGet() == totalMembers) {
+                                runOnUiThread(() -> updateSummary(allVaccinations));
+                            }
+                        });
+                }
+            });
     }
 
     private void updateSummary(List<Vaccination> vaccinationList) {
-        if (vaccinationList == null)
-            return;
         int completed = 0;
         int pending = 0;
         for (Vaccination v : vaccinationList) {
@@ -136,8 +146,7 @@ public class VaccinationActivity extends AppCompatActivity {
         TextView tvCompleted = findViewById(R.id.tvCompletedCount);
         TextView tvPending = findViewById(R.id.tvPendingCount);
         TextView tvProgressPercent = findViewById(R.id.tvProgressPercent);
-        com.google.android.material.progressindicator.LinearProgressIndicator pbProgress = findViewById(
-                R.id.pbVaccinationProgress);
+        com.google.android.material.progressindicator.LinearProgressIndicator pbProgress = findViewById(R.id.pbVaccinationProgress);
 
         tvCompleted.setText(String.valueOf(completed));
         tvPending.setText(String.valueOf(pending));
@@ -150,13 +159,8 @@ public class VaccinationActivity extends AppCompatActivity {
     }
 
     private void logoutUser() {
-        // Clear SharedPreferences
         getSharedPreferences("AppPrefs", MODE_PRIVATE).edit().clear().apply();
-
-        // Sign out of Firebase
         FirebaseAuth.getInstance().signOut();
-
-        // Redirect to Login/Welcome
         Intent intent = new Intent(this, WelcomeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
@@ -166,6 +170,6 @@ public class VaccinationActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadDashboardData(); // Refresh counts from local Room DB
+        loadDashboardData();
     }
 }

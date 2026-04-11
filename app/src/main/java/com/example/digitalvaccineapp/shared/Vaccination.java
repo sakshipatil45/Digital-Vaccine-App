@@ -1,6 +1,7 @@
 package com.example.digitalvaccineapp.shared;
 
 import com.google.gson.annotations.SerializedName;
+import com.google.firebase.firestore.Exclude;
 
 public class Vaccination {
     @SerializedName("vaccinationId")
@@ -14,8 +15,12 @@ public class Vaccination {
     private String status;
     private String dependentName;
     private Object createdAt;
+    
+    // Smooth Sync Field: Stores the ID of the beneficiary document this record belongs to
+    @Exclude
+    private String patientId;
 
-    // Default constructor for GSON
+    // Default constructor for Firebase/GSON
     public Vaccination() {}
 
     public Vaccination(String vaccineName, int doseNumber, String dateTaken, String hospitalName, String status, String dependentName) {
@@ -46,4 +51,9 @@ public class Vaccination {
     public void setDependentName(String dependentName) { this.dependentName = dependentName; }
     public Object getCreatedAt() { return createdAt; }
     public void setCreatedAt(Object createdAt) { this.createdAt = createdAt; }
+
+    @Exclude
+    public String getPatientId() { return patientId; }
+    @Exclude
+    public void setPatientId(String patientId) { this.patientId = patientId; }
 }

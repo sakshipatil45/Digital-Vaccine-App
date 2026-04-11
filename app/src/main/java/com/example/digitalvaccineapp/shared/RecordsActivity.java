@@ -2,6 +2,7 @@ package com.example.digitalvaccineapp.shared;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -10,8 +11,13 @@ import com.example.digitalvaccineapp.R;
 import com.example.digitalvaccineapp.shared.VaccinationAdapter;
 import com.example.digitalvaccineapp.shared.Vaccination;
 import com.example.digitalvaccineapp.network.VaccinationRepository;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RecordsActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
@@ -21,13 +27,18 @@ public class RecordsActivity extends AppCompatActivity {
     private VaccinationRepository repository;
     private com.google.android.material.textfield.TextInputEditText etSearch;
     private android.widget.ProgressBar progressBar;
+    private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_records);
 
+        db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
         repository = new VaccinationRepository(this);
+        
         recyclerView = findViewById(R.id.rvVaccinationsList);
         progressBar = findViewById(R.id.progressBar);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -38,6 +49,7 @@ public class RecordsActivity extends AppCompatActivity {
                 Intent intent = new Intent(RecordsActivity.this, AddVaccinationActivity.class);
                 intent.putExtra("edit_mode", true);
                 intent.putExtra("vax_id", vaccination.getId());
+                intent.putExtra("beneficiary_id", vaccination.getPatientId()); // Passed for repository update
                 intent.putExtra("vax_name", vaccination.getVaccineName());
                 intent.putExtra("vax_dose", vaccination.getDoseNumber());
                 intent.putExtra("vax_date", vaccination.getDateTaken());
@@ -68,39 +80,31 @@ public class RecordsActivity extends AppCompatActivity {
         etSearch.addTextChangedListener(new android.text.TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                filterRecords(s.toString());
-            }
-
+            public void onTextChanged(CharSequence s, int start, int before, int count) { filterRecords(s.toString()); }
             @Override
             public void afterTextChanged(android.text.Editable s) {}
         });
 
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
-
         fetchVaccinations();
     }
     
     private void deleteRecord(Vaccination vaccination) {
-        if (vaccination.getId() == null) {
-            com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content), "Cannot delete un-synced record.", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
+        if (vaccination.getId() == null || vaccination.getPatientId() == null) {
+            Toast.makeText(this, "Cannot delete record: Missing IDs", Toast.LENGTH_SHORT).show();
             return;
         }
         
-        com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content), "Deleting from Cloud...", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
-        
-        repository.deleteVaccination(vaccination.getId(), new VaccinationRepository.DataCallback() {
+        repository.deleteVaccination(vaccination.getPatientId(), vaccination.getId(), new VaccinationRepository.DataCallback() {
             @Override
             public void onDataLoaded(List<Vaccination> vaccinations) {
-                com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content), "Record deleted successfully", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
-                fetchVaccinations(); // Refresh list
+                Toast.makeText(RecordsActivity.this, "Record deleted from cloud", Toast.LENGTH_SHORT).show();
+                fetchVaccinations(); 
             }
-
             @Override
             public void onError(String message) {
-                com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content), "Error deleting: " + message, com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
+                Toast.makeText(RecordsActivity.this, "Delete failed: " + message, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -120,38 +124,58 @@ public class RecordsActivity extends AppCompatActivity {
     }
 
     private void fetchVaccinations() {
-        repository.getVaccinations(new VaccinationRepository.DataCallback() {
-            @Override
-            public void onDataLoaded(List<Vaccination> vaccinations) {
-                runOnUiThread(() -> {
-                    progressBar.setVisibility(android.view.View.GONE);
-                    if (vaccinations != null) {
-                        fullList.clear();
-                        fullList.addAll(vaccinations);
-                        
-                        String filterDependent = getIntent().getStringExtra("filterDependent");
-                        vaccinationList.clear();
-                        if (filterDependent != null && !filterDependent.isEmpty()) {
-                            for (Vaccination v : vaccinations) {
-                                if (filterDependent.equalsIgnoreCase(v.getDependentName())) {
-                                    vaccinationList.add(v);
-                                }
-                            }
-                        } else {
-                            vaccinationList.addAll(vaccinations);
-                        }
-                        adapter.notifyDataSetChanged();
-                    }
-                });
-            }
+        if (mAuth.getCurrentUser() == null) return;
+        progressBar.setVisibility(View.VISIBLE);
 
-            @Override
-            public void onError(String message) {
-                runOnUiThread(() -> {
-                    progressBar.setVisibility(android.view.View.GONE);
-                    com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content), message, com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
-                });
-            }
+        // Fetch user phone to link to beneficiaries
+        db.collection("users").document(mAuth.getCurrentUser().getUid()).get()
+            .addOnSuccessListener(userDoc -> {
+                String phone = userDoc.getString("phone");
+                if (phone != null && !phone.isEmpty()) {
+                    aggregateRecords(phone);
+                } else {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(this, "Set phone in Profile to fetch records", Toast.LENGTH_LONG).show();
+                }
+            });
+    }
+
+    private void aggregateRecords(String phone) {
+        fullList.clear();
+        db.collection("beneficiaries").whereEqualTo("mobileNumber", phone).get()
+            .addOnSuccessListener(queryDocumentSnapshots -> {
+                if (queryDocumentSnapshots.isEmpty()) {
+                    finishLoading();
+                    return;
+                }
+
+                int total = queryDocumentSnapshots.size();
+                AtomicInteger processed = new AtomicInteger(0);
+
+                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                    String beneficiaryId = doc.getId();
+                    db.collection("beneficiaries").document(beneficiaryId).collection("vaccinations").get()
+                        .addOnSuccessListener(vaxDocs -> {
+                            for (QueryDocumentSnapshot vaxDoc : vaxDocs) {
+                                Vaccination v = vaxDoc.toObject(Vaccination.class);
+                                v.setId(vaxDoc.getId());
+                                v.setPatientId(beneficiaryId); // Store parent ID for deletion/edit
+                                fullList.add(v);
+                            }
+                            if (processed.incrementAndGet() == total) {
+                                finishLoading();
+                            }
+                        });
+                }
+            });
+    }
+
+    private void finishLoading() {
+        runOnUiThread(() -> {
+            progressBar.setVisibility(View.GONE);
+            vaccinationList.clear();
+            vaccinationList.addAll(fullList);
+            adapter.notifyDataSetChanged();
         });
     }
 }

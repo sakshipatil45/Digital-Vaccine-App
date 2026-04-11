@@ -78,16 +78,39 @@ public class FamilyMembersActivity extends AppCompatActivity {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
         
-        String userId = user.getUid();
-        db.collection("users").document(userId).collection("familyMembers")
+        // Step 1: Get the parent's phone number from their profile
+        db.collection("users").document(user.getUid()).get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    String phone = documentSnapshot.getString("phone");
+                    if (phone != null && !phone.isEmpty()) {
+                        fetchMembersByPhone(phone);
+                    } else {
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(this, "Set phone number in Profile to see records", Toast.LENGTH_LONG).show();
+                        llEmptyState.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
+    }
+
+    private void fetchMembersByPhone(String phone) {
+        // Step 2: Fetch from global "beneficiaries" where mobileNumber matches parent's phone
+        db.collection("beneficiaries")
+            .whereEqualTo("mobileNumber", phone)
             .get()
             .addOnCompleteListener(task -> {
                 progressBar.setVisibility(View.GONE);
                 if (task.isSuccessful()) {
                     memberList.clear();
                     for (QueryDocumentSnapshot document : task.getResult()) {
-                        FamilyMember member = document.toObject(FamilyMember.class);
-                        member.setId(document.getId());
+                        FamilyMember member = new FamilyMember(
+                            document.getId(),
+                            document.getString("name"),
+                            document.getString("age"),
+                            document.getString("gender"),
+                            document.getString("category") // relationship stored in category field
+                        );
                         memberList.add(member);
                     }
                     adapter.notifyDataSetChanged();
@@ -100,7 +123,7 @@ public class FamilyMembersActivity extends AppCompatActivity {
                         llEmptyState.setVisibility(View.GONE);
                     }
                 } else {
-                        com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content), "Failed to load family members", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
+                    com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content), "Sync failed", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
                 }
             });
     }

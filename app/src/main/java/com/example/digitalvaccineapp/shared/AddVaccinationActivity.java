@@ -11,13 +11,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.digitalvaccineapp.R;
 import com.example.digitalvaccineapp.shared.Vaccination;
 import com.example.digitalvaccineapp.network.VaccinationRepository;
+import com.example.digitalvaccineapp.citizen.FamilyMember;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.android.material.snackbar.Snackbar;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AddVaccinationActivity extends AppCompatActivity {
 
@@ -25,14 +28,20 @@ public class AddVaccinationActivity extends AppCompatActivity {
     private AutoCompleteTextView spinnerVaccineName, spinnerDoseNumber, spinnerDependentName, spinnerStatus;
     private Button btnSave;
     private VaccinationRepository repository;
+    private FirebaseFirestore db;
     private boolean isEditMode = false;
     private String vaxId = null;
+    private String beneficiaryId = null;
+    
+    // Maps dependent name -> beneficiaryId for Citizen side
+    private Map<String, String> dependentMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_vaccination);
 
+        db = FirebaseFirestore.getInstance();
         spinnerVaccineName = findViewById(R.id.spinnerVaccineName);
         spinnerDoseNumber = findViewById(R.id.spinnerDoseNumber);
         spinnerDependentName = findViewById(R.id.spinnerDependentName);
@@ -43,10 +52,14 @@ public class AddVaccinationActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSave);
         repository = new VaccinationRepository(this);
 
+        // Check for ASHA mode (passed from BeneficiaryDetailActivity)
+        beneficiaryId = getIntent().getStringExtra("beneficiary_id");
+
         // Check for Edit Mode
         if (getIntent().hasExtra("edit_mode")) {
             isEditMode = getIntent().getBooleanExtra("edit_mode", false);
             vaxId = getIntent().getStringExtra("vax_id");
+            beneficiaryId = getIntent().getStringExtra("beneficiary_id");
             
             spinnerVaccineName.setText(getIntent().getStringExtra("vax_name"), false);
             int doseNum = getIntent().getIntExtra("vax_dose", 1);
@@ -58,81 +71,69 @@ public class AddVaccinationActivity extends AppCompatActivity {
             btnSave.setText("Update Vaccination");
         }
 
-        // Set up Vaccine Name dropdown
-        String[] vaccines = {"Covaxin", "Covishield", "Sputnik V", "Pfizer", "Moderna", "Johnson & Johnson", "Other"};
-        ArrayAdapter<String> vaccineAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_line, vaccines);
-        spinnerVaccineName.setAdapter(vaccineAdapter);
-
-        // Set up Dose Number dropdown
-        String[] doses = {"1st Dose", "2nd Dose", "Booster Dose", "Precautionary Dose"};
-        ArrayAdapter<String> doseAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_line, doses);
-        spinnerDoseNumber.setAdapter(doseAdapter);
+        // Set up drop downs...
+        setupSpinners();
 
         // Date picker
         etDateTaken.setOnClickListener(v -> showDatePicker());
 
         btnSave.setOnClickListener(v -> saveVaccination());
 
-        // Set up Status dropdown
+        // Fetch Dependents (Family Members) to link by ID
+        loadDependents();
+    }
+
+    private void setupSpinners() {
+        String[] vaccines = {"Covaxin", "Covishield", "Sputnik V", "Pfizer", "Moderna", "Johnson & Johnson", "Other"};
+        spinnerVaccineName.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_line, vaccines));
+
+        String[] doses = {"1st Dose", "2nd Dose", "Booster Dose", "Precautionary Dose"};
+        spinnerDoseNumber.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_line, doses));
+
         String[] statuses = {"Completed", "Pending"};
-        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_line, statuses);
-        spinnerStatus.setAdapter(statusAdapter);
-        if (isEditMode) {
-             spinnerStatus.setText(getIntent().getStringExtra("vax_status") != null ? getIntent().getStringExtra("vax_status") : "Completed", false);
-        } else {
-             spinnerStatus.setText("Completed", false);
+        spinnerStatus.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_line, statuses));
+        spinnerStatus.setText("Completed", false);
+    }
+
+    private void loadDependents() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) return;
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        // If ASHA passed a beneficiary, we force it
+        String forcedName = getIntent().getStringExtra("force_dependent");
+        if (forcedName != null) {
+            spinnerDependentName.setText(forcedName, false);
+            spinnerDependentName.setEnabled(false);
+            return;
         }
 
-        // Fetch Family Members for Dependent Dropdown
-        List<String> dependents = new ArrayList<>();
-        dependents.add("Self");
-        
-        ArrayAdapter<String> initialAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_line, dependents);
-        spinnerDependentName.setAdapter(initialAdapter);
-        
-        if (isEditMode) {
-            String currentDependent = getIntent().getStringExtra("vax_dependent");
-            if (currentDependent == null || currentDependent.isEmpty()) currentDependent = "Self";
-            spinnerDependentName.setText(currentDependent, false);
-        } else {
-            spinnerDependentName.setText("Self", false);
-        }
-        
-        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            FirebaseFirestore.getInstance().collection("users").document(uid).collection("familyMembers")
-                .get()
+        // Otherwise (Citizen Mode), fetch from global registry using Phone Number
+        db.collection("users").document(uid).get().addOnSuccessListener(userDoc -> {
+            String phone = userDoc.getString("phone");
+            if (phone == null || phone.isEmpty()) return;
+
+            db.collection("beneficiaries").whereEqualTo("mobileNumber", phone).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    boolean addedNew = false;
+                    List<String> dependentNames = new ArrayList<>();
                     for (com.google.firebase.firestore.QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        String depName = doc.getString("name");
-                        if (depName != null) {
-                            if (!dependents.contains(depName)) {
-                                dependents.add(depName);
-                            }
-                            addedNew = true;
+                        String name = doc.getString("name");
+                        if (name != null) {
+                            dependentNames.add(name);
+                            dependentMap.put(name, doc.getId());
                         }
                     }
-                    if (addedNew) {
-                        ArrayAdapter<String> depAdapter = new ArrayAdapter<>(AddVaccinationActivity.this, android.R.layout.simple_dropdown_item_line, dependents);
-                        spinnerDependentName.setAdapter(depAdapter);
-                        String currentText = spinnerDependentName.getText().toString();
-                        spinnerDependentName.setText(currentText, false);
-                    }
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_line, dependentNames);
+                    spinnerDependentName.setAdapter(adapter);
                 });
-        }
+        });
     }
 
     private void showDatePicker() {
         final Calendar c = Calendar.getInstance();
-        int year = c.get(Calendar.YEAR);
-        int month = c.get(Calendar.MONTH);
-        int day = c.get(Calendar.DAY_OF_MONTH);
-
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, year1, monthOfYear, dayOfMonth) -> {
-            String date = year1 + "-" + String.format("%02d", (monthOfYear + 1)) + "-" + String.format("%02d", dayOfMonth);
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+            String date = year + "-" + String.format("%02d", (month + 1)) + "-" + String.format("%02d", dayOfMonth);
             etDateTaken.setText(date);
-        }, year, month, day);
+        }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
         datePickerDialog.show();
     }
 
@@ -141,63 +142,37 @@ public class AddVaccinationActivity extends AppCompatActivity {
         String doseStr = spinnerDoseNumber.getText().toString();
         String date = etDateTaken.getText().toString();
         String hospital = etHospitalName.getText().toString();
+        String depName = spinnerDependentName.getText().toString();
 
-        if (name.isEmpty() || doseStr.isEmpty() || date.isEmpty() || hospital.isEmpty()) {
-            Snackbar.make(findViewById(android.R.id.content), "Please fill all required fields", Snackbar.LENGTH_SHORT).show();
+        if (name.isEmpty() || date.isEmpty() || depName.isEmpty()) {
+            Snackbar.make(findViewById(android.R.id.content), "All fields required", Snackbar.LENGTH_SHORT).show();
             return;
         }
 
-        int doseNum = 1;
-        if (doseStr.contains("2")) doseNum = 2;
-        if (doseStr.contains("Booster")) doseNum = 3;
-
-        String dependent = spinnerDependentName.getText().toString().trim();
-        if (dependent.isEmpty()) dependent = "Self";
-
-        String status = spinnerStatus.getText().toString();
-        if (status.isEmpty()) status = "Completed";
-
-        Vaccination vaccination = new Vaccination(name, doseNum, date, hospital, status, dependent);
-
-        if (isEditMode) {
-            updateVaccination(vaccination);
-        } else {
-            addVaccination(vaccination);
+        // Resolve beneficiaryId if in Citizen mode
+        if (beneficiaryId == null) {
+            beneficiaryId = dependentMap.get(depName);
         }
-    }
 
-    private void addVaccination(Vaccination vaccination) {
+        if (beneficiaryId == null) {
+             Snackbar.make(findViewById(android.R.id.content), "Error: Beneficiary ID not found", Snackbar.LENGTH_SHORT).show();
+             return;
+        }
+
+        int doseNum = doseStr.contains("2") ? 2 : (doseStr.contains("Booster") ? 3 : 1);
+        Vaccination vax = new Vaccination(name, doseNum, date, hospital, spinnerStatus.getText().toString(), depName);
+
         btnSave.setEnabled(false);
-        repository.addVaccination(vaccination, new VaccinationRepository.DataCallback() {
-            @Override
-            public void onDataLoaded(List<Vaccination> vaccinations) {
-                Snackbar.make(findViewById(android.R.id.content), "Vaccination saved securely to Cloud", Snackbar.LENGTH_LONG).show();
-                finish();
-            }
-
-            @Override
-            public void onError(String message) {
-                btnSave.setEnabled(true);
-                Snackbar.make(findViewById(android.R.id.content), "Error: " + message, Snackbar.LENGTH_LONG)
-                        .setAction("Retry", v -> saveVaccination()).show();
-            }
-        });
-    }
-
-    private void updateVaccination(Vaccination vaccination) {
-        btnSave.setEnabled(false);
-        repository.updateVaccination(vaxId, vaccination, new VaccinationRepository.DataCallback() {
-            @Override
-            public void onDataLoaded(List<Vaccination> vaccinations) {
-                Snackbar.make(findViewById(android.R.id.content), "Record updated in Cloud", Snackbar.LENGTH_LONG).show();
-                finish();
-            }
-
-            @Override
-            public void onError(String message) {
-                btnSave.setEnabled(true);
-                Snackbar.make(findViewById(android.R.id.content), "Update failed: " + message, Snackbar.LENGTH_LONG).show();
-            }
-        });
+        if (isEditMode) {
+            repository.updateVaccination(beneficiaryId, vaxId, vax, new VaccinationRepository.DataCallback() {
+                @Override public void onDataLoaded(List<Vaccination> v) { finish(); }
+                @Override public void onError(String msg) { btnSave.setEnabled(true); Snackbar.make(btnSave, msg, 2000).show(); }
+            });
+        } else {
+            repository.addVaccination(beneficiaryId, vax, new VaccinationRepository.DataCallback() {
+                @Override public void onDataLoaded(List<Vaccination> v) { finish(); }
+                @Override public void onError(String msg) { btnSave.setEnabled(true); Snackbar.make(btnSave, msg, 2000).show(); }
+            });
+        }
     }
 }

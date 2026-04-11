@@ -85,8 +85,6 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
         rvVaccinations.setLayoutManager(new LinearLayoutManager(this));
         vaccinationList = new ArrayList<>();
         
-        // Utilizing existing Vaccination Adapter. Deletion from this view requires Cloud path tweaks, 
-        // so we disable editing for now or wire it to the subcollection instead of standard Collection.
         adapter = new VaccinationAdapter(vaccinationList, new VaccinationAdapter.OnVaccinationClickListener() {
             @Override
             public void onEditClick(Vaccination vaccination) {
@@ -100,14 +98,13 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
 
             @Override
             public void onItemClick(Vaccination vaccination) {
-                // Ignore for now
+                // Ignore
             }
         }, false);
         rvVaccinations.setAdapter(adapter);
 
         btnAddRecord.setOnClickListener(v -> {
             Intent intent = new Intent(BeneficiaryDetailActivity.this, AddVaccinationActivity.class);
-            // We pass the beneficiary filter flag so the record automatically maps to them.
             intent.putExtra("force_dependent", beneficiaryName);
             intent.putExtra("asha_beneficiary_mode", true);
             intent.putExtra("beneficiary_id", beneficiaryId);
@@ -126,9 +123,8 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
     private void loadVaccinations() {
         if (mAuth.getCurrentUser() == null || beneficiaryId == null) return;
         
-        String userId = mAuth.getCurrentUser().getUid();
-        db.collection("users").document(userId)
-            .collection("beneficiaries").document(beneficiaryId)
+        // Path updated for Global Registry Sync
+        db.collection("beneficiaries").document(beneficiaryId)
             .collection("vaccinations")
             .get()
             .addOnCompleteListener(task -> {
@@ -148,7 +144,6 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
                     } else {
                         rvVaccinations.setVisibility(View.VISIBLE);
                         llEmptyState.setVisibility(View.GONE);
-                        rvVaccinations.scheduleLayoutAnimation();
                     }
                 } else {
                     Snackbar.make(findViewById(android.R.id.content), "Error pulling records", Snackbar.LENGTH_SHORT).show();
@@ -157,11 +152,10 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
     }
 
     private void deleteBeneficiary() {
-        if (mAuth.getCurrentUser() == null || beneficiaryId == null) return;
-        String userId = mAuth.getCurrentUser().getUid();
+        if (beneficiaryId == null) return;
         
-        db.collection("users").document(userId)
-            .collection("beneficiaries").document(beneficiaryId)
+        // Path updated for Global Registry Sync
+        db.collection("beneficiaries").document(beneficiaryId)
             .delete()
             .addOnSuccessListener(aVoid -> {
                 Snackbar.make(findViewById(android.R.id.content), "Beneficiary record removed", Snackbar.LENGTH_SHORT).show();
@@ -173,14 +167,14 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
     }
 
     private void deleteVaccination(String vaxId) {
-        if (vaxId == null || mAuth.getCurrentUser() == null) return;
-        String userId = mAuth.getCurrentUser().getUid();
-        db.collection("users").document(userId)
-            .collection("beneficiaries").document(beneficiaryId)
+        if (vaxId == null || beneficiaryId == null) return;
+        
+        // Path updated for Global Registry Sync
+        db.collection("beneficiaries").document(beneficiaryId)
             .collection("vaccinations").document(vaxId)
             .delete()
             .addOnSuccessListener(aVoid -> {
-                Snackbar.make(findViewById(android.R.id.content), "Record purged from Cloud", Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(android.R.id.content), "Record purged from shared registry", Snackbar.LENGTH_SHORT).show();
                 loadVaccinations();
             })
             .addOnFailureListener(e -> {
