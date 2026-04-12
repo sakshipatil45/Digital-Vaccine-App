@@ -23,7 +23,7 @@ import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    private TextInputEditText etName, etEmail, etPassword, etConfirmPassword, etAge;
+    private TextInputEditText etName, etEmail, etPhone, etPassword, etConfirmPassword, etAge;
     private RadioGroup rgGender;
     private MaterialButton btnRegister;
     private MaterialCardView cardAsha, cardCitizen;
@@ -44,6 +44,7 @@ public class RegisterActivity extends AppCompatActivity {
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
+        etPhone = findViewById(R.id.etPhone);
         etAge = findViewById(R.id.etAge);
         rgGender = findViewById(R.id.rgGender);
         btnRegister = findViewById(R.id.btnRegister);
@@ -92,8 +93,14 @@ public class RegisterActivity extends AppCompatActivity {
         String age = etAge.getText().toString().trim();
 
         if (TextUtils.isEmpty(name) || TextUtils.isEmpty(email) || TextUtils.isEmpty(password) ||
-            TextUtils.isEmpty(confirmPassword) || TextUtils.isEmpty(age)) {
+            TextUtils.isEmpty(confirmPassword) || TextUtils.isEmpty(age) || etPhone.getText().toString().isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String phone = etPhone.getText().toString().trim();
+        if (phone.length() < 10) {
+            Toast.makeText(this, "Enter a valid 10-digit phone number", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -114,19 +121,20 @@ public class RegisterActivity extends AppCompatActivity {
             .addOnCompleteListener(this, task -> {
                 if (task.isSuccessful()) {
                     // Save user details to backend
-                    saveProfileToBackend(name, age, gender, selectedRole);
+                    saveProfileToBackend(name, phone, age, gender, selectedRole);
                 } else {
                     Toast.makeText(this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
     }
 
-    private void saveProfileToBackend(String name, String age, String gender, String role) {
+    private void saveProfileToBackend(String name, String phone, String age, String gender, String role) {
         if (mAuth.getCurrentUser() == null) return;
 
         Map<String, Object> userData = new HashMap<>();
         userData.put("name", name);
         userData.put("role", role);
+        userData.put("phone", phone);
         userData.put("age", age);
         userData.put("gender", gender);
         userData.put("email", mAuth.getCurrentUser().getEmail());
