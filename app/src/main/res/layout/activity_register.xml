@@ -177,11 +177,27 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:hint="Phone Number"
+                android:hint="Personal Phone Number"
                 app:boxStrokeColor="@color/primary_teal">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etPhone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="phone" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Family Sync Phone/Code (e.g. Household Head Num)"
+                app:boxStrokeColor="@color/primary_teal"
+                app:helperText="Use this to sync records across your family's phones">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etFamilySyncPhone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="phone" />

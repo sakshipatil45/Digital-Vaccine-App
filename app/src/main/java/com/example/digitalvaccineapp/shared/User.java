@@ -8,14 +8,16 @@ public class User {
     private String age;
     private String address;
     private String gender;
+    private String familySyncPhone;
 
     public User() {}
 
-    public User(String uid, String email, String name, String phone, String age, String address, String gender) {
+    public User(String uid, String email, String name, String phone, String familySyncPhone, String age, String address, String gender) {
         this.uid = uid;
         this.email = email;
         this.name = name;
         this.phone = phone;
+        this.familySyncPhone = familySyncPhone;
         this.age = age;
         this.address = address;
         this.gender = gender;
@@ -36,4 +38,6 @@ public class User {
     public void setAddress(String address) { this.address = address; }
     public String getGender() { return gender; }
     public void setGender(String gender) { this.gender = gender; }
+    public String getFamilySyncPhone() { return familySyncPhone; }
+    public void setFamilySyncPhone(String familySyncPhone) { this.familySyncPhone = familySyncPhone; }
 }
