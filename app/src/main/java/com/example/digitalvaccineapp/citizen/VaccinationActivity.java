@@ -82,7 +82,7 @@ public class VaccinationActivity extends AppCompatActivity {
         String userId = user.getUid();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         
-        // Real-time listener for Profile Name
+        // Real-time listener for Profile Name and Phone-based Sync
         db.collection("users").document(userId)
                 .addSnapshotListener((documentSnapshot, e) -> {
                     if (e != null) return;
@@ -93,21 +93,22 @@ public class VaccinationActivity extends AppCompatActivity {
                         
                         String phone = documentSnapshot.getString("phone");
                         if (phone != null && !phone.isEmpty()) {
-                            aggregateVaccinationsForFamily(phone);
+                            aggregateDataForFamily(phone);
                         }
                     }
                 });
     }
 
-    private void aggregateVaccinationsForFamily(String phone) {
+    private void aggregateDataForFamily(String phone) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         List<Vaccination> allVaccinations = new ArrayList<>();
+        AtomicInteger totalReminders = new AtomicInteger(0);
         
-        // 1. Find all beneficiaries linked by phone
+        // 1. Find all beneficiaries linked by mobileNumber
         db.collection("beneficiaries").whereEqualTo("mobileNumber", phone).get()
             .addOnSuccessListener(queryDocumentSnapshots -> {
                 if (queryDocumentSnapshots.isEmpty()) {
-                    updateSummary(allVaccinations);
+                    updateSummary(allVaccinations, totalReminders.get());
                     return;
                 }
 
@@ -115,25 +116,34 @@ public class VaccinationActivity extends AppCompatActivity {
                 AtomicInteger processed = new AtomicInteger(0);
 
                 for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                    // 2. For each member, fetch their sub-collection vaccinations
-                    db.collection("beneficiaries").document(doc.getId()).collection("vaccinations").get()
+                    String bId = doc.getId();
+                    
+                    // 2. Fetch Completed/Pending Vaccinations
+                    db.collection("beneficiaries").document(bId).collection("vaccinations").get()
                         .addOnSuccessListener(vaxSnapshots -> {
                             for (QueryDocumentSnapshot vaxDoc : vaxSnapshots) {
                                 Vaccination v = vaxDoc.toObject(Vaccination.class);
                                 allVaccinations.add(v);
                             }
                             
-                            if (processed.incrementAndGet() == totalMembers) {
-                                runOnUiThread(() -> updateSummary(allVaccinations));
-                            }
+                            // 3. Fetch Shared Reminders (counts as extra pending)
+                            db.collection("beneficiaries").document(bId).collection("reminders").get()
+                                .addOnSuccessListener(remSnapshots -> {
+                                    totalReminders.addAndGet(remSnapshots.size());
+                                    
+                                    if (processed.incrementAndGet() == totalMembers) {
+                                        runOnUiThread(() -> updateSummary(allVaccinations, totalReminders.get()));
+                                    }
+                                });
                         });
                 }
             });
     }
 
-    private void updateSummary(List<Vaccination> vaccinationList) {
+    private void updateSummary(List<Vaccination> vaccinationList, int reminderCount) {
         int completed = 0;
-        int pending = 0;
+        int pending = reminderCount; // Reminders are strictly pending things to do
+        
         for (Vaccination v : vaccinationList) {
             String status = v.getStatus() != null ? v.getStatus().toLowerCase() : "pending";
             if (status.contains("completed") || status.contains("done")) {
@@ -159,7 +169,6 @@ public class VaccinationActivity extends AppCompatActivity {
     }
 
     private void logoutUser() {
-        getSharedPreferences("AppPrefs", MODE_PRIVATE).edit().clear().apply();
         FirebaseAuth.getInstance().signOut();
         Intent intent = new Intent(this, WelcomeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

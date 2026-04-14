@@ -65,9 +65,11 @@ public class AshaReportsActivity extends AppCompatActivity {
     private void fetchAnalytics() {
         if (mAuth.getCurrentUser() == null) return;
         
-        String userId = mAuth.getCurrentUser().getUid();
+        String ashaId = mAuth.getCurrentUser().getUid();
         
-        db.collection("users").document(userId).collection("beneficiaries")
+        // Step 1: Query global "beneficiaries" for this ASHA
+        db.collection("beneficiaries")
+            .whereEqualTo("ashaId", ashaId)
             .get()
             .addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
@@ -99,13 +101,12 @@ public class AshaReportsActivity extends AppCompatActivity {
                         return;
                     }
 
-                    // Multi-query aggregation for vaccinations across all beneficiaries
+                    // Step 2: Aggregate vaccinations from sub-collections
                     AtomicInteger completedQueries = new AtomicInteger(0);
                     AtomicInteger totalVaccines = new AtomicInteger(0);
 
                     for (String bId : beneficiaryIds) {
-                        db.collection("users").document(userId)
-                            .collection("beneficiaries").document(bId)
+                        db.collection("beneficiaries").document(bId)
                             .collection("vaccinations")
                             .get()
                             .addOnCompleteListener(vaxTask -> {
@@ -113,19 +114,16 @@ public class AshaReportsActivity extends AppCompatActivity {
                                     totalVaccines.addAndGet(vaxTask.getResult().size());
                                 }
                                 
-                                int current = completedQueries.incrementAndGet();
-                                // Once all sub-queries finish
-                                if (current == totalBeneficiaries) {
+                                if (completedQueries.incrementAndGet() == totalBeneficiaries) {
                                     tvTotalVaccines.setText(String.valueOf(totalVaccines.get()));
                                     progressBarReports.setVisibility(View.GONE);
                                     svReportsContent.setVisibility(View.VISIBLE);
-                                    svReportsContent.scheduleLayoutAnimation();
                                 }
                             });
                     }
                 } else {
                     progressBarReports.setVisibility(View.GONE);
-                    Snackbar.make(findViewById(android.R.id.content), "Network error. Failed to map insights.", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(findViewById(android.R.id.content), "Analytics sync failed.", Snackbar.LENGTH_LONG).show();
                 }
             });
     }

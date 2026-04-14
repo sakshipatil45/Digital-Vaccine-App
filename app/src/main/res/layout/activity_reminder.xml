@@ -54,10 +54,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                android:text="Never miss a dose! Schedule a reminder and we'll notify you."
+                android:text="Never miss a dose! Schedule a shared reminder for your family or patients."
                 android:textAlignment="center"
                 android:textColor="@color/text_sub"
                 android:textSize="14sp" />
+
+            <!-- New Patient Selection Dropdown for Sync -->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Select Patient / Family Member"
+                app:boxStrokeColor="@color/primary_teal">
+
+                <AutoCompleteTextView
+                    android:id="@+id/spinnerReminderPatient"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none" />
+            </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -95,7 +111,7 @@
                 android:id="@+id/btnSetReminder"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
-                android:text="Set Reminder"
+                android:text="Set Shared Reminder"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:cornerRadius="16dp" />
