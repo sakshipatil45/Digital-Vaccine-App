@@ -85,13 +85,13 @@ public class AddVaccinationActivity extends AppCompatActivity {
 
     private void setupSpinners() {
         String[] vaccines = {"Covaxin", "Covishield", "Sputnik V", "Pfizer", "Moderna", "Johnson & Johnson", "Other"};
-        spinnerVaccineName.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_line, vaccines));
+        spinnerVaccineName.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, vaccines));
 
         String[] doses = {"1st Dose", "2nd Dose", "Booster Dose", "Precautionary Dose"};
-        spinnerDoseNumber.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_line, doses));
+        spinnerDoseNumber.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, doses));
 
         String[] statuses = {"Completed", "Pending"};
-        spinnerStatus.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_line, statuses));
+        spinnerStatus.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, statuses));
         spinnerStatus.setText("Completed", false);
     }
 
@@ -122,7 +122,7 @@ public class AddVaccinationActivity extends AppCompatActivity {
                             dependentMap.put(name, doc.getId());
                         }
                     }
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_line, dependentNames);
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, dependentNames);
                     spinnerDependentName.setAdapter(adapter);
                 });
         });
