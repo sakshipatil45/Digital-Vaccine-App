@@ -87,6 +87,10 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void registerUser() {
+        String name = etName.getText().toString().trim();
+        String email = etEmail.getText().toString().trim();
+        String password = etPassword.getText().toString().trim();
+        String confirmPassword = etConfirmPassword.getText().toString().trim();
         String age = etAge.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
         String familyPhone = etFamilySyncPhone.getText().toString().trim();
