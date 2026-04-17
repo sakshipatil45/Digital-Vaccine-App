@@ -54,6 +54,10 @@ public class ReminderActivity extends AppCompatActivity {
         etDate = findViewById(R.id.etReminderDate);
         btnSetReminder = findViewById(R.id.btnSetReminder);
         
+        // Ensure dropdown shows all items on click
+        spinnerPatient.setThreshold(0);
+        spinnerVaccine.setThreshold(0);
+
         requestNotificationPermission();
 
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
@@ -76,32 +80,58 @@ public class ReminderActivity extends AppCompatActivity {
 
         // 1. Get User Profile to check role/phone
         db.collection("users").document(uid).get().addOnSuccessListener(userDoc -> {
+            if (!userDoc.exists()) return;
+            
             String role = userDoc.getString("role");
             String phone = userDoc.getString("phone");
+            String myName = userDoc.getString("name");
 
+            List<String> initialNames = new ArrayList<>();
             if ("asha".equalsIgnoreCase(role)) {
                 // Fetch all beneficiaries assigned to this ASHA
                 db.collection("beneficiaries").whereEqualTo("ashaId", uid).get()
-                    .addOnSuccessListener(queryDocumentSnapshots -> populateSpinner(queryDocumentSnapshots));
+                    .addOnSuccessListener(queryDocumentSnapshots -> populateSpinner(queryDocumentSnapshots, initialNames))
+                    .addOnFailureListener(e -> Toast.makeText(this, "Sync failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
             } else {
+                // Add the user themselves to the dropdown
+                if (myName != null) {
+                    String selfEntry = myName + " (Self)";
+                    initialNames.add(selfEntry);
+                    patientMap.put(selfEntry, uid); // Link to user's own document/id
+                }
+
                 // Fetch family members linked by phone
-                if (phone != null) {
+                if (phone != null && !phone.isEmpty()) {
                     db.collection("beneficiaries").whereEqualTo("mobileNumber", phone).get()
-                        .addOnSuccessListener(queryDocumentSnapshots -> populateSpinner(queryDocumentSnapshots));
+                        .addOnSuccessListener(queryDocumentSnapshots -> populateSpinner(queryDocumentSnapshots, initialNames))
+                        .addOnFailureListener(e -> {
+                            populateSpinner(null, initialNames); // Show at least 'Self'
+                            Toast.makeText(this, "Family sync failed", Toast.LENGTH_SHORT).show();
+                        });
+                } else {
+                    populateSpinner(null, initialNames);
+                    Toast.makeText(this, "Set phone in Profile to sync with family", Toast.LENGTH_LONG).show();
                 }
             }
-        });
+        }).addOnFailureListener(e -> Toast.makeText(this, "Failed to load profile", Toast.LENGTH_SHORT).show());
     }
 
-    private void populateSpinner(com.google.firebase.firestore.QuerySnapshot snapshots) {
-        List<String> names = new ArrayList<>();
-        for (QueryDocumentSnapshot doc : snapshots) {
-            String name = doc.getString("name");
-            if (name != null) {
-                names.add(name);
-                patientMap.put(name, doc.getId());
+    private void populateSpinner(com.google.firebase.firestore.QuerySnapshot snapshots, List<String> names) {
+        if (snapshots != null) {
+            for (QueryDocumentSnapshot doc : snapshots) {
+                String name = doc.getString("name");
+                if (name != null) {
+                    String displayName = name;
+                    // Tag them if they are citizens to distinguish
+                    String category = doc.getString("category");
+                    if (category != null) displayName += " (" + category + ")";
+                    
+                    names.add(displayName);
+                    patientMap.put(displayName, doc.getId());
+                }
             }
         }
+        
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, names);
         spinnerPatient.setAdapter(adapter);
     }
