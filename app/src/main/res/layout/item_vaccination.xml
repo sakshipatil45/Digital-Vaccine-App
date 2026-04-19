@@ -155,6 +155,16 @@
             app:layout_constraintTop_toBottomOf="@id/divider">
 
             <ImageButton
+                android:id="@+id/btnSetReminder"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="8dp"
+                android:scaleType="centerInside"
+                android:src="@android:drawable/ic_popup_reminder"
+                app:tint="@color/primary_blue" />
+
+            <ImageButton
                 android:id="@+id/btnEditVax"
                 android:layout_width="36dp"
                 android:layout_height="36dp"

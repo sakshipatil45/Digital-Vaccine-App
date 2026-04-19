@@ -20,6 +20,7 @@ public class VaccinationAdapter extends RecyclerView.Adapter<VaccinationAdapter.
         void onEditClick(Vaccination vaccination);
         void onDeleteClick(Vaccination vaccination);
         void onItemClick(Vaccination vaccination);
+        void onReminderClick(Vaccination vaccination);
     }
 
     public VaccinationAdapter(List<Vaccination> vaccinationList, OnVaccinationClickListener listener) {
@@ -76,6 +77,7 @@ public class VaccinationAdapter extends RecyclerView.Adapter<VaccinationAdapter.
             holder.itemView.setOnClickListener(v -> listener.onItemClick(vaccination));
             holder.btnEdit.setOnClickListener(v -> listener.onEditClick(vaccination));
             holder.btnDelete.setOnClickListener(v -> listener.onDeleteClick(vaccination));
+            holder.btnReminder.setOnClickListener(v -> listener.onReminderClick(vaccination));
         }
     }
 
@@ -87,7 +89,7 @@ public class VaccinationAdapter extends RecyclerView.Adapter<VaccinationAdapter.
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvDate, tvStatus, tvHospital, tvDose, tvDependent;
         View vStatusBadge;
-        ImageButton btnEdit, btnDelete;
+        ImageButton btnEdit, btnDelete, btnReminder;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -100,6 +102,7 @@ public class VaccinationAdapter extends RecyclerView.Adapter<VaccinationAdapter.
             vStatusBadge = itemView.findViewById(R.id.vStatusBadge);
             btnEdit = itemView.findViewById(R.id.btnEditVax);
             btnDelete = itemView.findViewById(R.id.btnDeleteVax);
+            btnReminder = itemView.findViewById(R.id.btnSetReminder);
         }
     }
 }
