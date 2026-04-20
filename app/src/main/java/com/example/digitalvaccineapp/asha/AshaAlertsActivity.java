@@ -52,6 +52,12 @@ public class AshaAlertsActivity extends AppCompatActivity {
         adapter = new VaccinationAdapter(alertList, new VaccinationAdapter.OnVaccinationClickListener() {
             @Override public void onEditClick(Vaccination vaccination) { }
             @Override public void onDeleteClick(Vaccination vaccination) { }
+            @Override public void onReminderClick(Vaccination vaccination) {
+                android.content.Intent intent = new android.content.Intent(AshaAlertsActivity.this, com.example.digitalvaccineapp.shared.ReminderActivity.class);
+                intent.putExtra("force_vaccine", vaccination.getVaccineName());
+                intent.putExtra("force_patient", vaccination.getDependentName());
+                startActivity(intent);
+            }
             @Override public void onItemClick(Vaccination vaccination) {
                 Toast.makeText(AshaAlertsActivity.this, "Priority follow-up needed", Toast.LENGTH_SHORT).show();
             }

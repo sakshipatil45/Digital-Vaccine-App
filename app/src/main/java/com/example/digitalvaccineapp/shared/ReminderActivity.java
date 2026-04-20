@@ -66,6 +66,11 @@ public class ReminderActivity extends AppCompatActivity {
         String[] vaccines = {"Covaxin", "Covishield", "Sputnik V", "Pfizer", "Moderna", "Other"};
         spinnerVaccine.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, vaccines));
 
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("force_vaccine")) {
+            spinnerVaccine.setText(intent.getStringExtra("force_vaccine"), false);
+        }
+
         // Setup Patients (Global Registry Sync)
         loadPatients();
 
@@ -134,6 +139,19 @@ public class ReminderActivity extends AppCompatActivity {
         
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, names);
         spinnerPatient.setAdapter(adapter);
+
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("force_patient")) {
+            String forcePatient = intent.getStringExtra("force_patient");
+            if (forcePatient != null) {
+                for (String pName : names) {
+                    if (pName.contains(forcePatient)) {
+                        spinnerPatient.setText(pName, false);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     private void showDatePicker() {

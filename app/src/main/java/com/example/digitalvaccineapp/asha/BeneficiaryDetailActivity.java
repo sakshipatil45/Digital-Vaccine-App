@@ -92,6 +92,14 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
             }
 
             @Override
+            public void onReminderClick(Vaccination vaccination) {
+                Intent intent = new Intent(BeneficiaryDetailActivity.this, com.example.digitalvaccineapp.shared.ReminderActivity.class);
+                intent.putExtra("force_vaccine", vaccination.getVaccineName());
+                intent.putExtra("force_patient", vaccination.getDependentName());
+                startActivity(intent);
+            }
+
+            @Override
             public void onDeleteClick(Vaccination vaccination) {
                 deleteVaccination(vaccination.getId());
             }
