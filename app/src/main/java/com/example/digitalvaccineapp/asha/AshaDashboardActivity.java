@@ -115,22 +115,24 @@ public class AshaDashboardActivity extends AppCompatActivity {
         
         String ashaId = user.getUid();
         
-        // Count beneficiaries assigned to this ASHA worker in the global registry
-        db.collection("beneficiaries")
-            .whereEqualTo("ashaId", ashaId)
-            .addSnapshotListener((snapshots, e) -> {
-                if (e != null || snapshots == null) return;
-                
-                int totalCount = snapshots.size();
-                tvTotalBeneficiaries.setText(String.valueOf(totalCount));
-                
-                // For alerts: Check pending vaccinations (demonstration logic)
-                int alertCount = 0;
-                for (DocumentSnapshot doc : snapshots) {
-                    // This would ideally be a separate query on the sub-collection or a denormalized field
-                    // For now we show the patient count if it's new
-                }
-                tvOverdueAlerts.setText(String.valueOf(totalCount / 2)); // Dynamic placeholder
+        // Fetch ASHA's village first
+        db.collection("users").document(ashaId).get()
+            .addOnSuccessListener(userDoc -> {
+                String ashaVillage = userDoc.getString("village");
+                if (ashaVillage == null) return;
+
+                // Count beneficiaries in this village (ASHA + Citizen added)
+                db.collection("beneficiaries")
+                    .whereEqualTo("village", ashaVillage)
+                    .addSnapshotListener((snapshots, e) -> {
+                        if (e != null || snapshots == null) return;
+                        
+                        int totalCount = snapshots.size();
+                        tvTotalBeneficiaries.setText(String.valueOf(totalCount));
+                        
+                        // For alerts: Check pending vaccinations (demonstration logic)
+                        tvOverdueAlerts.setText(String.valueOf(totalCount / 2)); 
+                    });
             });
     }
 

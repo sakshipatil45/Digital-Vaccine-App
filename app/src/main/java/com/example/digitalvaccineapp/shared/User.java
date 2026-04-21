@@ -8,11 +8,12 @@ public class User {
     private String age;
     private String address;
     private String gender;
+    private String village;
     private String familySyncPhone;
 
     public User() {}
 
-    public User(String uid, String email, String name, String phone, String familySyncPhone, String age, String address, String gender) {
+    public User(String uid, String email, String name, String phone, String familySyncPhone, String age, String address, String gender, String village) {
         this.uid = uid;
         this.email = email;
         this.name = name;
@@ -21,6 +22,7 @@ public class User {
         this.age = age;
         this.address = address;
         this.gender = gender;
+        this.village = village;
     }
 
     // Getters and Setters
@@ -40,4 +42,7 @@ public class User {
     public void setGender(String gender) { this.gender = gender; }
     public String getFamilySyncPhone() { return familySyncPhone; }
     public void setFamilySyncPhone(String familySyncPhone) { this.familySyncPhone = familySyncPhone; }
+
+    public String getVillage() { return village; }
+    public void setVillage(String village) { this.village = village; }
 }

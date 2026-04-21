@@ -100,36 +100,52 @@ public class BeneficiaryListActivity extends AppCompatActivity {
         loadBeneficiaries();
     }
 
+
     private void loadBeneficiaries() {
         if (mAuth.getCurrentUser() == null) return;
         
         String userId = mAuth.getCurrentUser().getUid();
         
-        // Path changed to global "beneficiaries" collection filtered by ashaId
-        db.collection("beneficiaries")
-            .whereEqualTo("ashaId", userId)
-            .get()
-            .addOnCompleteListener(task -> {
-                progressBar.setVisibility(View.GONE);
-                if (task.isSuccessful()) {
-                    beneficiaryList.clear();
-                    for (QueryDocumentSnapshot document : task.getResult()) {
-                        Beneficiary beneficiary = document.toObject(Beneficiary.class);
-                        beneficiary.setId(document.getId());
-                        beneficiaryList.add(beneficiary);
-                    }
-                    adapter.updateData(beneficiaryList);
-
-                    if (beneficiaryList.isEmpty()) {
-                        rvBeneficiaries.setVisibility(View.GONE);
-                        llEmptyState.setVisibility(View.VISIBLE);
-                    } else {
-                        rvBeneficiaries.setVisibility(View.VISIBLE);
-                        llEmptyState.setVisibility(View.GONE);
-                    }
-                } else {
-                    Snackbar.make(findViewById(android.R.id.content), "Failed to load beneficiaries", Snackbar.LENGTH_SHORT).show();
+        // First fetch ASHA's village to filter correctly
+        db.collection("users").document(userId).get()
+            .addOnSuccessListener(userDoc -> {
+                String ashaVillage = userDoc.getString("village");
+                if (ashaVillage == null) {
+                    progressBar.setVisibility(View.GONE);
+                    llEmptyState.setVisibility(View.VISIBLE);
+                    return;
                 }
+
+                // Path changed to filter by village for cross-role sync (ASHA + Citizen records)
+                db.collection("beneficiaries")
+                    .whereEqualTo("village", ashaVillage)
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        progressBar.setVisibility(View.GONE);
+                        if (task.isSuccessful()) {
+                            beneficiaryList.clear();
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Beneficiary beneficiary = document.toObject(Beneficiary.class);
+                                beneficiary.setId(document.getId());
+                                beneficiaryList.add(beneficiary);
+                            }
+                            adapter.updateData(beneficiaryList);
+
+                            if (beneficiaryList.isEmpty()) {
+                                rvBeneficiaries.setVisibility(View.GONE);
+                                llEmptyState.setVisibility(View.VISIBLE);
+                            } else {
+                                rvBeneficiaries.setVisibility(View.VISIBLE);
+                                llEmptyState.setVisibility(View.GONE);
+                            }
+                        } else {
+                            Snackbar.make(findViewById(android.R.id.content), "Failed to load beneficiaries", Snackbar.LENGTH_SHORT).show();
+                        }
+                    });
+            })
+            .addOnFailureListener(e -> {
+                progressBar.setVisibility(View.GONE);
+                Snackbar.make(findViewById(android.R.id.content), "Error: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
             });
     }
 }

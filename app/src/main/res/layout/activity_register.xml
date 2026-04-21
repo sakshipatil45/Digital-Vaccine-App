@@ -213,6 +213,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
+                android:hint="Village Name"
+                app:boxStrokeColor="@color/primary_teal"
+                app:helperText="Helps sync with your local ASHA worker">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etVillage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPersonName" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:hint="Password"
                 app:passwordToggleEnabled="true"
                 app:boxStrokeColor="@color/primary_teal">

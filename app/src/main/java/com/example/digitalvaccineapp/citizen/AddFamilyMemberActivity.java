@@ -32,6 +32,7 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private String userPhone = "";
+    private String userVillage = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +73,7 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
             .addOnSuccessListener(documentSnapshot -> {
                 if (documentSnapshot.exists()) {
                     userPhone = documentSnapshot.getString("phone");
+                    userVillage = documentSnapshot.getString("village");
                 }
             });
     }
@@ -113,6 +115,7 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
         memberData.put("gender", gender);
         memberData.put("category", relationship); // Matching 'category' field used by ASHA
         memberData.put("mobileNumber", userPhone); // Linking Key
+        memberData.put("village", userVillage != null ? userVillage : "General"); // Sync Key
         memberData.put("citizenId", userId);
         memberData.put("createdAt", com.google.firebase.Timestamp.now());
 
