@@ -180,13 +180,30 @@ public class AddVaccinationActivity extends AppCompatActivity {
         btnSave.setEnabled(false);
         if (isEditMode) {
             repository.updateVaccination(beneficiaryId, vaxId, vax, new VaccinationRepository.DataCallback() {
-                @Override public void onDataLoaded(List<Vaccination> v) { finish(); }
+                @Override public void onDataLoaded(List<Vaccination> v) { 
+                    checkAndAddAutoReminder(beneficiaryId, vax);
+                    finish(); 
+                }
                 @Override public void onError(String msg) { btnSave.setEnabled(true); Snackbar.make(btnSave, msg, 2000).show(); }
             });
         } else {
             repository.addVaccination(beneficiaryId, vax, new VaccinationRepository.DataCallback() {
-                @Override public void onDataLoaded(List<Vaccination> v) { finish(); }
+                @Override public void onDataLoaded(List<Vaccination> v) { 
+                    checkAndAddAutoReminder(beneficiaryId, vax);
+                    finish(); 
+                }
                 @Override public void onError(String msg) { btnSave.setEnabled(true); Snackbar.make(btnSave, msg, 2000).show(); }
+            });
+        }
+    }
+
+    private void checkAndAddAutoReminder(String bId, Vaccination vax) {
+        if ("Pending".equalsIgnoreCase(vax.getStatus())) {
+            repository.addReminder(bId, vax.getVaccineName(), vax.getDateTaken(), new VaccinationRepository.SimpleCallback() {
+                @Override public void onSuccess() { /* Silent success */ }
+                @Override public void onError(String message) { 
+                    android.util.Log.e("AddVaccination", "Auto-reminder failed: " + message);
+                }
             });
         }
     }
