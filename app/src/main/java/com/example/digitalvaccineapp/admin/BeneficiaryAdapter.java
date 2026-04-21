@@ -1,4 +1,4 @@
-package com.example.digitalvaccineapp.asha;
+package com.example.digitalvaccineapp.admin;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.digitalvaccineapp.R;
-import com.example.digitalvaccineapp.asha.Beneficiary;
+import com.example.digitalvaccineapp.admin.Beneficiary;
 
 import java.util.ArrayList;
 import java.util.List;

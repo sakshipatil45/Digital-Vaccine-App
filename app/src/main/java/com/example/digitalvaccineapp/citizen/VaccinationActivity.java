@@ -22,13 +22,24 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import android.widget.TextView;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
+import android.view.View;
+import android.util.Log;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class VaccinationActivity extends AppCompatActivity {
     private TextView tvWelcomeName;
+    private Spinner spinnerProfileSwitch;
     private VaccinationRepository repository;
+    private List<String> memberNames = new ArrayList<>();
+    private Map<String, String> memberIdMap = new HashMap<>(); // Name -> ID
+    private String selectedMemberId = null; // null means "All Family"
+    private String userPhone;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,9 +48,15 @@ public class VaccinationActivity extends AppCompatActivity {
 
         repository = new VaccinationRepository(this);
         tvWelcomeName = findViewById(R.id.tvWelcomeName);
+        spinnerProfileSwitch = findViewById(R.id.spinnerProfileSwitch);
 
         // Fetch user name and dashboard counts
         loadDashboardData();
+        loadLatestAnnouncement();
+
+        findViewById(R.id.btnDashSchedule).setOnClickListener(v -> {
+            startActivity(new Intent(this, VaccinationScheduleActivity.class));
+        });
 
         // 2. View Records Button
         findViewById(R.id.btnDashViewRecords).setOnClickListener(v -> {
@@ -82,7 +99,6 @@ public class VaccinationActivity extends AppCompatActivity {
         String userId = user.getUid();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         
-        // Real-time listener for Profile Name and Phone-based Sync
         db.collection("users").document(userId)
                 .addSnapshotListener((documentSnapshot, e) -> {
                     if (e != null) return;
@@ -91,12 +107,84 @@ public class VaccinationActivity extends AppCompatActivity {
                         String name = documentSnapshot.getString("name");
                         tvWelcomeName.setText("Hello, " + (name != null ? name : "User"));
                         
-                        String phone = documentSnapshot.getString("phone");
-                        if (phone != null && !phone.isEmpty()) {
-                            aggregateDataForFamily(phone);
+                        userPhone = documentSnapshot.getString("phone");
+                        if (userPhone != null && !userPhone.isEmpty()) {
+                            setupProfileSwitcher(userPhone);
+                            if (selectedMemberId == null) {
+                                aggregateDataForFamily(userPhone);
+                            }
                         }
                     }
                 });
+    }
+
+    private void setupProfileSwitcher(String phone) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("beneficiaries").whereEqualTo("mobileNumber", phone).get()
+            .addOnSuccessListener(queryDocumentSnapshots -> {
+                memberNames.clear();
+                memberIdMap.clear();
+                memberNames.add("All Family Members");
+                
+                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                    String name = doc.getString("name");
+                    if (name != null) {
+                        memberNames.add(name);
+                        memberIdMap.put(name, doc.getId());
+                    }
+                }
+                
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, memberNames);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerProfileSwitch.setAdapter(adapter);
+                
+                spinnerProfileSwitch.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                        if (position == 0) {
+                            selectedMemberId = null;
+                            aggregateDataForFamily(phone);
+                        } else {
+                            String name = memberNames.get(position);
+                            selectedMemberId = memberIdMap.get(name);
+                            fetchDataForSingleMember(selectedMemberId);
+                        }
+                    }
+                    @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+                });
+            });
+    }
+
+    private void fetchDataForSingleMember(String bId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        List<Vaccination> vaxList = new ArrayList<>();
+        
+        db.collection("beneficiaries").document(bId).collection("vaccinations").get()
+            .addOnSuccessListener(vaxSnapshots -> {
+                for (QueryDocumentSnapshot vaxDoc : vaxSnapshots) {
+                    vaxList.add(vaxDoc.toObject(Vaccination.class));
+                }
+                
+                db.collection("beneficiaries").document(bId).collection("reminders").get()
+                    .addOnSuccessListener(remSnapshots -> {
+                        updateSummary(vaxList, remSnapshots.size());
+                    });
+            });
+    }
+
+    private void loadLatestAnnouncement() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("announcements")
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .limit(1)
+            .addSnapshotListener((snapshots, e) -> {
+                if (e != null || snapshots == null || snapshots.isEmpty()) return;
+                
+                QueryDocumentSnapshot doc = (QueryDocumentSnapshot) snapshots.getDocuments().get(0);
+                findViewById(R.id.cardLatestAnnouncement).setVisibility(View.VISIBLE);
+                ((TextView) findViewById(R.id.tvAnnounceTitle)).setText(doc.getString("title"));
+                ((TextView) findViewById(R.id.tvAnnounceMsg)).setText(doc.getString("message"));
+            });
     }
 
     private void aggregateDataForFamily(String phone) {

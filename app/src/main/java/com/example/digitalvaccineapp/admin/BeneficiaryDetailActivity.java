@@ -1,4 +1,4 @@
-package com.example.digitalvaccineapp.asha;
+package com.example.digitalvaccineapp.admin;
 import com.example.digitalvaccineapp.shared.AddVaccinationActivity;
 
 import android.os.Bundle;
@@ -88,7 +88,16 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
         adapter = new VaccinationAdapter(vaccinationList, new VaccinationAdapter.OnVaccinationClickListener() {
             @Override
             public void onEditClick(Vaccination vaccination) {
-                Snackbar.make(findViewById(android.R.id.content), "Edit locked in Beneficiary View", Snackbar.LENGTH_SHORT).show();
+                Intent intent = new Intent(BeneficiaryDetailActivity.this, AddVaccinationActivity.class);
+                intent.putExtra("edit_mode", true);
+                intent.putExtra("vax_id", vaccination.getId());
+                intent.putExtra("vax_name", vaccination.getVaccineName());
+                intent.putExtra("vax_dose", vaccination.getDoseNumber());
+                intent.putExtra("vax_date", vaccination.getDateTaken());
+                intent.putExtra("vax_hospital", vaccination.getHospitalName());
+                intent.putExtra("beneficiary_id", beneficiaryId);
+                intent.putExtra("force_dependent", beneficiaryName);
+                startActivity(intent);
             }
 
             @Override
@@ -114,7 +123,7 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
         btnAddRecord.setOnClickListener(v -> {
             Intent intent = new Intent(BeneficiaryDetailActivity.this, AddVaccinationActivity.class);
             intent.putExtra("force_dependent", beneficiaryName);
-            intent.putExtra("asha_beneficiary_mode", true);
+            intent.putExtra("admin_mode", true);
             intent.putExtra("beneficiary_id", beneficiaryId);
             startActivity(intent);
         });

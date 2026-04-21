@@ -1,4 +1,4 @@
-package com.example.digitalvaccineapp.asha;
+package com.example.digitalvaccineapp.admin;
 
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.digitalvaccineapp.R;
-import com.example.digitalvaccineapp.asha.Beneficiary;
+import com.example.digitalvaccineapp.admin.Beneficiary;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -20,7 +20,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.UUID;
 
-public class AddBeneficiaryActivity extends AppCompatActivity {
+public class AdminAddUserActivity extends AppCompatActivity {
 
     private TextInputEditText etName, etAge, etVillage, etMobile;
     private RadioGroup rgGender;
@@ -35,7 +35,7 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_beneficiary);
+        setContentView(R.layout.activity_admin_add_user);
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
@@ -45,6 +45,7 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setTitle(isEditMode ? "Update Record" : "Add Patient");
         }
         toolbar.setNavigationOnClickListener(v -> finish());
 
@@ -129,7 +130,7 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
         String gender = selectedGender.getText().toString();
 
         if (mAuth.getCurrentUser() == null) return;
-        String ashaId = mAuth.getCurrentUser().getUid();
+        String adminId = mAuth.getCurrentUser().getUid();
 
         btnSave.setEnabled(false);
         
@@ -140,7 +141,7 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
             beneficiaryId = UUID.randomUUID().toString();
         }
 
-        Beneficiary beneficiary = new Beneficiary(beneficiaryId, name, age, gender, village, mobile, category, ashaId);
+        Beneficiary beneficiary = new Beneficiary(beneficiaryId, name, age, gender, village, mobile, category, adminId);
 
         // Path changed to global "beneficiaries" for smooth sync across roles
         db.collection("beneficiaries").document(beneficiaryId)
@@ -154,4 +155,5 @@ public class AddBeneficiaryActivity extends AppCompatActivity {
                 Snackbar.make(findViewById(android.R.id.content), "Operation failed: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
             });
     }
+}
 }

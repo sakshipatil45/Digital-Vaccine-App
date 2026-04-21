@@ -52,7 +52,7 @@ public class AddVaccinationActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSave);
         repository = new VaccinationRepository(this);
 
-        // Check for ASHA mode (passed from BeneficiaryDetailActivity)
+        // Check for Admin mode (passed from BeneficiaryDetailActivity)
         beneficiaryId = getIntent().getStringExtra("beneficiary_id");
 
         // Check for Edit Mode
@@ -84,8 +84,23 @@ public class AddVaccinationActivity extends AppCompatActivity {
     }
 
     private void setupSpinners() {
-        String[] vaccines = {"Covaxin", "Covishield", "Sputnik V", "Pfizer", "Moderna", "Johnson & Johnson", "Other"};
-        spinnerVaccineName.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, vaccines));
+        // Fetch from Master Collection
+        db.collection("vaccines_master").get().addOnSuccessListener(snapshots -> {
+            List<String> vaccineNames = new ArrayList<>();
+            if (snapshots.isEmpty()) {
+                // Fallback
+                String[] vaccines = {"Covaxin", "Covishield", "Sputnik V", "Pfizer", "Moderna", "Other"};
+                for(String s : vaccines) vaccineNames.add(s);
+            } else {
+                for (com.google.firebase.firestore.QueryDocumentSnapshot doc : snapshots) {
+                    String name = doc.getString("name");
+                    if (name != null) vaccineNames.add(name);
+                }
+                vaccineNames.add("Other");
+            }
+            ArrayAdapter<String> vaxAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, vaccineNames);
+            spinnerVaccineName.setAdapter(vaxAdapter);
+        });
 
         String[] doses = {"1st Dose", "2nd Dose", "Booster Dose", "Precautionary Dose"};
         spinnerDoseNumber.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, doses));

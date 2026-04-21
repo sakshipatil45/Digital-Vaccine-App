@@ -1,9 +1,7 @@
-package com.example.digitalvaccineapp.asha;
+package com.example.digitalvaccineapp.admin;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.LinearLayout;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -15,8 +13,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.digitalvaccineapp.R;
-import com.example.digitalvaccineapp.asha.BeneficiaryAdapter;
-import com.example.digitalvaccineapp.asha.Beneficiary;
+import com.example.digitalvaccineapp.admin.BeneficiaryAdapter;
+import com.example.digitalvaccineapp.admin.Beneficiary;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,7 +24,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BeneficiaryListActivity extends AppCompatActivity {
+public class AdminUserListActivity extends AppCompatActivity {
 
     private RecyclerView rvBeneficiaries;
     private LinearLayout llEmptyState;
@@ -43,7 +41,7 @@ public class BeneficiaryListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_beneficiary_list);
+        setContentView(R.layout.activity_admin_user_list);
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
@@ -53,6 +51,7 @@ public class BeneficiaryListActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setTitle("System Registry");
         }
         toolbar.setNavigationOnClickListener(v -> finish());
 
@@ -65,7 +64,7 @@ public class BeneficiaryListActivity extends AppCompatActivity {
         beneficiaryList = new ArrayList<>();
         
         adapter = new BeneficiaryAdapter(beneficiaryList, beneficiary -> {
-            Intent intent = new Intent(BeneficiaryListActivity.this, BeneficiaryDetailActivity.class);
+            Intent intent = new Intent(AdminUserListActivity.this, BeneficiaryDetailActivity.class);
             intent.putExtra("beneficiaryId", beneficiary.getId());
             intent.putExtra("beneficiaryName", beneficiary.getName());
             intent.putExtra("beneficiaryVillage", beneficiary.getVillage());
@@ -76,6 +75,7 @@ public class BeneficiaryListActivity extends AppCompatActivity {
         rvBeneficiaries.setAdapter(adapter);
 
         svBeneficiaries = findViewById(R.id.svBeneficiaries);
+        svBeneficiaries.setQueryHint("Search by Name, Village or ID");
         svBeneficiaries.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) { return false; }
@@ -88,64 +88,48 @@ public class BeneficiaryListActivity extends AppCompatActivity {
         });
 
         fabAddBeneficiary.setOnClickListener(v -> {
-            startActivity(new Intent(BeneficiaryListActivity.this, AddBeneficiaryActivity.class));
+            startActivity(new Intent(AdminUserListActivity.this, AddBeneficiaryActivity.class));
         });
 
-        loadBeneficiaries();
+        loadGlobalUsers();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadBeneficiaries();
+        loadGlobalUsers();
     }
 
-
-    private void loadBeneficiaries() {
+    private void loadGlobalUsers() {
         if (mAuth.getCurrentUser() == null) return;
         
-        String userId = mAuth.getCurrentUser().getUid();
+        progressBar.setVisibility(View.VISIBLE);
         
-        // First fetch ASHA's village to filter correctly
-        db.collection("users").document(userId).get()
-            .addOnSuccessListener(userDoc -> {
-                String ashaVillage = userDoc.getString("village");
-                if (ashaVillage == null) {
-                    progressBar.setVisibility(View.GONE);
-                    llEmptyState.setVisibility(View.VISIBLE);
-                    return;
-                }
-
-                // Path changed to filter by village for cross-role sync (ASHA + Citizen records)
-                db.collection("beneficiaries")
-                    .whereEqualTo("village", ashaVillage)
-                    .get()
-                    .addOnCompleteListener(task -> {
-                        progressBar.setVisibility(View.GONE);
-                        if (task.isSuccessful()) {
-                            beneficiaryList.clear();
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Beneficiary beneficiary = document.toObject(Beneficiary.class);
-                                beneficiary.setId(document.getId());
-                                beneficiaryList.add(beneficiary);
-                            }
-                            adapter.updateData(beneficiaryList);
-
-                            if (beneficiaryList.isEmpty()) {
-                                rvBeneficiaries.setVisibility(View.GONE);
-                                llEmptyState.setVisibility(View.VISIBLE);
-                            } else {
-                                rvBeneficiaries.setVisibility(View.VISIBLE);
-                                llEmptyState.setVisibility(View.GONE);
-                            }
-                        } else {
-                            Snackbar.make(findViewById(android.R.id.content), "Failed to load beneficiaries", Snackbar.LENGTH_SHORT).show();
-                        }
-                    });
-            })
-            .addOnFailureListener(e -> {
+        // Admin fetches ALL beneficiaries globally
+        db.collection("beneficiaries")
+            .get()
+            .addOnCompleteListener(task -> {
                 progressBar.setVisibility(View.GONE);
-                Snackbar.make(findViewById(android.R.id.content), "Error: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                if (task.isSuccessful()) {
+                    beneficiaryList.clear();
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        Beneficiary beneficiary = document.toObject(Beneficiary.class);
+                        beneficiary.setId(document.getId());
+                        beneficiaryList.add(beneficiary);
+                    }
+                    adapter.updateData(beneficiaryList);
+
+                    if (beneficiaryList.isEmpty()) {
+                        rvBeneficiaries.setVisibility(View.GONE);
+                        llEmptyState.setVisibility(View.VISIBLE);
+                    } else {
+                        rvBeneficiaries.setVisibility(View.VISIBLE);
+                        llEmptyState.setVisibility(View.GONE);
+                    }
+                } else {
+                    Snackbar.make(findViewById(android.R.id.content), "Failed to sync system registry", Snackbar.LENGTH_SHORT).show();
+                }
             });
     }
+}
 }

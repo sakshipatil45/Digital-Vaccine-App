@@ -1,6 +1,7 @@
 package com.example.digitalvaccineapp.auth;
+
 import com.example.digitalvaccineapp.citizen.VaccinationActivity;
-import com.example.digitalvaccineapp.asha.AshaDashboardActivity;
+import com.example.digitalvaccineapp.admin.AdminDashboardActivity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,7 +12,6 @@ import android.os.Looper;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.digitalvaccineapp.R;
-import com.example.digitalvaccineapp.MainActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -27,8 +27,6 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void checkLoginAndRedirect() {
-
-
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         boolean isLoggedInSharedPrefs = prefs.getBoolean("isLoggedIn", false);
         
@@ -38,8 +36,8 @@ public class SplashActivity extends AppCompatActivity {
         Intent intent;
         if (isLoggedInSharedPrefs || user != null) {
             String role = prefs.getString("userRole", "citizen");
-            if ("asha".equals(role)) {
-                intent = new Intent(SplashActivity.this, AshaDashboardActivity.class);
+            if ("admin".equals(role)) {
+                intent = new Intent(SplashActivity.this, AdminDashboardActivity.class);
             } else {
                 intent = new Intent(SplashActivity.this, VaccinationActivity.class);
             }

@@ -26,7 +26,7 @@ public class RegisterActivity extends AppCompatActivity {
     private TextInputEditText etName, etEmail, etPhone, etFamilySyncPhone, etPassword, etConfirmPassword, etAge, etVillage;
     private RadioGroup rgGender;
     private MaterialButton btnRegister;
-    private MaterialCardView cardAsha, cardCitizen;
+    private MaterialCardView cardAdmin, cardCitizen;
     private String selectedRole = "citizen";
     private TextView tvLogin;
     private FirebaseAuth mAuth;
@@ -51,10 +51,10 @@ public class RegisterActivity extends AppCompatActivity {
         rgGender = findViewById(R.id.rgGender);
         btnRegister = findViewById(R.id.btnRegister);
         tvLogin = findViewById(R.id.tvLogin);
-        cardAsha = findViewById(R.id.cardAsha);
+        cardAdmin = findViewById(R.id.cardAdmin);
         cardCitizen = findViewById(R.id.cardCitizen);
 
-        cardAsha.setOnClickListener(v -> selectRole("asha"));
+        cardAdmin.setOnClickListener(v -> selectRole("admin"));
         cardCitizen.setOnClickListener(v -> selectRole("citizen"));
 
         btnRegister.setOnClickListener(v -> registerUser());
@@ -68,10 +68,10 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void selectRole(String role) {
         selectedRole = role;
-        if ("asha".equals(role)) {
-            cardAsha.setStrokeColor(Color.parseColor("#4CAF50")); // Green
-            cardAsha.setStrokeWidth(4);
-            cardAsha.setCardBackgroundColor(Color.parseColor("#E8F5E9"));
+        if ("admin".equals(role)) {
+            cardAdmin.setStrokeColor(Color.parseColor("#1976D2")); // Blue for Admin
+            cardAdmin.setStrokeWidth(4);
+            cardAdmin.setCardBackgroundColor(Color.parseColor("#E3F2FD"));
 
             cardCitizen.setStrokeColor(Color.parseColor("#E0E0E0"));
             cardCitizen.setStrokeWidth(2);
@@ -81,9 +81,9 @@ public class RegisterActivity extends AppCompatActivity {
             cardCitizen.setStrokeWidth(4);
             cardCitizen.setCardBackgroundColor(Color.parseColor("#FFF3E0"));
 
-            cardAsha.setStrokeColor(Color.parseColor("#E0E0E0"));
-            cardAsha.setStrokeWidth(2);
-            cardAsha.setCardBackgroundColor(Color.WHITE);
+            cardAdmin.setStrokeColor(Color.parseColor("#E0E0E0"));
+            cardAdmin.setStrokeWidth(2);
+            cardAdmin.setCardBackgroundColor(Color.WHITE);
         }
     }
 
@@ -164,4 +164,5 @@ public class RegisterActivity extends AppCompatActivity {
                 finish();
             });
     }
+}
 }

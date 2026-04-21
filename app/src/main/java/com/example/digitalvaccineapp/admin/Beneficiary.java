@@ -1,4 +1,4 @@
-package com.example.digitalvaccineapp.asha;
+package com.example.digitalvaccineapp.admin;
 
 public class Beneficiary {
     private String id;
@@ -8,11 +8,11 @@ public class Beneficiary {
     private String village;
     private String mobileNumber;
     private String category; // Child, Pregnant Woman, Adult
-    private String ashaId;
+    private String adminId;
 
     public Beneficiary() {}
 
-    public Beneficiary(String id, String name, String age, String gender, String village, String mobileNumber, String category, String ashaId) {
+    public Beneficiary(String id, String name, String age, String gender, String village, String mobileNumber, String category, String adminId) {
         this.id = id;
         this.name = name;
         this.age = age;
@@ -20,7 +20,7 @@ public class Beneficiary {
         this.village = village;
         this.mobileNumber = mobileNumber;
         this.category = category;
-        this.ashaId = ashaId;
+        this.adminId = adminId;
     }
 
     public String getId() { return id; }
@@ -44,6 +44,6 @@ public class Beneficiary {
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
 
-    public String getAshaId() { return ashaId; }
-    public void setAshaId(String ashaId) { this.ashaId = ashaId; }
+    public String getAdminId() { return adminId; }
+    public void setAdminId(String adminId) { this.adminId = adminId; }
 }

@@ -12,7 +12,7 @@
         app:elevation="4dp">
 
         <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbarAshaReports"
+            android:id="@+id/toolbarAdminReports"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="Analytics &amp; Impact"

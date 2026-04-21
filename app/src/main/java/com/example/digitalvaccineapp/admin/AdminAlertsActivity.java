@@ -1,4 +1,4 @@
-package com.example.digitalvaccineapp.asha;
+package com.example.digitalvaccineapp.admin;
 
 import android.os.Bundle;
 import android.view.View;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class AshaAlertsActivity extends AppCompatActivity {
+public class AdminAlertsActivity extends AppCompatActivity {
 
     private RecyclerView rvAlerts;
     private ProgressBar progressBar;
@@ -32,7 +32,7 @@ public class AshaAlertsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_asha_alerts);
+        setContentView(R.layout.activity_admin_alerts);
 
         db = FirebaseFirestore.getInstance();
 
@@ -41,6 +41,7 @@ public class AshaAlertsActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setTitle("System Due List");
         }
         toolbar.setNavigationOnClickListener(v -> finish());
 
@@ -53,29 +54,27 @@ public class AshaAlertsActivity extends AppCompatActivity {
             @Override public void onEditClick(Vaccination vaccination) { }
             @Override public void onDeleteClick(Vaccination vaccination) { }
             @Override public void onReminderClick(Vaccination vaccination) {
-                android.content.Intent intent = new android.content.Intent(AshaAlertsActivity.this, com.example.digitalvaccineapp.shared.ReminderActivity.class);
+                android.content.Intent intent = new android.content.Intent(AdminAlertsActivity.this, com.example.digitalvaccineapp.shared.ReminderActivity.class);
                 intent.putExtra("force_vaccine", vaccination.getVaccineName());
                 intent.putExtra("force_patient", vaccination.getDependentName());
                 startActivity(intent);
             }
             @Override public void onItemClick(Vaccination vaccination) {
-                Toast.makeText(AshaAlertsActivity.this, "Priority follow-up needed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(AdminAlertsActivity.this, "Priority follow-up needed for: " + vaccination.getDependentName(), Toast.LENGTH_SHORT).show();
             }
         }, false);
         
         rvAlerts.setAdapter(adapter);
-        loadAlerts();
+        loadGlobalAlerts();
     }
 
-    private void loadAlerts() {
+    private void loadGlobalAlerts() {
         if (FirebaseAuth.getInstance().getCurrentUser() == null) return;
-        String ashaId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         
         progressBar.setVisibility(View.VISIBLE);
         
-        // Step 1: Get all beneficiaries assigned to this ASHA
+        // Admin fetches ALL beneficiaries to check for alerts
         db.collection("beneficiaries")
-            .whereEqualTo("ashaId", ashaId)
             .get()
             .addOnCompleteListener(task -> {
                 if (task.isSuccessful() && !task.getResult().isEmpty()) {
@@ -85,7 +84,7 @@ public class AshaAlertsActivity extends AppCompatActivity {
                     aggregateVaccinations(ids);
                 } else {
                     progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "No assigned patients found.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "No records found in system.", Toast.LENGTH_SHORT).show();
                 }
             });
     }
@@ -103,8 +102,9 @@ public class AshaAlertsActivity extends AppCompatActivity {
                         for (QueryDocumentSnapshot doc : task.getResult()) {
                             Vaccination v = doc.toObject(Vaccination.class);
                             v.setId(doc.getId());
+                            v.setPatientId(id);
                             // Filter for pending/alert logic
-                            if ("Pending".equalsIgnoreCase(v.getStatus())) {
+                            if (v.getStatus() != null && v.getStatus().equalsIgnoreCase("pending")) {
                                 alertList.add(v);
                             }
                         }
@@ -115,7 +115,7 @@ public class AshaAlertsActivity extends AppCompatActivity {
                             progressBar.setVisibility(View.GONE);
                             adapter.notifyDataSetChanged();
                             if (alertList.isEmpty()) {
-                                Toast.makeText(this, "All your patients are up to date! 🎉", Toast.LENGTH_LONG).show();
+                                Toast.makeText(this, "Everything is up to date! 🎉", Toast.LENGTH_LONG).show();
                             }
                         });
                     }

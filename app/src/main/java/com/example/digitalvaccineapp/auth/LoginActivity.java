@@ -1,6 +1,7 @@
 package com.example.digitalvaccineapp.auth;
+
 import com.example.digitalvaccineapp.citizen.VaccinationActivity;
-import com.example.digitalvaccineapp.asha.AshaDashboardActivity;
+import com.example.digitalvaccineapp.admin.AdminDashboardActivity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,7 +18,6 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import android.util.Log;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -82,8 +82,8 @@ public class LoginActivity extends AppCompatActivity {
 
                                 Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
                                 Intent intent;
-                                if ("asha".equals(role)) {
-                                    intent = new Intent(LoginActivity.this, AshaDashboardActivity.class);
+                                if ("admin".equals(role)) {
+                                    intent = new Intent(LoginActivity.this, AdminDashboardActivity.class);
                                 } else {
                                     intent = new Intent(LoginActivity.this, VaccinationActivity.class);
                                 }

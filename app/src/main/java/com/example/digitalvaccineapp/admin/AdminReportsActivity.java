@@ -1,4 +1,4 @@
-package com.example.digitalvaccineapp.asha;
+package com.example.digitalvaccineapp.admin;
 
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.digitalvaccineapp.R;
-import com.example.digitalvaccineapp.asha.Beneficiary;
+import com.example.digitalvaccineapp.admin.Beneficiary;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class AshaReportsActivity extends AppCompatActivity {
+public class AdminReportsActivity extends AppCompatActivity {
 
     private ProgressBar progressBarReports;
     private ScrollView svReportsContent;
@@ -36,17 +36,17 @@ public class AshaReportsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_asha_reports);
+        setContentView(R.layout.activity_admin_reports);
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        Toolbar toolbar = findViewById(R.id.toolbarAshaReports);
+        Toolbar toolbar = findViewById(R.id.toolbarAdminReports);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
-            toolbar.getNavigationIcon().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
+            getSupportActionBar().setTitle("System Analytics");
         }
         toolbar.setNavigationOnClickListener(v -> finish());
 
@@ -59,17 +59,13 @@ public class AshaReportsActivity extends AppCompatActivity {
         tvCountPregnant = findViewById(R.id.tvCountPregnant);
         tvCountAdult = findViewById(R.id.tvCountAdult);
 
-        fetchAnalytics();
+        fetchGlobalAnalytics();
     }
 
-    private void fetchAnalytics() {
+    private void fetchGlobalAnalytics() {
         if (mAuth.getCurrentUser() == null) return;
         
-        String ashaId = mAuth.getCurrentUser().getUid();
-        
-        // Step 1: Query global "beneficiaries" for this ASHA
         db.collection("beneficiaries")
-            .whereEqualTo("ashaId", ashaId)
             .get()
             .addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
@@ -78,15 +74,22 @@ public class AshaReportsActivity extends AppCompatActivity {
                     int countPregnant = 0;
                     int countAdult = 0;
                     
-                    List<String> beneficiaryIds = new ArrayList<>();
+                    java.util.Map<String, Integer> villageMap = new java.util.HashMap<>();
 
                     for (QueryDocumentSnapshot doc : task.getResult()) {
-                        beneficiaryIds.add(doc.getId());
                         Beneficiary b = doc.toObject(Beneficiary.class);
+                        
+                        // Demographic count
                         if (b.getCategory() != null) {
                             if (b.getCategory().equalsIgnoreCase("Child")) countChild++;
                             else if (b.getCategory().equalsIgnoreCase("Pregnant Woman")) countPregnant++;
                             else countAdult++;
+                        }
+                        
+                        // Village tracking
+                        String village = b.getVillage();
+                        if (village != null) {
+                            villageMap.put(village, villageMap.getOrDefault(village, 0) + 1);
                         }
                     }
 
@@ -101,29 +104,35 @@ public class AshaReportsActivity extends AppCompatActivity {
                         return;
                     }
 
-                    // Step 2: Aggregate vaccinations from sub-collections
-                    AtomicInteger completedQueries = new AtomicInteger(0);
-                    AtomicInteger totalVaccines = new AtomicInteger(0);
+                    // Dynamic Village Breakdown Display (Console / Snackbar for now, can be extended to UI)
+                    StringBuilder villageStats = new StringBuilder("Coverage by Village:\n");
+                    for (java.util.Map.Entry<String, Integer> entry : villageMap.entrySet()) {
+                        villageStats.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+                    }
 
-                    for (String bId : beneficiaryIds) {
-                        db.collection("beneficiaries").document(bId)
-                            .collection("vaccinations")
-                            .get()
+                    // Step 2: Aggregate vaccinations globally
+                    AtomicInteger completedQueries = new AtomicInteger(0);
+                    AtomicInteger totalDoses = new AtomicInteger(0);
+
+                    for (QueryDocumentSnapshot doc : task.getResult()) {
+                        doc.getReference().collection("vaccinations").get()
                             .addOnCompleteListener(vaxTask -> {
                                 if (vaxTask.isSuccessful()) {
-                                    totalVaccines.addAndGet(vaxTask.getResult().size());
+                                    totalDoses.addAndGet(vaxTask.getResult().size());
                                 }
                                 
                                 if (completedQueries.incrementAndGet() == totalBeneficiaries) {
-                                    tvTotalVaccines.setText(String.valueOf(totalVaccines.get()));
+                                    tvTotalVaccines.setText(String.valueOf(totalDoses.get()));
                                     progressBarReports.setVisibility(View.GONE);
                                     svReportsContent.setVisibility(View.VISIBLE);
+                                    
+                                    Snackbar.make(findViewById(android.R.id.content), "Global Sync Complete", Snackbar.LENGTH_SHORT).show();
                                 }
                             });
                     }
                 } else {
                     progressBarReports.setVisibility(View.GONE);
-                    Snackbar.make(findViewById(android.R.id.content), "Analytics sync failed.", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(findViewById(android.R.id.content), "Failed to load global data.", Snackbar.LENGTH_LONG).show();
                 }
             });
     }

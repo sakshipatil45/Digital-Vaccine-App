@@ -27,12 +27,12 @@
                     android:layout_height="wrap_content">
 
                     <TextView
-                        android:id="@+id/tvWelcomeAsha"
+                        android:id="@+id/tvWelcomeAdmin"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
-                        android:text="Welcome, Health Worker 👩‍⚕️"
-                        android:textColor="#2E7D32" 
+                        android:text="Welcome, Admin ⚙️"
+                        android:textColor="#1976D2" 
                         android:textSize="22sp"
                         android:textStyle="bold" />
 
@@ -43,24 +43,24 @@
                         android:orientation="horizontal">
 
                         <ImageButton
-                            android:id="@+id/btnNotificationsAsha"
+                            android:id="@+id/btnNotificationsAdmin"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:padding="12dp"
                             android:scaleType="centerInside"
                             android:src="@android:drawable/ic_popup_reminder"
-                            app:tint="#4CAF50" />
+                            app:tint="#1976D2" />
 
                         <ImageButton
-                            android:id="@+id/btnProfileAsha"
+                            android:id="@+id/btnProfileAdmin"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:padding="12dp"
                             android:scaleType="centerInside"
                             android:src="@drawable/ic_profile"
-                            app:tint="#4CAF50" />
+                            app:tint="#1976D2" />
                     </LinearLayout>
                 </RelativeLayout>
 
@@ -68,7 +68,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Manage Village Vaccinations"
+                    android:text="System Administration & Control"
                     android:textColor="@color/text_sub"
                     android:textSize="14sp" />
 
@@ -99,7 +99,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="0"
-                                android:textColor="#2E7D32"
+                                android:textColor="#1976D2"
                                 android:textSize="24sp"
                                 android:textStyle="bold" />
 
@@ -163,51 +163,62 @@
             android:padding="24dp">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAshaAddBeneficiary"
+                android:id="@+id/btnAdminAddBeneficiary"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:layout_marginBottom="16dp"
-                android:text="➕ Add Beneficiary"
+                android:text="➕ Add New User"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:cornerRadius="12dp"
-                app:backgroundTint="#4CAF50" /> <!-- Green dominant action -->
+                app:backgroundTint="#1976D2" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAshaViewRecords"
+                android:id="@+id/btnAdminViewRecords"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:layout_marginBottom="16dp"
-                android:text="📋 View All Records"
+                android:text="📋 System Registry"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:cornerRadius="12dp"
-                app:strokeColor="#4CAF50"
-                android:textColor="#388E3C" />
-
-
+                app:strokeColor="#1976D2"
+                android:textColor="#1565C0" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAshaReminders"
+                android:id="@+id/btnAdminVaccineInventory"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:layout_marginBottom="16dp"
-                android:text="🔔 Set Reminder"
+                android:text="💉 Vaccine Inventory"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:cornerRadius="12dp"
-                app:strokeColor="#4CAF50"
-                android:textColor="#388E3C" />
+                app:strokeColor="#1976D2"
+                android:textColor="#1565C0" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAshaAlerts"
+                android:id="@+id/btnAdminAnnouncements"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:layout_marginBottom="16dp"
-                android:text="🚨 Due / Missed Vaccines"
+                android:text="📢 Broadcast News"
+                android:textAllCaps="false"
+                android:textSize="18sp"
+                app:cornerRadius="12dp"
+                app:strokeColor="#1976D2"
+                android:textColor="#1565C0" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAdminAlerts"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginBottom="16dp"
+                android:text="🚨 Overdue List"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:cornerRadius="12dp"
@@ -215,20 +226,20 @@
                 android:textColor="#D32F2F" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAshaReports"
+                android:id="@+id/btnAdminReports"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:layout_marginBottom="16dp"
-                android:text="📊 Reports"
+                android:text="📈 System Analytics"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:cornerRadius="12dp"
-                app:strokeColor="#4CAF50"
-                android:textColor="#388E3C" />
+                app:strokeColor="#1976D2"
+                android:textColor="#1565C0" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAshaLogout"
+                android:id="@+id/btnAdminLogout"
                 style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"

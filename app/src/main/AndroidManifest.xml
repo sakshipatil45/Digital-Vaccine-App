@@ -73,7 +73,7 @@
         </activity>
 
         <activity
-            android:name=".asha.AshaDashboardActivity"
+            android:name=".admin.AdminDashboardActivity"
             android:exported="false">
         </activity>
         <activity
@@ -86,22 +86,22 @@
         </activity>
         
         <activity
-            android:name=".asha.AshaAlertsActivity"
+            android:name=".admin.AdminAlertsActivity"
             android:exported="false">
         </activity>
         
         <activity
-            android:name=".asha.BeneficiaryListActivity"
+            android:name=".admin.AdminUserListActivity"
             android:exported="false">
         </activity>
         
         <activity
-            android:name=".asha.AddBeneficiaryActivity"
+            android:name=".admin.AdminAddUserActivity"
             android:exported="false">
         </activity>
         
         <activity
-            android:name=".asha.BeneficiaryDetailActivity"
+            android:name=".admin.BeneficiaryDetailActivity"
             android:exported="false">
         </activity>
         
@@ -111,7 +111,22 @@
         </activity>
         
         <activity
-            android:name=".asha.AshaReportsActivity"
+            android:name=".citizen.VaccinationScheduleActivity"
+            android:exported="false">
+        </activity>
+
+        <activity
+            android:name=".admin.AdminReportsActivity"
+            android:exported="false">
+        </activity>
+
+        <activity
+            android:name=".admin.AdminVaccineActivity"
+            android:exported="false">
+        </activity>
+
+        <activity
+            android:name=".admin.AdminAnnouncementsActivity"
             android:exported="false">
         </activity>
 
