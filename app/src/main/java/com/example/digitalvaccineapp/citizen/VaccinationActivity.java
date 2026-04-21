@@ -157,19 +157,33 @@ public class VaccinationActivity extends AppCompatActivity {
 
     private void fetchDataForSingleMember(String bId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        List<Vaccination> vaxList = new ArrayList<>();
         
-        db.collection("beneficiaries").document(bId).collection("vaccinations").get()
-            .addOnSuccessListener(vaxSnapshots -> {
-                for (QueryDocumentSnapshot vaxDoc : vaxSnapshots) {
-                    vaxList.add(vaxDoc.toObject(Vaccination.class));
-                }
-                
-                db.collection("beneficiaries").document(bId).collection("reminders").get()
-                    .addOnSuccessListener(remSnapshots -> {
-                        updateSummary(vaxList, remSnapshots.size());
+        // 1. Get Beneficiary Category first
+        db.collection("beneficiaries").document(bId).get().addOnSuccessListener(beneficiaryDoc -> {
+            String category = beneficiaryDoc.getString("category");
+            
+            // 2. Fetch History
+            db.collection("beneficiaries").document(bId).collection("vaccinations").get()
+                .addOnSuccessListener(vaxSnapshots -> {
+                    List<Vaccination> history = new ArrayList<>();
+                    for (QueryDocumentSnapshot vaxDoc : vaxSnapshots) {
+                        history.add(vaxDoc.toObject(Vaccination.class));
+                    }
+                    
+                    // 3. Fetch Dynamic Due Vaccines (Master Schedule - History)
+                    repository.getDueVaccines(bId, category, new VaccinationRepository.DataCallback() {
+                        @Override
+                        public void onDataLoaded(List<Vaccination> dueVaccines) {
+                            // Total Pending = (History with Pending status) + (Dynamic Due Vaccines)
+                            int dueCount = dueVaccines != null ? dueVaccines.size() : 0;
+                            updateSummary(history, dueCount);
+                        }
+                        @Override public void onError(String msg) { 
+                            updateSummary(history, 0);
+                        }
                     });
-            });
+                });
+        });
     }
 
     private void loadLatestAnnouncement() {
@@ -189,40 +203,48 @@ public class VaccinationActivity extends AppCompatActivity {
 
     private void aggregateDataForFamily(String phone) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        List<Vaccination> allVaccinations = new ArrayList<>();
-        AtomicInteger totalReminders = new AtomicInteger(0);
+        List<Vaccination> allHistory = new ArrayList<>();
+        AtomicInteger totalDynamicDue = new AtomicInteger(0);
         
-        // 1. Find all beneficiaries linked by mobileNumber
         db.collection("beneficiaries").whereEqualTo("mobileNumber", phone).get()
             .addOnSuccessListener(queryDocumentSnapshots -> {
                 if (queryDocumentSnapshots.isEmpty()) {
-                    updateSummary(allVaccinations, totalReminders.get());
+                    updateSummary(allHistory, 0);
                     return;
                 }
 
                 int totalMembers = queryDocumentSnapshots.size();
                 AtomicInteger processed = new AtomicInteger(0);
 
-                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                    String bId = doc.getId();
+                for (QueryDocumentSnapshot memberDoc : queryDocumentSnapshots) {
+                    String bId = memberDoc.getId();
+                    String category = memberDoc.getString("category");
                     
-                    // 2. Fetch Completed/Pending Vaccinations
+                    // 1. Fetch History
                     db.collection("beneficiaries").document(bId).collection("vaccinations").get()
                         .addOnSuccessListener(vaxSnapshots -> {
                             for (QueryDocumentSnapshot vaxDoc : vaxSnapshots) {
-                                Vaccination v = vaxDoc.toObject(Vaccination.class);
-                                allVaccinations.add(v);
+                                allHistory.add(vaxDoc.toObject(Vaccination.class));
                             }
                             
-                            // 3. Fetch Shared Reminders (counts as extra pending)
-                            db.collection("beneficiaries").document(bId).collection("reminders").get()
-                                .addOnSuccessListener(remSnapshots -> {
-                                    totalReminders.addAndGet(remSnapshots.size());
+                            // 2. Fetch Dynamic Due for this member
+                            repository.getDueVaccines(bId, category, new VaccinationRepository.DataCallback() {
+                                @Override
+                                public void onDataLoaded(List<Vaccination> dueVaccines) {
+                                    if (dueVaccines != null) {
+                                        totalDynamicDue.addAndGet(dueVaccines.size());
+                                    }
                                     
                                     if (processed.incrementAndGet() == totalMembers) {
-                                        runOnUiThread(() -> updateSummary(allVaccinations, totalReminders.get()));
+                                        runOnUiThread(() -> updateSummary(allHistory, totalDynamicDue.get()));
                                     }
-                                });
+                                }
+                                @Override public void onError(String msg) {
+                                    if (processed.incrementAndGet() == totalMembers) {
+                                        runOnUiThread(() -> updateSummary(allHistory, totalDynamicDue.get()));
+                                    }
+                                }
+                            });
                         });
                 }
             });

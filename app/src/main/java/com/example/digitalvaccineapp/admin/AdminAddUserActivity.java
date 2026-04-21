@@ -147,9 +147,6 @@ public class AdminAddUserActivity extends AppCompatActivity {
         db.collection("beneficiaries").document(beneficiaryId)
             .set(beneficiary)
             .addOnSuccessListener(aVoid -> {
-                if (!isEditMode) {
-                    autoScheduleReminders(beneficiaryId, category);
-                }
                 Snackbar.make(findViewById(android.R.id.content), isEditMode ? "Patient data updated" : "Beneficiary successfully registered", Snackbar.LENGTH_SHORT).show();
                 finish();
             })
@@ -157,37 +154,6 @@ public class AdminAddUserActivity extends AppCompatActivity {
                 btnSave.setEnabled(true);
                 Snackbar.make(findViewById(android.R.id.content), "Operation failed: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
             });
-    }
-
-    private void autoScheduleReminders(String bId, String category) {
-        db.collection("vaccines_master").get().addOnSuccessListener(snapshots -> {
-            if (snapshots.isEmpty()) return;
-
-            for (com.google.firebase.firestore.QueryDocumentSnapshot doc : snapshots) {
-                String vGroup = doc.getString("ageGroup");
-                String vName = doc.getString("name");
-                
-                boolean match = false;
-                if ("Child".equalsIgnoreCase(category)) {
-                    if ("Infant".equalsIgnoreCase(vGroup) || "Child".equalsIgnoreCase(vGroup)) match = true;
-                } else if ("Adult".equalsIgnoreCase(category)) {
-                    if ("Adult".equalsIgnoreCase(vGroup) || "Teen".equalsIgnoreCase(vGroup)) match = true;
-                } else if ("Pregnant Woman".equalsIgnoreCase(category)) {
-                    // For now, pregnant women might get specific boosters if tagged correctly in master
-                    if ("Maternal".equalsIgnoreCase(vGroup)) match = true;
-                }
-
-                if (match && vName != null) {
-                    java.util.Map<String, Object> reminder = new java.util.HashMap<>();
-                    reminder.put("vaccineName", vName);
-                    reminder.put("status", "Pending");
-                    reminder.put("reminderDate", "TBD"); // Admin or user will set exact date later
-                    reminder.put("createdAt", com.google.firebase.Timestamp.now());
-                    
-                    db.collection("beneficiaries").document(bId).collection("reminders").add(reminder);
-                }
-            }
-        });
     }
 }
 }

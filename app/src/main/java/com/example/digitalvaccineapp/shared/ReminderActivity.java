@@ -32,14 +32,14 @@ import java.util.Map;
 
 public class ReminderActivity extends AppCompatActivity {
 
-    private AutoCompleteTextView spinnerPatient, spinnerVaccine;
-    private TextInputEditText etDate;
-    private MaterialButton btnSetReminder;
-    private Calendar selectedCalendar;
-    
-    private FirebaseFirestore db;
+    private androidx.recyclerview.widget.RecyclerView rvAutoReminders;
+    private VaccinationAdapter autoReminderAdapter;
+    private List<Vaccination> autoReminderList = new ArrayList<>();
+    private VaccinationRepository repository;
+    private Map<String, String> patientMap = new java.util.HashMap<>();
     private String selectedBeneficiaryId = null;
-    private Map<String, String> patientMap = new HashMap<>();
+    private java.util.Calendar selectedCalendar;
+    private com.google.firebase.firestore.FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,20 +47,63 @@ public class ReminderActivity extends AppCompatActivity {
         setContentView(R.layout.activity_reminder);
 
         db = FirebaseFirestore.getInstance();
+        repository = new VaccinationRepository(this);
         createNotificationChannel();
 
         spinnerPatient = findViewById(R.id.spinnerReminderPatient);
         spinnerVaccine = findViewById(R.id.spinnerReminderVaccine);
         etDate = findViewById(R.id.etReminderDate);
         btnSetReminder = findViewById(R.id.btnSetReminder);
+        rvAutoReminders = findViewById(R.id.rvAutoReminders);
+
+        // Setup RecyclerView for Dynamic Reminders
+        rvAutoReminders.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
+        autoReminderAdapter = new VaccinationAdapter(autoReminderList, new VaccinationAdapter.OnVaccinationClickListener() {
+            @Override public void onEditClick(Vaccination v) {}
+            @Override public void onDeleteClick(Vaccination v) {}
+            @Override public void onItemClick(Vaccination v) {}
+            @Override public void onReminderClick(Vaccination v) {
+                // Pre-fill manual form
+                spinnerVaccine.setText(v.getVaccineName(), false);
+            }
+        }, true);
+        rvAutoReminders.setAdapter(autoReminderAdapter);
         
         // Ensure dropdown shows all items on click
         spinnerPatient.setThreshold(0);
         spinnerVaccine.setThreshold(0);
 
-        requestNotificationPermission();
+        spinnerPatient.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedName = parent.getItemAtPosition(position).toString();
+            selectedBeneficiaryId = patientMap.get(selectedName);
+            
+            // Extract category from name if present, e.g. "John (Child)"
+            String category = "Adult"; // Fallback
+            if (selectedName.contains("(Child)")) category = "Child";
+            else if (selectedName.contains("(Pregnant Woman)")) category = "Pregnant Woman";
+            
+            loadAutoReminders(selectedBeneficiaryId, category);
+        });
 
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+        loadAutoReminders(selectedBeneficiaryId, "Adult"); // Initial load attempt...
+
+        requestNotificationPermission();
+    }
+
+    private void loadAutoReminders(String bId, String category) {
+        if (bId == null) return;
+        repository.getDueVaccines(bId, category, new VaccinationRepository.DataCallback() {
+            @Override
+            public void onDataLoaded(List<Vaccination> vax) {
+                autoReminderList.clear();
+                if (vax != null) autoReminderList.addAll(vax);
+                autoReminderAdapter.notifyDataSetChanged();
+            }
+            @Override public void onError(String msg) {
+                Toast.makeText(ReminderActivity.this, "Failed to load schedule: " + msg, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
         // Setup Vaccines
         String[] vaccines = {"Covaxin", "Covishield", "Sputnik V", "Pfizer", "Moderna", "Other"};

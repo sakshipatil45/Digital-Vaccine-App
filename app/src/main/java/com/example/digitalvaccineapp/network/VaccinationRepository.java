@@ -145,6 +145,63 @@ public class VaccinationRepository {
     }
 
     /**
+     * Dynamically calculates missing vaccines by comparing Master Schedule vs History.
+     */
+    public void getDueVaccines(String beneficiaryId, String category, DataCallback callback) {
+        if (beneficiaryId == null || category == null) return;
+
+        // Step 1: Fetch Master Schedule for this Category
+        db.collection("vaccines_master").get().addOnSuccessListener(masterSnapshots -> {
+            List<String> requiredVaccines = new ArrayList<>();
+            for (QueryDocumentSnapshot doc : masterSnapshots) {
+                String vGroup = doc.getString("ageGroup");
+                String vName = doc.getString("name");
+                
+                boolean match = false;
+                if ("Child".equalsIgnoreCase(category)) {
+                    if ("Infant".equalsIgnoreCase(vGroup) || "Child".equalsIgnoreCase(vGroup)) match = true;
+                } else if ("Adult".equalsIgnoreCase(category)) {
+                    if ("Adult".equalsIgnoreCase(vGroup) || "Teen".equalsIgnoreCase(vGroup)) match = true;
+                } else if ("Pregnant Woman".equalsIgnoreCase(category)) {
+                    if ("Maternal".equalsIgnoreCase(vGroup)) match = true;
+                }
+
+                if (match && vName != null) {
+                    requiredVaccines.add(vName.toLowerCase());
+                }
+            }
+
+            // Step 2: Fetch Completed History
+            db.collection("beneficiaries").document(beneficiaryId).collection("vaccinations").get()
+                .addOnSuccessListener(vaxSnapshots -> {
+                    List<String> takenVaccines = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : vaxSnapshots) {
+                        String name = doc.getString("vaccineName");
+                        String status = doc.getString("status");
+                        if (name != null && status != null && status.equalsIgnoreCase("Completed")) {
+                            takenVaccines.add(name.toLowerCase());
+                        }
+                    }
+
+                    // Step 3: Calculate the Gap
+                    List<Vaccination> dueList = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : masterSnapshots) {
+                        String name = doc.getString("name");
+                        if (name != null && requiredVaccines.contains(name.toLowerCase()) && !takenVaccines.contains(name.toLowerCase())) {
+                            Vaccination v = new Vaccination();
+                            v.setVaccineName(name);
+                            v.setStatus("Required");
+                            v.setDoseNumber(1); // Default
+                            dueList.add(v);
+                        }
+                    }
+                    callback.onDataLoaded(dueList);
+                })
+                .addOnFailureListener(e -> callback.onError(e.getMessage()));
+        }).addOnFailureListener(e -> callback.onError(e.getMessage()));
+    }
+
+    /**
      * LEGACY - Keeping signature for compatibility
      */
     public void getVaccinations(DataCallback callback) {
