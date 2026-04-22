@@ -11,8 +11,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
+import android.widget.AutoCompleteTextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -32,14 +34,23 @@ import java.util.Map;
 
 public class ReminderActivity extends AppCompatActivity {
 
+    private AutoCompleteTextView spinnerPatient, spinnerVaccine;
+    private TextInputEditText etDate;
+    private MaterialButton btnSetReminder;
+    private java.util.Calendar selectedCalendar;
+    
     private androidx.recyclerview.widget.RecyclerView rvAutoReminders;
     private VaccinationAdapter autoReminderAdapter;
     private List<Vaccination> autoReminderList = new ArrayList<>();
     private VaccinationRepository repository;
     private Map<String, String> patientMap = new java.util.HashMap<>();
     private String selectedBeneficiaryId = null;
-    private java.util.Calendar selectedCalendar;
     private com.google.firebase.firestore.FirebaseFirestore db;
+    private RadioGroup rgTarget;
+    private RadioButton rbIndividual, rbAgeGroup;
+    private View layoutIndividual, layoutCategory;
+    private AutoCompleteTextView spinnerCategory;
+    private android.widget.TextView tvTargetTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,9 +63,33 @@ public class ReminderActivity extends AppCompatActivity {
 
         spinnerPatient = findViewById(R.id.spinnerReminderPatient);
         spinnerVaccine = findViewById(R.id.spinnerReminderVaccine);
+        spinnerCategory = findViewById(R.id.spinnerReminderCategory);
         etDate = findViewById(R.id.etReminderDate);
         btnSetReminder = findViewById(R.id.btnSetReminder);
         rvAutoReminders = findViewById(R.id.rvAutoReminders);
+        
+        rgTarget = findViewById(R.id.rgReminderTarget);
+        rbIndividual = findViewById(R.id.rbIndividual);
+        rbAgeGroup = findViewById(R.id.rbAgeGroup);
+        layoutIndividual = findViewById(R.id.layoutIndividualSelection);
+        layoutCategory = findViewById(R.id.layoutCategorySelection);
+        tvTargetTitle = findViewById(R.id.tvTargetType);
+
+        String[] categories = {"Child", "Pregnant Woman", "Adult"};
+        spinnerCategory.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, categories));
+        spinnerCategory.setThreshold(0);
+
+        rgTarget.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.rbIndividual) {
+                layoutIndividual.setVisibility(View.VISIBLE);
+                layoutCategory.setVisibility(View.GONE);
+                btnSetReminder.setText("Set Shared Reminder");
+            } else {
+                layoutIndividual.setVisibility(View.GONE);
+                layoutCategory.setVisibility(View.VISIBLE);
+                btnSetReminder.setText("Set Age-Group Campaign");
+            }
+        });
 
         // Setup RecyclerView for Dynamic Reminders
         rvAutoReminders.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
@@ -77,33 +112,13 @@ public class ReminderActivity extends AppCompatActivity {
             String selectedName = parent.getItemAtPosition(position).toString();
             selectedBeneficiaryId = patientMap.get(selectedName);
             
-            // Extract category from name if present, e.g. "John (Child)"
-            String category = "Adult"; // Fallback
+            // Extract category...
+            String category = "Adult";
             if (selectedName.contains("(Child)")) category = "Child";
             else if (selectedName.contains("(Pregnant Woman)")) category = "Pregnant Woman";
             
             loadAutoReminders(selectedBeneficiaryId, category);
         });
-
-        loadAutoReminders(selectedBeneficiaryId, "Adult"); // Initial load attempt...
-
-        requestNotificationPermission();
-    }
-
-    private void loadAutoReminders(String bId, String category) {
-        if (bId == null) return;
-        repository.getDueVaccines(bId, category, new VaccinationRepository.DataCallback() {
-            @Override
-            public void onDataLoaded(List<Vaccination> vax) {
-                autoReminderList.clear();
-                if (vax != null) autoReminderList.addAll(vax);
-                autoReminderAdapter.notifyDataSetChanged();
-            }
-            @Override public void onError(String msg) {
-                Toast.makeText(ReminderActivity.this, "Failed to load schedule: " + msg, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
 
         // Setup Vaccines
         String[] vaccines = {"Covaxin", "Covishield", "Sputnik V", "Pfizer", "Moderna", "Other"};
@@ -118,8 +133,26 @@ public class ReminderActivity extends AppCompatActivity {
         loadPatients();
 
         etDate.setOnClickListener(v -> showDatePicker());
-        
         btnSetReminder.setOnClickListener(v -> setReminder());
+        
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+
+        requestNotificationPermission();
+    }
+
+    private void loadAutoReminders(String bId, String category) {
+        if (bId == null) return;
+        repository.getDueVaccines(bId, category, new VaccinationRepository.DataCallback() {
+            @Override
+            public void onDataLoaded(List<Vaccination> vax) {
+                autoReminderList.clear();
+                if (vax != null) autoReminderList.addAll(vax);
+                autoReminderAdapter.notifyDataSetChanged();
+            }
+            @Override public void onError(String msg) {
+                android.widget.Toast.makeText(ReminderActivity.this, "Failed to load schedule: " + msg, android.widget.Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void loadPatients() {
@@ -135,9 +168,13 @@ public class ReminderActivity extends AppCompatActivity {
             String myName = userDoc.getString("name");
 
             List<String> initialNames = new ArrayList<>();
-            if ("asha".equalsIgnoreCase(role)) {
-                // Fetch all beneficiaries assigned to this ASHA
-                db.collection("beneficiaries").whereEqualTo("ashaId", uid).get()
+            if ("admin".equalsIgnoreCase(role)) {
+                // Show role-based options
+                tvTargetTitle.setVisibility(View.VISIBLE);
+                rgTarget.setVisibility(View.VISIBLE);
+
+                // Fetch all beneficiaries assigned to this Administrator
+                db.collection("beneficiaries").whereEqualTo("adminId", uid).get()
                     .addOnSuccessListener(queryDocumentSnapshots -> populateSpinner(queryDocumentSnapshots, initialNames))
                     .addOnFailureListener(e -> Toast.makeText(this, "Sync failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
             } else {
@@ -215,35 +252,59 @@ public class ReminderActivity extends AppCompatActivity {
     }
 
     private void setReminder() {
-        String patientName = spinnerPatient.getText().toString();
         String vaccine = spinnerVaccine.getText().toString();
         String date = etDate.getText().toString();
-        
-        selectedBeneficiaryId = patientMap.get(patientName);
 
-        if (selectedBeneficiaryId == null || vaccine.isEmpty() || date.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields for shared sync", Toast.LENGTH_SHORT).show();
+        if (vaccine.isEmpty() || date.isEmpty()) {
+            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
         btnSetReminder.setEnabled(false);
 
-        // SYNC WITH FIRESTORE (Phase 2 - Shared Registry)
-        VaccinationRepository repo = new VaccinationRepository(this);
-        repo.addReminder(selectedBeneficiaryId, vaccine, date, new VaccinationRepository.SimpleCallback() {
-            @Override
-            public void onSuccess() {
-                scheduleLocalNotification(vaccine);
-                Toast.makeText(ReminderActivity.this, "Shared reminder synced and scheduled!", Toast.LENGTH_LONG).show();
-                finish();
+        if (rbAgeGroup.isChecked()) {
+            String category = spinnerCategory.getText().toString();
+            if (category.isEmpty()) {
+                Toast.makeText(this, "Please select an age group", Toast.LENGTH_SHORT).show();
+                btnSetReminder.setEnabled(true);
+                return;
+            }
+            repository.addCampaignReminder(category, vaccine, date, new VaccinationRepository.SimpleCallback() {
+                @Override
+                public void onSuccess() {
+                    Toast.makeText(ReminderActivity.this, "Group campaign sent successfully!", Toast.LENGTH_LONG).show();
+                    finish();
+                }
+                @Override
+                public void onError(String message) {
+                    btnSetReminder.setEnabled(true);
+                    Toast.makeText(ReminderActivity.this, "Campaign failed: " + message, Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            String patientName = spinnerPatient.getText().toString();
+            selectedBeneficiaryId = patientMap.get(patientName);
+
+            if (selectedBeneficiaryId == null) {
+                Toast.makeText(this, "Please select a valid patient", Toast.LENGTH_SHORT).show();
+                btnSetReminder.setEnabled(true);
+                return;
             }
 
-            @Override
-            public void onError(String message) {
-                btnSetReminder.setEnabled(true);
-                Toast.makeText(ReminderActivity.this, "Cloud sync failed: " + message, Toast.LENGTH_SHORT).show();
-            }
-        });
+            repository.addReminder(selectedBeneficiaryId, vaccine, date, new VaccinationRepository.SimpleCallback() {
+                @Override
+                public void onSuccess() {
+                    scheduleLocalNotification(vaccine);
+                    Toast.makeText(ReminderActivity.this, "Shared reminder synced!", Toast.LENGTH_LONG).show();
+                    finish();
+                }
+                @Override
+                public void onError(String message) {
+                    btnSetReminder.setEnabled(true);
+                    Toast.makeText(ReminderActivity.this, "Sync failed: " + message, Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     private void scheduleLocalNotification(String vaccine) {

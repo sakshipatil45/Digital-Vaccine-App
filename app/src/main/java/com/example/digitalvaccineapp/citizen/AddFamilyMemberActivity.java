@@ -113,7 +113,7 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
         memberData.put("name", name);
         memberData.put("age", age);
         memberData.put("gender", gender);
-        memberData.put("category", relationship); // Matching 'category' field used by ASHA
+        memberData.put("category", relationship); // Matching 'category' field used by System Administrators
         memberData.put("mobileNumber", userPhone); // Linking Key
         memberData.put("village", userVillage != null ? userVillage : "General"); // Sync Key
         memberData.put("citizenId", userId);

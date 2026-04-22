@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light">
+    android:background="@color/bg_user">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -17,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="My Records"
-            app:titleTextColor="@color/text_main">
+            app:titleTextColor="@color/primary_teal">
 
             <ImageButton
                 android:id="@+id/btnBack"
@@ -47,15 +47,20 @@
             android:layout_height="wrap_content"
             android:hint="Search vaccine or hospital..."
             app:startIconDrawable="@android:drawable/ic_menu_search"
-            app:boxStrokeColor="@color/primary_blue"
-            app:hintTextColor="@color/primary_blue"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.SmallComponent">
+            app:startIconTint="@color/primary_teal"
+            app:boxStrokeColor="@color/primary_teal"
+            app:hintTextColor="@color/primary_teal"
+            app:boxCornerRadiusTopStart="24dp"
+            app:boxCornerRadiusTopEnd="24dp"
+            app:boxCornerRadiusBottomStart="24dp"
+            app:boxCornerRadiusBottomEnd="24dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etSearchRecords"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text" />
+                android:inputType="text"
+                android:textColor="@color/text_main" />
 
         </com.google.android.material.textfield.TextInputLayout>
     </android.widget.LinearLayout>
@@ -78,5 +83,4 @@
         android:layout_marginTop="100dp"
         android:layoutAnimation="@anim/layout_animation_slide_up"
         tools:listitem="@layout/item_vaccination" />
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

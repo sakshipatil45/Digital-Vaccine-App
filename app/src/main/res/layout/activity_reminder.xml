@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light">
+    android:background="@color/bg_user">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -50,58 +50,103 @@
                 android:src="@drawable/ic_calendar"
                 app:tint="@color/primary_teal" />
 
-            <!-- Automated Reminders Section -->
+            <!-- Target Selection (Admin Only Section) -->
             <TextView
+                android:id="@+id/tvTargetType"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Scheduled Vaccines (Automated)"
+                android:text="Reminder For"
                 android:textColor="@color/text_main"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:textStyle="bold"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginBottom="8dp"
+                android:visibility="gone" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvAutoReminders"
+            <RadioGroup
+                android:id="@+id/rgReminderTarget"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="horizontal"
                 android:layout_marginBottom="24dp"
-                android:nestedScrollingEnabled="false" />
+                android:visibility="gone">
+                
+                <RadioButton
+                    android:id="@+id/rbIndividual"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Particular Individual"
+                    android:checked="true"
+                    android:layout_marginEnd="16dp"/>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#EEEEEE"
-                android:layout_marginBottom="24dp" />
+                <RadioButton
+                    android:id="@+id/rbAgeGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Age Group"/>
+            </RadioGroup>
 
-            <TextView
+            <!-- Patient Selection (Visible if Individual) -->
+            <LinearLayout
+                android:id="@+id/layoutIndividualSelection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Or Set Custom Reminder"
-                android:textColor="@color/text_main"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="12dp" />
+                android:orientation="vertical">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                android:text="Schedule a specific dose or follow-up for your family."
-                android:textAlignment="center"
-                android:textColor="@color/text_sub"
-                android:textSize="14sp" />
+                <!-- Automated Reminders Section (Visible if Individual) -->
+                <TextView
+                    android:id="@+id/tvHeaderAuto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Scheduled Vaccines (Automated)"
+                    android:textColor="@color/text_main"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="12dp" />
 
-            <!-- New Patient Selection Dropdown for Sync -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvAutoReminders"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    android:nestedScrollingEnabled="false" />
+
+                <View
+                    android:id="@+id/viewDivider"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#EEEEEE"
+                    android:layout_marginBottom="24dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:hint="Select Patient / Family Member"
+                    app:boxStrokeColor="@color/primary_teal">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/spinnerReminderPatient"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:completionThreshold="0"
+                        android:inputType="none" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <!-- Category Selection (Visible if Age Group) -->
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutCategorySelection"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:hint="Select Patient / Family Member"
-                app:boxStrokeColor="@color/primary_teal">
+                android:hint="Select Target Age Group"
+                app:boxStrokeColor="@color/primary_teal"
+                android:visibility="gone">
 
                 <AutoCompleteTextView
-                    android:id="@+id/spinnerReminderPatient"
+                    android:id="@+id/spinnerReminderCategory"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:completionThreshold="0"

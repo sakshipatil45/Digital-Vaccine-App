@@ -19,6 +19,7 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -88,7 +89,7 @@ public class AdminUserListActivity extends AppCompatActivity {
         });
 
         fabAddBeneficiary.setOnClickListener(v -> {
-            startActivity(new Intent(AdminUserListActivity.this, AddBeneficiaryActivity.class));
+            startActivity(new Intent(AdminUserListActivity.this, AdminAddUserActivity.class));
         });
 
         loadGlobalUsers();
@@ -131,5 +132,4 @@ public class AdminUserListActivity extends AppCompatActivity {
                 }
             });
     }
-}
 }

@@ -57,9 +57,9 @@ public class VaccinationAdapter extends RecyclerView.Adapter<VaccinationAdapter.
         if (status.contains("done") || status.contains("completed")) {
             statusColor = holder.itemView.getContext().getColor(R.color.status_done);
         } else if (status.contains("pending")) {
-            statusColor = holder.itemView.getContext().getColor(R.color.status_pending);
+            statusColor = holder.itemView.getContext().getColor(R.color.accent_orange);
         } else {
-            statusColor = holder.itemView.getContext().getColor(R.color.status_upcoming);
+            statusColor = holder.itemView.getContext().getColor(R.color.text_sub);
         }
         
         holder.vStatusBadge.setBackgroundTintList(android.content.res.ColorStateList.valueOf(statusColor));

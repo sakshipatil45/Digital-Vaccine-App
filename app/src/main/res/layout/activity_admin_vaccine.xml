@@ -8,15 +8,15 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
+        android:background="@color/white"
+        app:elevation="0dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbarVaccineMaster"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="#1976D2"
             app:title="Vaccine Inventory"
-            app:titleTextColor="@android:color/white" />
+            app:titleTextColor="@color/primary_teal" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -64,7 +64,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="24dp"
         android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="#1976D2"
-        app:tint="@android:color/white"/>
+        app:backgroundTint="@color/primary_teal"
+        app:tint="@color/white"
+        app:elevation="4dp"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

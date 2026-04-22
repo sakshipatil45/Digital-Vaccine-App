@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_admin_dash"
+        android:icon="@android:drawable/ic_menu_today"
+        android:title="Dashboard" />
+    <item
+        android:id="@+id/nav_admin_vaccines"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:title="Vaccines" />
+    <item
+        android:id="@+id/nav_admin_users"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        android:title="Users" />
+    <item
+        android:id="@+id/nav_admin_notifications"
+        android:icon="@android:drawable/stat_notify_chat"
+        android:title="Notifications" />
+    <item
+        android:id="@+id/nav_admin_profile"
+        android:icon="@drawable/ic_profile"
+        android:title="Profile" />
+</menu>

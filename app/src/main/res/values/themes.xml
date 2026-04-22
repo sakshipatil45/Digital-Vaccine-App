@@ -4,17 +4,17 @@
         <!-- Primary brand color -->
         <item name="colorPrimary">@color/primary_teal</item>
         <item name="colorOnPrimary">@color/white</item>
-        <item name="colorPrimaryContainer">@color/primary_light</item>
-        <item name="colorOnPrimaryContainer">@color/primary_dark</item>
+        <item name="colorPrimaryContainer">@color/accent_teal_light</item>
+        <item name="colorOnPrimaryContainer">@color/text_main</item>
         
-        <item name="colorSecondary">@color/primary_blue</item>
+        <item name="colorSecondary">@color/primary_teal</item>
         <item name="colorOnSecondary">@color/white</item>
         
         <!-- Background and Surface colors -->
-        <item name="android:windowBackground">@color/bg_light</item>
+        <item name="android:windowBackground">@color/bg_user</item>
         <item name="colorSurface">@color/white</item>
         <item name="colorOnSurface">@color/text_main</item>
-        <item name="colorSurfaceVariant">@color/bg_light</item>
+        <item name="colorSurfaceVariant">@color/bg_user</item>
         <item name="colorOnSurfaceVariant">@color/text_sub</item>
         
         <!-- Explicit text colors for compatibility -->
@@ -22,7 +22,7 @@
         <item name="android:textColorSecondary">@color/text_sub</item>
         
         <!-- Status bar -->
-        <item name="android:statusBarColor">@color/bg_light</item>
+        <item name="android:statusBarColor">@color/bg_user</item>
         <item name="android:windowLightStatusBar">true</item>
         
         <item name="colorOutline">@color/stroke_color</item>

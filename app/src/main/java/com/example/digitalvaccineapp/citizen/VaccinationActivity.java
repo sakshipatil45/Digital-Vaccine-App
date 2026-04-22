@@ -20,8 +20,10 @@ import com.example.digitalvaccineapp.network.VaccinationRepository;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import android.widget.TextView;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.view.View;
@@ -54,41 +56,36 @@ public class VaccinationActivity extends AppCompatActivity {
         loadDashboardData();
         loadLatestAnnouncement();
 
-        findViewById(R.id.btnDashSchedule).setOnClickListener(v -> {
-            startActivity(new Intent(this, VaccinationScheduleActivity.class));
-        });
-
-        // 2. View Records Button
-        findViewById(R.id.btnDashViewRecords).setOnClickListener(v -> {
-            startActivity(new Intent(this, RecordsActivity.class));
-        });
-
-        // 3. Reminders Button
-        findViewById(R.id.btnDashReminders).setOnClickListener(v -> {
-            startActivity(new Intent(this, ReminderActivity.class));
-        });
-
-        // 5. Profile Button
-        findViewById(R.id.btnDashProfile).setOnClickListener(v -> {
-            startActivity(new Intent(this, ProfileActivity.class));
-        });
-
-        findViewById(R.id.btnProfile).setOnClickListener(v -> {
-            startActivity(new Intent(this, ProfileActivity.class));
-        });
-
         findViewById(R.id.btnNotifications).setOnClickListener(v -> {
             startActivity(new Intent(this, com.example.digitalvaccineapp.shared.NotificationsActivity.class));
         });
 
-        // 6. Family Members Button
-        findViewById(R.id.btnDashFamily).setOnClickListener(v -> {
-            startActivity(new Intent(this, FamilyMembersActivity.class));
-        });
+        setupBottomNavigation();
+    }
 
-        // 6. Logout Button
-        findViewById(R.id.btnDashLogout).setOnClickListener(v -> {
-            logoutUser();
+    private void setupBottomNavigation() {
+        BottomNavigationView nav = findViewById(R.id.bottom_navigation);
+        nav.setSelectedItemId(R.id.nav_home);
+        nav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) return true;
+            if (id == R.id.nav_schedule) {
+                startActivity(new Intent(this, VaccinationScheduleActivity.class));
+                return true;
+            }
+            if (id == R.id.nav_vaccines) {
+                startActivity(new Intent(this, RecordsActivity.class));
+                return true;
+            }
+            if (id == R.id.nav_reminders) {
+                startActivity(new Intent(this, ReminderActivity.class));
+                return true;
+            }
+            if (id == R.id.nav_profile) {
+                startActivity(new Intent(this, ProfileActivity.class));
+                return true;
+            }
+            return false;
         });
     }
 
@@ -174,9 +171,21 @@ public class VaccinationActivity extends AppCompatActivity {
                     repository.getDueVaccines(bId, category, new VaccinationRepository.DataCallback() {
                         @Override
                         public void onDataLoaded(List<Vaccination> dueVaccines) {
-                            // Total Pending = (History with Pending status) + (Dynamic Due Vaccines)
-                            int dueCount = dueVaccines != null ? dueVaccines.size() : 0;
-                            updateSummary(history, dueCount);
+                            // 4. Fetch Targeted Campaigns for this category
+                            db.collection("campaign_reminders")
+                                .whereEqualTo("targetCategory", category)
+                                .get()
+                                .addOnSuccessListener(campaignSnapshots -> {
+                                    int campaignCount = campaignSnapshots.size();
+                                    int totalDueCount = (dueVaccines != null ? dueVaccines.size() : 0) + campaignCount;
+                                    updateSummary(history, totalDueCount);
+                                    
+                                    if (campaignCount > 0) {
+                                        // Show latest campaign in announcement card
+                                        QueryDocumentSnapshot lastCampaign = (QueryDocumentSnapshot) campaignSnapshots.getDocuments().get(campaignSnapshots.size() - 1);
+                                        showCampaignAlert(lastCampaign.getString("vaccineName"), lastCampaign.getString("reminderDate"));
+                                    }
+                                });
                         }
                         @Override public void onError(String msg) { 
                             updateSummary(history, 0);
@@ -184,6 +193,12 @@ public class VaccinationActivity extends AppCompatActivity {
                     });
                 });
         });
+    }
+
+    private void showCampaignAlert(String name, String date) {
+        findViewById(R.id.cardLatestAnnouncement).setVisibility(View.VISIBLE);
+        ((TextView) findViewById(R.id.tvAnnounceTitle)).setText("🚨 Group Alert: " + name);
+        ((TextView) findViewById(R.id.tvAnnounceMsg)).setText("Special vaccination drive scheduled for " + date + ". Please visit your nearest center.");
     }
 
     private void loadLatestAnnouncement() {
@@ -234,10 +249,23 @@ public class VaccinationActivity extends AppCompatActivity {
                                     if (dueVaccines != null) {
                                         totalDynamicDue.addAndGet(dueVaccines.size());
                                     }
-                                    
-                                    if (processed.incrementAndGet() == totalMembers) {
-                                        runOnUiThread(() -> updateSummary(allHistory, totalDynamicDue.get()));
-                                    }
+
+                                    // 3. Fetch Campaigns for this category
+                                    db.collection("campaign_reminders")
+                                        .whereEqualTo("targetCategory", category)
+                                        .get()
+                                        .addOnSuccessListener(campaignSnapshots -> {
+                                            totalDynamicDue.addAndGet(campaignSnapshots.size());
+                                            
+                                            if (processed.incrementAndGet() == totalMembers) {
+                                                runOnUiThread(() -> updateSummary(allHistory, totalDynamicDue.get()));
+                                            }
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            if (processed.incrementAndGet() == totalMembers) {
+                                                runOnUiThread(() -> updateSummary(allHistory, totalDynamicDue.get()));
+                                            }
+                                        });
                                 }
                                 @Override public void onError(String msg) {
                                     if (processed.incrementAndGet() == totalMembers) {

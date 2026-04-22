@@ -1,160 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
-
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        app:elevation="0dp">
-
-        <com.google.android.material.appbar.CollapsingToolbarLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="24dp">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <TextView
-                        android:id="@+id/tvWelcomeAdmin"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:text="Welcome, Admin ⚙️"
-                        android:textColor="#1976D2" 
-                        android:textSize="22sp"
-                        android:textStyle="bold" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:orientation="horizontal">
-
-                        <ImageButton
-                            android:id="@+id/btnNotificationsAdmin"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:padding="12dp"
-                            android:scaleType="centerInside"
-                            android:src="@android:drawable/ic_popup_reminder"
-                            app:tint="#1976D2" />
-
-                        <ImageButton
-                            android:id="@+id/btnProfileAdmin"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:padding="12dp"
-                            android:scaleType="centerInside"
-                            android:src="@drawable/ic_profile"
-                            app:tint="#1976D2" />
-                    </LinearLayout>
-                </RelativeLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="System Administration &amp; Control"
-                    android:textColor="@color/text_sub"
-                    android:textSize="14sp" />
-
-                <!-- ASHA Overview Section -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:layout_weight="1"
-                        app:cardBackgroundColor="#E8F5E9"
-                        app:cardCornerRadius="16dp"
-                        app:strokeWidth="0dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <TextView
-                                android:id="@+id/tvTotalBeneficiaries"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0"
-                                android:textColor="#1976D2"
-                                android:textSize="24sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Patients"
-                                android:textColor="@color/text_sub"
-                                android:textSize="12sp" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        app:cardBackgroundColor="#FFEBEE"
-                        app:cardCornerRadius="16dp"
-                        app:strokeWidth="0dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <TextView
-                                android:id="@+id/tvOverdueAlerts"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0"
-                                android:textColor="#C62828"
-                                android:textSize="24sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Due / Missed"
-                                android:textColor="@color/text_sub"
-                                android:textSize="12sp" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                </LinearLayout>
-
-            </LinearLayout>
-        </com.google.android.material.appbar.CollapsingToolbarLayout>
-    </com.google.android.material.appbar.AppBarLayout>
+    android:background="@color/bg_admin">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:layout_marginBottom="64dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -162,93 +17,276 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAdminAddBeneficiary"
+            <!-- Admin Header -->
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginBottom="16dp"
-                android:text="➕ Add New User"
-                android:textAllCaps="false"
-                android:textSize="18sp"
-                app:cornerRadius="12dp"
-                app:backgroundTint="#1976D2" />
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAdminViewRecords"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginBottom="16dp"
-                android:text="📋 System Registry"
-                android:textAllCaps="false"
-                android:textSize="18sp"
-                app:cornerRadius="12dp"
-                app:strokeColor="#1976D2"
-                android:textColor="#1565C0" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAdminVaccineInventory"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginBottom="16dp"
-                android:text="💉 Vaccine Inventory"
-                android:textAllCaps="false"
-                android:textSize="18sp"
-                app:cornerRadius="12dp"
-                app:strokeColor="#1976D2"
-                android:textColor="#1565C0" />
+                    <TextView
+                        android:id="@+id/tvWelcomeAdmin"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Hello, Admin"
+                        android:textColor="@color/primary_teal"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAdminAnnouncements"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginBottom="16dp"
-                android:text="📢 Broadcast News"
-                android:textAllCaps="false"
-                android:textSize="18sp"
-                app:cornerRadius="12dp"
-                app:strokeColor="#1976D2"
-                android:textColor="#1565C0" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="System Performance &amp; Control"
+                        android:textColor="@color/text_sub"
+                        android:textSize="14sp" />
+                </LinearLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAdminAlerts"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginBottom="16dp"
-                android:text="🚨 Overdue List"
-                android:textAllCaps="false"
-                android:textSize="18sp"
-                app:cornerRadius="12dp"
-                app:strokeColor="#E53935"
-                android:textColor="#D32F2F" />
+                <ImageButton
+                    android:id="@+id/btnNotificationsAdmin"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_alignParentEnd="true"
+                    android:background="@drawable/bg_rounded_card"
+                    android:padding="10dp"
+                    android:scaleType="centerInside"
+                    android:src="@android:drawable/stat_notify_chat"
+                    app:tint="@color/primary_teal" />
+            </RelativeLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAdminReports"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            <!-- Major Stats -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginBottom="16dp"
-                android:text="📈 System Analytics"
-                android:textAllCaps="false"
-                android:textSize="18sp"
-                app:cornerRadius="12dp"
-                app:strokeColor="#1976D2"
-                android:textColor="#1565C0" />
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="0dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAdminLogout"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Total Users"
+                            android:textColor="@color/text_sub"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvTotalBeneficiaries"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="156"
+                            android:textColor="@color/primary_teal"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#F0F0F0"
+                        android:layout_marginHorizontal="16dp"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Overdue Alerts"
+                            android:textColor="@color/text_sub"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvOverdueAlerts"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="12"
+                            android:textColor="@color/accent_orange"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- System Analytics -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:text="🚪 Logout"
-                android:textAllCaps="false"
-                android:textSize="18sp"
-                android:textColor="#D32F2F" />
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardBackgroundColor="@color/accent_teal_light"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_centerVertical="true">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Vaccination Coverage"
+                            android:textColor="@color/primary_teal"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Growth in system wide\nimmunization rates"
+                            android:textColor="@color/text_sub"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <com.google.android.material.progressindicator.CircularProgressIndicator
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:layout_alignParentEnd="true"
+                        app:indicatorSize="80dp"
+                        app:trackThickness="8dp"
+                        app:trackColor="@color/white"
+                        app:indicatorColor="@color/primary_teal"
+                        app:trackCornerRadius="4dp"
+                        android:progress="78" />
+                </RelativeLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="System Actions"
+                android:textColor="@color/text_main"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Administrative Actions Grid -->
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="2"
+                android:rowCount="3"
+                android:layout_marginBottom="24dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnAdminAddBeneficiary"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="8dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="2dp"
+                    android:clickable="true"
+                    android:focusable="true">
+                    
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:orientation="vertical">
+                        <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_add" app:tint="@color/primary_teal"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Add User" android:textColor="@color/text_main" android:textSize="12sp" android:textStyle="bold"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnAdminVaccineInventory"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="8dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="2dp">
+                    
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:orientation="vertical">
+                        <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_manage" app:tint="@color/primary_teal"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Manage Vax" android:textColor="@color/text_main" android:textSize="12sp" android:textStyle="bold"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnAdminAnnouncements"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="8dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="2dp">
+                    
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:orientation="vertical">
+                        <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/stat_notify_chat" app:tint="@color/primary_teal"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Broadcast" android:textColor="@color/text_main" android:textSize="12sp" android:textStyle="bold"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnAdminReports"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="8dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="2dp">
+                    
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:orientation="vertical">
+                        <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_sort_by_size" app:tint="@color/primary_teal"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Reports" android:textColor="@color/text_main" android:textSize="12sp" android:textStyle="bold"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </GridLayout>
+
+            <!-- Compatibility Section (Hidden) -->
+            <View android:id="@+id/btnAdminViewRecords" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+            <View android:id="@+id/btnAdminAlerts" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+            <View android:id="@+id/btnAdminLogout" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+            <ImageButton android:id="@+id/btnProfileAdmin" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation_admin"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_gravity="bottom"
+        android:background="@color/white"
+        app:elevation="8dp"
+        app:menu="@menu/bottom_nav_admin"
+        app:labelVisibilityMode="labeled"
+        app:itemIconTint="@color/primary_teal"
+        app:itemTextColor="@color/text_sub"
+        app:itemRippleColor="@color/accent_teal_light"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

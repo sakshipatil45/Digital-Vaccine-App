@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light">
+    android:background="@color/bg_user">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -53,9 +53,9 @@
                 android:orientation="horizontal"
                 android:layout_marginBottom="24dp">
 
-                <!-- ASHA Worker Card -->
+                <!-- System Administration Section -->
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardAsha"
+                    android:id="@+id/cardAdmin"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -77,14 +77,14 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="👩‍⚕️"
+                            android:text="🛡️"
                             android:textSize="32sp" />
                         
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="ASHA Worker"
+                            android:text="System Admin"
                             android:textColor="@color/text_main"
                             android:textStyle="bold"
                             android:textSize="14sp" />
@@ -93,7 +93,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="Manage Village"
+                            android:text="Manage System"
                             android:textColor="@color/text_sub"
                             android:textSize="10sp"
                             android:gravity="center" />
@@ -213,9 +213,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:hint="Village Name"
+                android:hint="Village / Area Name"
                 app:boxStrokeColor="@color/primary_teal"
-                app:helperText="Helps sync with your local ASHA worker">
+                app:helperText="Helps sync with official health records">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etVillage"

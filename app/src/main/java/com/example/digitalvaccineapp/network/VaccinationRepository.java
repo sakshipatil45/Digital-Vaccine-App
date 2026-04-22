@@ -130,6 +130,19 @@ public class VaccinationRepository {
             .addOnFailureListener(e -> callback.onError(e.getMessage()));
     }
 
+    public void addCampaignReminder(String category, String vaccineName, String date, SimpleCallback callback) {
+        Map<String, Object> campaign = new HashMap<>();
+        campaign.put("targetCategory", category);
+        campaign.put("vaccineName", vaccineName);
+        campaign.put("reminderDate", date);
+        campaign.put("type", "Campaign");
+        campaign.put("createdAt", com.google.firebase.Timestamp.now());
+
+        db.collection("campaign_reminders").add(campaign)
+            .addOnSuccessListener(doc -> callback.onSuccess())
+            .addOnFailureListener(e -> callback.onError(e.getMessage()));
+    }
+
     public void getRemindersForPatient(String beneficiaryId, DataCallback callback) {
         if (beneficiaryId == null) return;
 

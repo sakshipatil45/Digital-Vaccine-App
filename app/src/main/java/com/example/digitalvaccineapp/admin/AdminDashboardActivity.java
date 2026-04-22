@@ -3,6 +3,7 @@ package com.example.digitalvaccineapp.admin;
 import com.example.digitalvaccineapp.shared.ReminderActivity;
 import com.example.digitalvaccineapp.shared.ProfileActivity;
 import com.example.digitalvaccineapp.auth.LoginActivity;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.example.digitalvaccineapp.shared.NotificationsActivity;
 
 import android.content.Intent;
@@ -46,26 +47,17 @@ public class AdminDashboardActivity extends AppCompatActivity {
         btnViewRecords = findViewById(R.id.btnAdminViewRecords);
 
         btnAlerts = findViewById(R.id.btnAdminAlerts);
-        btnReports = findViewById(R.id.btnAdminReports);
         btnLogout = findViewById(R.id.btnAdminLogout);
 
         loadAdminProfile();
         loadDashboardStats();
 
-        btnProfileAdmin.setOnClickListener(v -> {
-            startActivity(new Intent(AdminDashboardActivity.this, ProfileActivity.class));
-        });
-        
         findViewById(R.id.btnNotificationsAdmin).setOnClickListener(v -> {
             startActivity(new Intent(AdminDashboardActivity.this, NotificationsActivity.class));
         });
 
-        btnAddBeneficiary.setOnClickListener(v -> {
+        findViewById(R.id.btnAdminAddBeneficiary).setOnClickListener(v -> {
             startActivity(new Intent(AdminDashboardActivity.this, AdminAddUserActivity.class));
-        });
-
-        btnViewRecords.setOnClickListener(v -> {
-            startActivity(new Intent(AdminDashboardActivity.this, AdminUserListActivity.class));
         });
 
         findViewById(R.id.btnAdminVaccineInventory).setOnClickListener(v -> {
@@ -76,11 +68,37 @@ public class AdminDashboardActivity extends AppCompatActivity {
             startActivity(new Intent(AdminDashboardActivity.this, AdminAnnouncementsActivity.class));
         });
 
-        btnReports.setOnClickListener(v -> {
+        findViewById(R.id.btnAdminReports).setOnClickListener(v -> {
             startActivity(new Intent(AdminDashboardActivity.this, AdminReportsActivity.class));
         });
 
-        btnLogout.setOnClickListener(v -> logout());
+        setupBottomNavigation();
+    }
+
+    private void setupBottomNavigation() {
+        BottomNavigationView nav = findViewById(R.id.bottom_navigation_admin);
+        nav.setSelectedItemId(R.id.nav_admin_dash);
+        nav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_admin_dash) return true;
+            if (id == R.id.nav_admin_vaccines) {
+                startActivity(new Intent(this, AdminVaccineActivity.class));
+                return true;
+            }
+            if (id == R.id.nav_admin_users) {
+                startActivity(new Intent(this, AdminUserListActivity.class));
+                return true;
+            }
+            if (id == R.id.nav_admin_notifications) {
+                startActivity(new Intent(this, AdminAnnouncementsActivity.class));
+                return true;
+            }
+            if (id == R.id.nav_admin_profile) {
+                startActivity(new Intent(this, ProfileActivity.class));
+                return true;
+            }
+            return false;
+        });
     }
 
     @Override
@@ -128,5 +146,4 @@ public class AdminDashboardActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
-}
 }

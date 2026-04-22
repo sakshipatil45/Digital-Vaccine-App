@@ -8,14 +8,15 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#1976D2">
+        android:background="@color/white"
+        app:elevation="0dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbarAnnouncements"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="System Broadcast"
-            app:titleTextColor="@android:color/white" />
+            app:titleTextColor="@color/primary_teal" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -42,20 +43,25 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
+                app:cardCornerRadius="20dp"
                 app:cardElevation="2dp"
+                app:strokeWidth="0dp"
                 android:layout_marginBottom="24dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="20dp">
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Title (e.g. New Vaccine Added)"
+                        android:hint="Broadcast Title"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etAnnounceTitle"
@@ -67,8 +73,12 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Message content..."
+                        android:hint="Announcement Message"
                         android:layout_marginTop="16dp"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etAnnounceMessage"
@@ -84,10 +94,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
                         android:layout_marginTop="24dp"
-                        android:text="🚀 Send to All Users"
+                        android:text="🚀 Broadcast Now"
                         android:textAllCaps="false"
-                        app:cornerRadius="12dp"
-                        app:backgroundTint="#1976D2"/>
+                        app:cornerRadius="16dp"
+                        app:backgroundTint="@color/primary_teal"/>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

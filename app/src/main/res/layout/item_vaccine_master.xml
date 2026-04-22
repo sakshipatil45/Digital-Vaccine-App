@@ -1,59 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/app-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
-    app:strokeWidth="1dp"
-    app:strokeColor="#E0E0E0">
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="20dp">
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/tvVaccineMasterName"
-                android:layout_width="0dp"
-                android:layout_weight="1"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Vaccine Name"
+                android:text="BCG Vaccine"
+                android:textColor="@color/primary_teal"
                 android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#1976D2"/>
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvVaccineMasterMonths"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="12m"
-                android:background="#E3F2FD"
-                android:textColor="#1976D2"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
-                android:textSize="12sp"
-                android:textStyle="bold"/>
-        </LinearLayout>
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="@drawable/bg_rounded_card"
+                android:backgroundTint="@color/accent_teal_light"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
+                android:text="At Birth"
+                android:textColor="@color/primary_teal"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
 
         <TextView
             android:id="@+id/tvVaccineMasterGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Target: Child"
-            android:textColor="#666666"
-            android:textSize="14sp"
-            android:layout_marginTop="4dp"/>
+            android:layout_marginTop="4dp"
+            android:text="Target: Children"
+            android:textColor="@color/text_sub"
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/tvVaccineMasterDesc"

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light"
+    android:background="@color/bg_user"
     tools:context=".auth.WelcomeActivity">
 
     <LinearLayout
@@ -31,7 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Digital Vaccine App"
-            android:textColor="@color/primary_dark"
+            android:textColor="@color/text_main"
             android:textSize="28sp"
             android:textStyle="bold"
             android:layout_marginBottom="16dp"/>
