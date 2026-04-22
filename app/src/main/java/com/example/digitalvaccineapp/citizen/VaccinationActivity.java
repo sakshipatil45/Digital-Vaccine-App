@@ -1,20 +1,17 @@
 package com.example.digitalvaccineapp.citizen;
 
-
+import com.example.digitalvaccineapp.shared.ViewRemindersActivity;
 import com.example.digitalvaccineapp.shared.ProfileActivity;
-import com.example.digitalvaccineapp.shared.AddVaccinationActivity;
 import com.example.digitalvaccineapp.shared.RecordsActivity;
 import com.example.digitalvaccineapp.auth.WelcomeActivity;
 import com.example.digitalvaccineapp.shared.ReminderActivity;
+import com.example.digitalvaccineapp.shared.NotificationsActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import com.example.digitalvaccineapp.R;
-import com.example.digitalvaccineapp.shared.VaccinationAdapter;
 import com.example.digitalvaccineapp.shared.Vaccination;
 import com.example.digitalvaccineapp.network.VaccinationRepository;
 import com.google.firebase.auth.FirebaseAuth;
@@ -24,6 +21,8 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import android.widget.TextView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.android.material.card.MaterialCardView;
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.view.View;
@@ -35,13 +34,17 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class VaccinationActivity extends AppCompatActivity {
-    private TextView tvWelcomeName;
-    private Spinner spinnerProfileSwitch;
+    private TextView tvWelcomeName, tvCompletedCount, tvSelectedMemberName, tvSelectedMemberInfo;
+    private MaterialCardView btnDashSchedule, btnDashViewRecords, btnDashReminders, btnDashFamily;
+
     private VaccinationRepository repository;
     private List<String> memberNames = new ArrayList<>();
-    private Map<String, String> memberIdMap = new HashMap<>(); // Name -> ID
-    private String selectedMemberId = null; // null means "All Family"
+    private Map<String, String> memberIdMap = new HashMap<>(); 
+    private Map<String, String> memberInfoMap = new HashMap<>(); 
+    private String selectedMemberId = null; 
     private String userPhone;
+
+    private com.google.firebase.firestore.ListenerRegistration userListener, memberListener, summaryListener, reminderListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,228 +52,212 @@ public class VaccinationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_vaccination);
 
         repository = new VaccinationRepository(this);
+        
+        // Bind Views
         tvWelcomeName = findViewById(R.id.tvWelcomeName);
-        spinnerProfileSwitch = findViewById(R.id.spinnerProfileSwitch);
+        tvCompletedCount = findViewById(R.id.tvCompletedCount);
+        
+        tvSelectedMemberName = findViewById(R.id.tvSelectedMemberName);
+        tvSelectedMemberInfo = findViewById(R.id.tvSelectedMemberInfo);
+        MaterialCardView btnChangeMember = findViewById(R.id.btnChangeMember);
 
-        // Fetch user name and dashboard counts
-        loadDashboardData();
-        loadLatestAnnouncement();
+        btnChangeMember.setOnClickListener(v -> {
+            // Show member selection logic (currently uses loadMemberData)
+            showMemberSelectionDialog();
+        });
 
+        btnDashSchedule = findViewById(R.id.btnDashSchedule);
+        btnDashViewRecords = findViewById(R.id.btnDashVaccines); // Updated ID
+        btnDashReminders = findViewById(R.id.btnDashReminders);
+        btnDashFamily = findViewById(R.id.btnDashFamily);
+        
         findViewById(R.id.btnNotifications).setOnClickListener(v -> {
-            startActivity(new Intent(this, com.example.digitalvaccineapp.shared.NotificationsActivity.class));
+            startActivity(new Intent(this, ViewRemindersActivity.class));
         });
 
-        setupBottomNavigation();
+        // Use the hidden logic views or existing header buttons
+        findViewById(R.id.btnDashLogout).setOnClickListener(v -> logoutUser());
+        
+        btnDashSchedule.setOnClickListener(v -> {
+            startActivity(new Intent(this, VaccinationScheduleActivity.class));
+        });
+
+        btnDashViewRecords.setOnClickListener(v -> {
+            startActivity(new Intent(this, RecordsActivity.class));
+        });
+
+        btnDashReminders.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ViewRemindersActivity.class);
+            intent.putExtra("beneficiaryId", selectedMemberId);
+            startActivity(intent);
+        });
+
+        btnDashFamily.setOnClickListener(v -> {
+            startActivity(new Intent(this, FamilyMembersActivity.class));
+        });
+
+        loadDashboardData();
     }
 
-    private void setupBottomNavigation() {
-        BottomNavigationView nav = findViewById(R.id.bottom_navigation);
-        nav.setSelectedItemId(R.id.nav_home);
-        nav.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_home) return true;
-            if (id == R.id.nav_schedule) {
-                startActivity(new Intent(this, VaccinationScheduleActivity.class));
-                return true;
-            }
-            if (id == R.id.nav_vaccines) {
-                startActivity(new Intent(this, RecordsActivity.class));
-                return true;
-            }
-            if (id == R.id.nav_reminders) {
-                startActivity(new Intent(this, ReminderActivity.class));
-                return true;
-            }
-            if (id == R.id.nav_profile) {
-                startActivity(new Intent(this, ProfileActivity.class));
-                return true;
-            }
-            return false;
-        });
-    }
 
     private void loadDashboardData() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) return;
+        if (user == null) {
+            startActivity(new Intent(this, WelcomeActivity.class));
+            finish();
+            return;
+        }
         
-        String userId = user.getUid();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        if (userListener != null) userListener.remove();
         
-        db.collection("users").document(userId)
+        userListener = db.collection("users").document(user.getUid())
                 .addSnapshotListener((documentSnapshot, e) -> {
-                    if (e != null) return;
+                    if (e != null || documentSnapshot == null || !documentSnapshot.exists()) return;
 
-                    if (documentSnapshot != null && documentSnapshot.exists()) {
-                        String name = documentSnapshot.getString("name");
-                        tvWelcomeName.setText("Hello, " + (name != null ? name : "User"));
-                        
-                        userPhone = documentSnapshot.getString("phone");
-                        if (userPhone != null && !userPhone.isEmpty()) {
-                            setupProfileSwitcher(userPhone);
-                            if (selectedMemberId == null) {
-                                aggregateDataForFamily(userPhone);
-                            }
-                        }
+                    String name = documentSnapshot.getString("name");
+                    tvWelcomeName.setText("Hello, " + (name != null ? name : "User"));
+                    
+                    userPhone = documentSnapshot.getString("phone");
+                    if (userPhone != null && !userPhone.isEmpty()) {
+                        setupProfileSwitcher(userPhone);
                     }
                 });
     }
 
     private void setupProfileSwitcher(String phone) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("beneficiaries").whereEqualTo("mobileNumber", phone).get()
-            .addOnSuccessListener(queryDocumentSnapshots -> {
+        if (memberListener != null) memberListener.remove();
+
+        memberListener = db.collection("beneficiaries").whereEqualTo("mobileNumber", phone)
+            .addSnapshotListener((queryDocumentSnapshots, e) -> {
+                if (e != null || queryDocumentSnapshots == null) return;
+
                 memberNames.clear();
                 memberIdMap.clear();
+                memberInfoMap.clear();
+                
                 memberNames.add("All Family Members");
+                memberInfoMap.put("All Family Members", "Overall family health summary");
                 
                 for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                     String name = doc.getString("name");
+                    String relation = doc.getString("relation");
+                    String age = doc.getString("age");
                     if (name != null) {
                         memberNames.add(name);
                         memberIdMap.put(name, doc.getId());
+                        memberInfoMap.put(name, (relation != null ? relation : "Member") + " | Age " + (age != null ? age : "N/A"));
                     }
                 }
-                
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, memberNames);
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                spinnerProfileSwitch.setAdapter(adapter);
-                
-                spinnerProfileSwitch.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                        if (position == 0) {
-                            selectedMemberId = null;
-                            aggregateDataForFamily(phone);
-                        } else {
-                            String name = memberNames.get(position);
-                            selectedMemberId = memberIdMap.get(name);
-                            fetchDataForSingleMember(selectedMemberId);
-                        }
-                    }
-                    @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
-                });
+
+                if (selectedMemberId == null && !memberNames.isEmpty()) {
+                    updateDashboardForMember(0);
+                }
             });
+    }
+
+    private void showMemberSelectionDialog() {
+        if (memberNames.isEmpty()) return;
+        
+        String[] namesArray = memberNames.toArray(new String[0]);
+        new android.app.AlertDialog.Builder(this)
+            .setTitle("Select Member")
+            .setItems(namesArray, (dialog, which) -> {
+                updateDashboardForMember(which);
+            })
+            .show();
+    }
+
+    private void updateDashboardForMember(int position) {
+        String name = memberNames.get(position);
+        tvSelectedMemberName.setText(name);
+        tvSelectedMemberInfo.setText(memberInfoMap.get(name));
+
+        if (position == 0) {
+            selectedMemberId = null;
+            aggregateDataForFamily(userPhone);
+            if (reminderListener != null) reminderListener.remove();
+        } else {
+            selectedMemberId = memberIdMap.get(name);
+            fetchDataForSingleMember(selectedMemberId);
+        }
     }
 
     private void fetchDataForSingleMember(String bId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        
-        // 1. Get Beneficiary Category first
-        db.collection("beneficiaries").document(bId).get().addOnSuccessListener(beneficiaryDoc -> {
-            String category = beneficiaryDoc.getString("category");
-            
-            // 2. Fetch History
-            db.collection("beneficiaries").document(bId).collection("vaccinations").get()
-                .addOnSuccessListener(vaxSnapshots -> {
-                    List<Vaccination> history = new ArrayList<>();
-                    for (QueryDocumentSnapshot vaxDoc : vaxSnapshots) {
-                        history.add(vaxDoc.toObject(Vaccination.class));
-                    }
-                    
-                    // 3. Fetch Dynamic Due Vaccines (Master Schedule - History)
+        if (summaryListener != null) summaryListener.remove();
+
+        summaryListener = db.collection("beneficiaries").document(bId).collection("vaccinations")
+            .addSnapshotListener((vaxSnapshots, e) -> {
+                if (e != null || vaxSnapshots == null) return;
+
+                List<Vaccination> history = new ArrayList<>();
+                for (QueryDocumentSnapshot vaxDoc : vaxSnapshots) {
+                    history.add(vaxDoc.toObject(Vaccination.class));
+                }
+
+                db.collection("beneficiaries").document(bId).get().addOnSuccessListener(beneficiaryDoc -> {
+                    String category = beneficiaryDoc.getString("category");
                     repository.getDueVaccines(bId, category, new VaccinationRepository.DataCallback() {
                         @Override
                         public void onDataLoaded(List<Vaccination> dueVaccines) {
-                            // 4. Fetch Targeted Campaigns for this category
                             db.collection("campaign_reminders")
                                 .whereEqualTo("targetCategory", category)
                                 .get()
                                 .addOnSuccessListener(campaignSnapshots -> {
-                                    int campaignCount = campaignSnapshots.size();
-                                    int totalDueCount = (dueVaccines != null ? dueVaccines.size() : 0) + campaignCount;
+                                    int totalDueCount = (dueVaccines != null ? dueVaccines.size() : 0) + campaignSnapshots.size();
                                     updateSummary(history, totalDueCount);
-                                    
-                                    if (campaignCount > 0) {
-                                        // Show latest campaign in announcement card
-                                        QueryDocumentSnapshot lastCampaign = (QueryDocumentSnapshot) campaignSnapshots.getDocuments().get(campaignSnapshots.size() - 1);
-                                        showCampaignAlert(lastCampaign.getString("vaccineName"), lastCampaign.getString("reminderDate"));
-                                    }
                                 });
                         }
-                        @Override public void onError(String msg) { 
-                            updateSummary(history, 0);
-                        }
+                        @Override public void onError(String msg) { updateSummary(history, 0); }
                     });
                 });
-        });
-    }
-
-    private void showCampaignAlert(String name, String date) {
-        findViewById(R.id.cardLatestAnnouncement).setVisibility(View.VISIBLE);
-        ((TextView) findViewById(R.id.tvAnnounceTitle)).setText("🚨 Group Alert: " + name);
-        ((TextView) findViewById(R.id.tvAnnounceMsg)).setText("Special vaccination drive scheduled for " + date + ". Please visit your nearest center.");
-    }
-
-    private void loadLatestAnnouncement() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("announcements")
-            .orderBy("timestamp", Query.Direction.DESCENDING)
-            .limit(1)
-            .addSnapshotListener((snapshots, e) -> {
-                if (e != null || snapshots == null || snapshots.isEmpty()) return;
-                
-                QueryDocumentSnapshot doc = (QueryDocumentSnapshot) snapshots.getDocuments().get(0);
-                findViewById(R.id.cardLatestAnnouncement).setVisibility(View.VISIBLE);
-                ((TextView) findViewById(R.id.tvAnnounceTitle)).setText(doc.getString("title"));
-                ((TextView) findViewById(R.id.tvAnnounceMsg)).setText(doc.getString("message"));
             });
     }
 
     private void aggregateDataForFamily(String phone) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        List<Vaccination> allHistory = new ArrayList<>();
-        AtomicInteger totalDynamicDue = new AtomicInteger(0);
-        
-        db.collection("beneficiaries").whereEqualTo("mobileNumber", phone).get()
-            .addOnSuccessListener(queryDocumentSnapshots -> {
-                if (queryDocumentSnapshots.isEmpty()) {
+        if (summaryListener != null) summaryListener.remove();
+
+        summaryListener = db.collection("beneficiaries").whereEqualTo("mobileNumber", phone)
+            .addSnapshotListener((beneficiaries, e) -> {
+                if (e != null || beneficiaries == null) return;
+                
+                List<Vaccination> allHistory = new ArrayList<>();
+                AtomicInteger totalDynamicDue = new AtomicInteger(0);
+                int totalMembers = beneficiaries.size();
+                if (totalMembers == 0) {
                     updateSummary(allHistory, 0);
                     return;
                 }
 
-                int totalMembers = queryDocumentSnapshots.size();
                 AtomicInteger processed = new AtomicInteger(0);
-
-                for (QueryDocumentSnapshot memberDoc : queryDocumentSnapshots) {
+                for (QueryDocumentSnapshot memberDoc : beneficiaries) {
                     String bId = memberDoc.getId();
                     String category = memberDoc.getString("category");
-                    
-                    // 1. Fetch History
+
                     db.collection("beneficiaries").document(bId).collection("vaccinations").get()
                         .addOnSuccessListener(vaxSnapshots -> {
                             for (QueryDocumentSnapshot vaxDoc : vaxSnapshots) {
                                 allHistory.add(vaxDoc.toObject(Vaccination.class));
                             }
-                            
-                            // 2. Fetch Dynamic Due for this member
                             repository.getDueVaccines(bId, category, new VaccinationRepository.DataCallback() {
                                 @Override
                                 public void onDataLoaded(List<Vaccination> dueVaccines) {
-                                    if (dueVaccines != null) {
-                                        totalDynamicDue.addAndGet(dueVaccines.size());
-                                    }
-
-                                    // 3. Fetch Campaigns for this category
-                                    db.collection("campaign_reminders")
-                                        .whereEqualTo("targetCategory", category)
-                                        .get()
-                                        .addOnSuccessListener(campaignSnapshots -> {
-                                            totalDynamicDue.addAndGet(campaignSnapshots.size());
-                                            
+                                    if (dueVaccines != null) totalDynamicDue.addAndGet(dueVaccines.size());
+                                    db.collection("campaign_reminders").whereEqualTo("targetCategory", category).get()
+                                        .addOnSuccessListener(campaigns -> {
+                                            totalDynamicDue.addAndGet(campaigns.size());
                                             if (processed.incrementAndGet() == totalMembers) {
-                                                runOnUiThread(() -> updateSummary(allHistory, totalDynamicDue.get()));
+                                                updateSummary(allHistory, totalDynamicDue.get());
                                             }
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            if (processed.incrementAndGet() == totalMembers) {
-                                                runOnUiThread(() -> updateSummary(allHistory, totalDynamicDue.get()));
-                                            }
+                                        }).addOnFailureListener(err -> {
+                                            if (processed.incrementAndGet() == totalMembers) updateSummary(allHistory, totalDynamicDue.get());
                                         });
                                 }
                                 @Override public void onError(String msg) {
-                                    if (processed.incrementAndGet() == totalMembers) {
-                                        runOnUiThread(() -> updateSummary(allHistory, totalDynamicDue.get()));
-                                    }
+                                    if (processed.incrementAndGet() == totalMembers) updateSummary(allHistory, totalDynamicDue.get());
                                 }
                             });
                         });
@@ -278,9 +265,18 @@ public class VaccinationActivity extends AppCompatActivity {
             });
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (userListener != null) userListener.remove();
+        if (memberListener != null) memberListener.remove();
+        if (summaryListener != null) summaryListener.remove();
+        if (reminderListener != null) reminderListener.remove();
+    }
+
     private void updateSummary(List<Vaccination> vaccinationList, int reminderCount) {
         int completed = 0;
-        int pending = reminderCount; // Reminders are strictly pending things to do
+        int pending = reminderCount;
         
         for (Vaccination v : vaccinationList) {
             String status = v.getStatus() != null ? v.getStatus().toLowerCase() : "pending";
@@ -291,19 +287,7 @@ public class VaccinationActivity extends AppCompatActivity {
             }
         }
 
-        TextView tvCompleted = findViewById(R.id.tvCompletedCount);
-        TextView tvPending = findViewById(R.id.tvPendingCount);
-        TextView tvProgressPercent = findViewById(R.id.tvProgressPercent);
-        com.google.android.material.progressindicator.LinearProgressIndicator pbProgress = findViewById(R.id.pbVaccinationProgress);
-
-        tvCompleted.setText(String.valueOf(completed));
-        tvPending.setText(String.valueOf(pending));
-
-        int total = completed + pending;
-        int progress = total > 0 ? (completed * 100) / total : 0;
-
-        pbProgress.setProgress(progress, true);
-        tvProgressPercent.setText(progress + "%");
+        tvCompletedCount.setText(String.format("%02d", completed));
     }
 
     private void logoutUser() {
@@ -320,3 +304,4 @@ public class VaccinationActivity extends AppCompatActivity {
         loadDashboardData();
     }
 }
+

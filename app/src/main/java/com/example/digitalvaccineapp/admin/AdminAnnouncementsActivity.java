@@ -28,7 +28,7 @@ import java.util.Map;
 
 public class AdminAnnouncementsActivity extends AppCompatActivity {
 
-    private TextInputEditText etTitle, etMessage;
+    private TextInputEditText etTitle, etMessage, etDate, etTime, etLocation;
     private MaterialButton btnSend;
     private RecyclerView rvRecent;
     private FirebaseFirestore db;
@@ -44,7 +44,9 @@ public class AdminAnnouncementsActivity extends AppCompatActivity {
         etTitle = findViewById(R.id.etAnnounceTitle);
         etMessage = findViewById(R.id.etAnnounceMessage);
         btnSend = findViewById(R.id.btnSendBroadcast);
-        rvRecent = findViewById(R.id.rvRecentAnnouncements);
+        etDate = findViewById(R.id.etAnnounceDate);
+        etTime = findViewById(R.id.etAnnounceTime);
+        etLocation = findViewById(R.id.etAnnounceLocation);
 
         Toolbar toolbar = findViewById(R.id.toolbarAnnouncements);
         setSupportActionBar(toolbar);
@@ -53,6 +55,9 @@ public class AdminAnnouncementsActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("Broadcast Center");
         }
         toolbar.setNavigationOnClickListener(v -> finish());
+
+        etDate.setOnClickListener(v -> showDatePicker());
+        etTime.setOnClickListener(v -> showTimePicker());
 
         rvRecent.setLayoutManager(new LinearLayoutManager(this));
         announcementList = new ArrayList<>();
@@ -64,9 +69,31 @@ public class AdminAnnouncementsActivity extends AppCompatActivity {
         loadRecentAnnouncements();
     }
 
+    private void showDatePicker() {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        new android.app.DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+            String date = dayOfMonth + "/" + (month + 1) + "/" + year;
+            etDate.setText(date);
+        }, cal.get(java.util.Calendar.YEAR), cal.get(java.util.Calendar.MONTH), cal.get(java.util.Calendar.DAY_OF_MONTH)).show();
+    }
+
+    private void showTimePicker() {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        new android.app.TimePickerDialog(this, (view, hourOfDay, minute) -> {
+            String amPm = hourOfDay < 12 ? "AM" : "PM";
+            int hour = hourOfDay % 12;
+            if (hour == 0) hour = 12;
+            String time = String.format("%02d:%02d %s", hour, minute, amPm);
+            etTime.setText(time);
+        }, cal.get(java.util.Calendar.HOUR_OF_DAY), cal.get(java.util.Calendar.MINUTE), false).show();
+    }
+
     private void sendBroadcast() {
         String title = etTitle.getText().toString().trim();
         String message = etMessage.getText().toString().trim();
+        String date = etDate.getText().toString().trim();
+        String time = etTime.getText().toString().trim();
+        String location = etLocation.getText().toString().trim();
 
         if (TextUtils.isEmpty(title) || TextUtils.isEmpty(message)) {
             Toast.makeText(this, "Title and Message are required", Toast.LENGTH_SHORT).show();
@@ -77,14 +104,20 @@ public class AdminAnnouncementsActivity extends AppCompatActivity {
         Map<String, Object> announcement = new HashMap<>();
         announcement.put("title", title);
         announcement.put("message", message);
+        announcement.put("date", date);
+        announcement.put("time", time);
+        announcement.put("location", location);
         announcement.put("timestamp", com.google.firebase.Timestamp.now());
         announcement.put("sender", "Admin");
 
         db.collection("announcements").add(announcement)
             .addOnSuccessListener(documentReference -> {
-                Toast.makeText(this, "Broadcast sent successfully! 🚀", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Broadcast sent successfully!", Toast.LENGTH_LONG).show();
                 etTitle.setText("");
                 etMessage.setText("");
+                etDate.setText("");
+                etTime.setText("");
+                etLocation.setText("");
                 btnSend.setEnabled(true);
             })
             .addOnFailureListener(e -> {
@@ -120,6 +153,22 @@ public class AdminAnnouncementsActivity extends AppCompatActivity {
             h.title.setText((String) item.get("title"));
             h.msg.setText((String) item.get("message"));
             
+            String date = (String) item.get("date");
+            String time = (String) item.get("time");
+            String location = (String) item.get("location");
+            
+            StringBuilder info = new StringBuilder();
+            if (!TextUtils.isEmpty(date)) info.append(date);
+            if (!TextUtils.isEmpty(time)) info.append(" | ").append(time);
+            if (!TextUtils.isEmpty(location)) info.append(" | ").append(location);
+            
+            if (info.length() > 0) {
+                h.eventInfo.setText(info.toString());
+                h.eventInfo.setVisibility(View.VISIBLE);
+            } else {
+                h.eventInfo.setVisibility(View.GONE);
+            }
+            
             Object ts = item.get("timestamp");
             if (ts instanceof com.google.firebase.Timestamp) {
                 h.date.setText(((com.google.firebase.Timestamp) ts).toDate().toLocaleString());
@@ -129,12 +178,13 @@ public class AdminAnnouncementsActivity extends AppCompatActivity {
         @Override public int getItemCount() { return list.size(); }
 
         class VH extends RecyclerView.ViewHolder {
-            TextView title, msg, date;
+            TextView title, msg, date, eventInfo;
             public VH(@NonNull View v) {
                 super(v);
                 title = v.findViewById(R.id.tvAnnounceItemTitle);
                 msg = v.findViewById(R.id.tvAnnounceItemMessage);
                 date = v.findViewById(R.id.tvAnnounceItemDate);
+                eventInfo = v.findViewById(R.id.tvAnnounceItemEventInfo);
             }
         }
     }

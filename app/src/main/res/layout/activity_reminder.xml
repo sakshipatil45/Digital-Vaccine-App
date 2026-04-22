@@ -48,7 +48,7 @@
                 android:layout_gravity="center"
                 android:layout_marginBottom="24dp"
                 android:src="@drawable/ic_calendar"
-                app:tint="@color/primary_teal" />
+                app:tint="@color/primary_blue" />
 
             <!-- Target Selection (Admin Only Section) -->
             <TextView
@@ -117,21 +117,6 @@
                     android:background="#EEEEEE"
                     android:layout_marginBottom="24dp" />
 
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:hint="Select Patient / Family Member"
-                    app:boxStrokeColor="@color/primary_teal">
-
-                    <AutoCompleteTextView
-                        android:id="@+id/spinnerReminderPatient"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:completionThreshold="0"
-                        android:inputType="none" />
-                </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
             <!-- Category Selection (Visible if Age Group) -->
@@ -142,7 +127,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:hint="Select Target Age Group"
-                app:boxStrokeColor="@color/primary_teal"
+                app:boxStrokeColor="@color/primary_blue"
                 android:visibility="gone">
 
                 <AutoCompleteTextView
@@ -159,7 +144,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:hint="Select Vaccine"
-                app:boxStrokeColor="@color/primary_teal">
+                app:boxStrokeColor="@color/primary_blue">
 
                 <AutoCompleteTextView
                     android:id="@+id/spinnerReminderVaccine"
@@ -174,7 +159,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="32dp"
                 android:hint="Next Dose Date"
-                app:boxStrokeColor="@color/primary_teal"
+                app:boxStrokeColor="@color/primary_blue"
                 app:startIconDrawable="@drawable/ic_calendar">
 
                 <com.google.android.material.textfield.TextInputEditText

@@ -82,7 +82,7 @@
             android:textAllCaps="false"
             android:textSize="18sp"
             app:cornerRadius="12dp"
-            app:strokeColor="@color/primary_teal" />
+            app:strokeColor="@color/primary_blue" />
 
     </LinearLayout>
 

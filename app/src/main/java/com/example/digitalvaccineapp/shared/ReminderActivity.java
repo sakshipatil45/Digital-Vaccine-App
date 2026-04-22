@@ -32,9 +32,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// CLEANED UP VERSION
 public class ReminderActivity extends AppCompatActivity {
 
-    private AutoCompleteTextView spinnerPatient, spinnerVaccine;
+    private AutoCompleteTextView spinnerVaccine;
     private TextInputEditText etDate;
     private MaterialButton btnSetReminder;
     private java.util.Calendar selectedCalendar;
@@ -61,7 +62,6 @@ public class ReminderActivity extends AppCompatActivity {
         repository = new VaccinationRepository(this);
         createNotificationChannel();
 
-        spinnerPatient = findViewById(R.id.spinnerReminderPatient);
         spinnerVaccine = findViewById(R.id.spinnerReminderVaccine);
         spinnerCategory = findViewById(R.id.spinnerReminderCategory);
         etDate = findViewById(R.id.etReminderDate);
@@ -104,21 +104,7 @@ public class ReminderActivity extends AppCompatActivity {
         }, true);
         rvAutoReminders.setAdapter(autoReminderAdapter);
         
-        // Ensure dropdown shows all items on click
-        spinnerPatient.setThreshold(0);
         spinnerVaccine.setThreshold(0);
-
-        spinnerPatient.setOnItemClickListener((parent, view, position, id) -> {
-            String selectedName = parent.getItemAtPosition(position).toString();
-            selectedBeneficiaryId = patientMap.get(selectedName);
-            
-            // Extract category...
-            String category = "Adult";
-            if (selectedName.contains("(Child)")) category = "Child";
-            else if (selectedName.contains("(Pregnant Woman)")) category = "Pregnant Woman";
-            
-            loadAutoReminders(selectedBeneficiaryId, category);
-        });
 
         // Setup Vaccines
         String[] vaccines = {"Covaxin", "Covishield", "Sputnik V", "Pfizer", "Moderna", "Other"};
@@ -216,22 +202,6 @@ public class ReminderActivity extends AppCompatActivity {
                 }
             }
         }
-        
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, names);
-        spinnerPatient.setAdapter(adapter);
-
-        Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("force_patient")) {
-            String forcePatient = intent.getStringExtra("force_patient");
-            if (forcePatient != null) {
-                for (String pName : names) {
-                    if (pName.contains(forcePatient)) {
-                        spinnerPatient.setText(pName, false);
-                        break;
-                    }
-                }
-            }
-        }
     }
 
     private void showDatePicker() {
@@ -282,7 +252,7 @@ public class ReminderActivity extends AppCompatActivity {
                 }
             });
         } else {
-            String patientName = spinnerPatient.getText().toString();
+            String patientName = "Selected Member";
             selectedBeneficiaryId = patientMap.get(patientName);
 
             if (selectedBeneficiaryId == null) {

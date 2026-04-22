@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="System Registry"
-            app:titleTextColor="@color/primary_teal" />
+            app:titleTextColor="@color/primary_blue" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -118,7 +118,7 @@
         app:icon="@android:drawable/ic_input_add"
         android:textColor="@color/white"
         app:iconTint="@color/white"
-        app:backgroundTint="@color/primary_teal"
+        app:backgroundTint="@color/primary_blue"
         app:elevation="4dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

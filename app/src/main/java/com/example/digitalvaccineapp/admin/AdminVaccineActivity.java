@@ -68,20 +68,54 @@ public class AdminVaccineActivity extends AppCompatActivity {
         loadVaccines();
     }
 
+    private final String[] defaultVaccines = {
+        "BCG (Tuberculosis)", "OPV (Oral Polio)", "HepB (Hepatitis B)", 
+        "Pentavalent (DPT+HepB+Hib)", "IPV (Injected Polio)", "Rotavirus Vaccine", 
+        "PCV (Pneumococcal)", "Measles/MR", "JE (Japanese Encephalitis)", 
+        "DPT Booster", "Vitamin A", "Td (Tetanus & Diphtheria)"
+    };
+
     private void loadVaccines() {
         pbVaccineMaster.setVisibility(View.VISIBLE);
         db.collection("vaccines_master")
             .orderBy("recommendedMonths")
             .addSnapshotListener((snapshots, e) -> {
                 pbVaccineMaster.setVisibility(View.GONE);
-                if (e != null || snapshots == null) return;
-
                 vaccineList.clear();
-                for (QueryDocumentSnapshot doc : snapshots) {
-                    Vaccine v = doc.toObject(Vaccine.class);
-                    v.setId(doc.getId());
-                    vaccineList.add(v);
+                java.util.Set<String> addedNames = new java.util.HashSet<>();
+
+                // 1. Add Custom/Database Vaccines first (Source of Truth)
+                if (snapshots != null && !snapshots.isEmpty()) {
+                    for (QueryDocumentSnapshot doc : snapshots) {
+                        Vaccine v = doc.toObject(Vaccine.class);
+                        v.setId(doc.getId());
+                        vaccineList.add(v);
+                        addedNames.add(v.getName().toLowerCase());
+                    }
                 }
+
+                // 2. Add Predefined Vaccines from array if they don't exist in DB
+                for (String name : defaultVaccines) {
+                    // Extract base name for comparison (e.g., "BCG" from "BCG (Tuberculosis)")
+                    String baseName = name.split(" ")[0].toLowerCase();
+                    boolean alreadyExists = false;
+                    for (String existing : addedNames) {
+                        if (existing.contains(baseName)) {
+                            alreadyExists = true;
+                            break;
+                        }
+                    }
+
+                    if (!alreadyExists) {
+                        Vaccine v = new Vaccine();
+                        v.setName(name);
+                        v.setAgeGroup("General");
+                        v.setDoseInfo("Standard");
+                        v.setDescription("Predefined system vaccine");
+                        vaccineList.add(v);
+                    }
+                }
+                
                 adapter.notifyDataSetChanged();
 
                 if (vaccineList.isEmpty()) {

@@ -55,9 +55,9 @@ public class VaccinationAdapter extends RecyclerView.Adapter<VaccinationAdapter.
         // Dynamic Status Color
         int statusColor;
         if (status.contains("done") || status.contains("completed")) {
-            statusColor = holder.itemView.getContext().getColor(R.color.status_done);
+            statusColor = holder.itemView.getContext().getColor(R.color.primary_teal);
         } else if (status.contains("pending")) {
-            statusColor = holder.itemView.getContext().getColor(R.color.accent_orange);
+            statusColor = holder.itemView.getContext().getColor(R.color.pending_orange);
         } else {
             statusColor = holder.itemView.getContext().getColor(R.color.text_sub);
         }

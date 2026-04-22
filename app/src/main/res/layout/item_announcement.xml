@@ -4,9 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
-    app:cardCornerRadius="8dp"
-    app:strokeWidth="1dp"
-    app:strokeColor="#E0E0E0">
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -32,15 +33,30 @@
             android:textSize="14sp"
             android:layout_marginTop="4dp"/>
 
-        <TextView
-            android:id="@+id/tvAnnounceItemDate"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Date"
-            android:textColor="#999999"
-            android:textSize="11sp"
-            android:layout_marginTop="8dp"
-            android:layout_gravity="end"/>
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/tvAnnounceItemEventInfo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Date | Time | Location"
+                android:textColor="@color/primary_teal"
+                android:textSize="12sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tvAnnounceItemDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sent Date"
+                android:textColor="#999999"
+                android:textSize="11sp"/>
+        </LinearLayout>
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

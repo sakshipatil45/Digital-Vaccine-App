@@ -31,7 +31,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_vax"
-            app:tint="@color/primary_teal"
+            app:tint="@color/primary_blue"
             app:layout_constraintBottom_toBottomOf="@id/iconContainer"
             app:layout_constraintEnd_toEndOf="@id/iconContainer"
             app:layout_constraintStart_toStartOf="@id/iconContainer"
@@ -162,7 +162,7 @@
                 android:padding="8dp"
                 android:scaleType="centerInside"
                 android:src="@android:drawable/ic_popup_reminder"
-                app:tint="@color/primary_teal" />
+                app:tint="@color/primary_blue" />
 
             <ImageButton
                 android:id="@+id/btnEditVax"
@@ -172,7 +172,7 @@
                 android:padding="8dp"
                 android:scaleType="centerInside"
                 android:src="@android:drawable/ic_menu_edit"
-                app:tint="@color/primary_teal" />
+                app:tint="@color/primary_blue" />
 
             <ImageButton
                 android:id="@+id/btnDeleteVax"

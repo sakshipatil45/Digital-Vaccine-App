@@ -29,7 +29,7 @@
                 android:layout_height="32dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_profile"
-                app:tint="@color/primary_teal" />
+                app:tint="@color/primary_blue" />
         </FrameLayout>
 
         <!-- Details -->

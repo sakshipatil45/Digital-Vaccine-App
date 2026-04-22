@@ -92,7 +92,7 @@
                     android:id="@+id/rbFamilyMale"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:buttonTint="@color/primary_teal"
+                    android:buttonTint="@color/primary_blue"
                     android:text="Male" />
 
                 <RadioButton
@@ -100,7 +100,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="24dp"
-                    android:buttonTint="@color/primary_teal"
+                    android:buttonTint="@color/primary_blue"
                     android:text="Female" />
             </RadioGroup>
 
@@ -146,7 +146,7 @@
             android:text="Save Member"
             android:textSize="18sp"
             app:cornerRadius="30dp"
-            app:backgroundTint="@color/primary_teal" />
+            app:backgroundTint="@color/primary_blue" />
             
     </LinearLayout>
 </RelativeLayout>

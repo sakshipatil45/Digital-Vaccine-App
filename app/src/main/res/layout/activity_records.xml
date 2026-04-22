@@ -17,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="My Records"
-            app:titleTextColor="@color/primary_teal">
+            app:titleTextColor="@color/primary_blue">
 
             <ImageButton
                 android:id="@+id/btnBack"
@@ -47,9 +47,9 @@
             android:layout_height="wrap_content"
             android:hint="Search vaccine or hospital..."
             app:startIconDrawable="@android:drawable/ic_menu_search"
-            app:startIconTint="@color/primary_teal"
-            app:boxStrokeColor="@color/primary_teal"
-            app:hintTextColor="@color/primary_teal"
+            app:startIconTint="@color/primary_blue"
+            app:boxStrokeColor="@color/primary_blue"
+            app:hintTextColor="@color/primary_blue"
             app:boxCornerRadiusTopStart="24dp"
             app:boxCornerRadiusTopEnd="24dp"
             app:boxCornerRadiusBottomStart="24dp"

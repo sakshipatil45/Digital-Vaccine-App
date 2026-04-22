@@ -20,10 +20,10 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@drawable/bg_icon_circle"
-            android:backgroundTint="@color/accent_teal_light"
+            android:backgroundTint="@color/accent_blue_light"
             android:padding="8dp"
             android:src="@android:drawable/ic_popup_reminder"
-            app:tint="@color/primary_teal"
+            app:tint="@color/primary_blue"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -57,7 +57,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textColor="@color/primary_teal"
+            android:textColor="@color/primary_blue"
             android:textSize="12sp"
             android:textStyle="bold"
             tools:text="2026-04-10"

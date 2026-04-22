@@ -16,18 +16,18 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="Recommended Schedule"
-            app:titleTextColor="@color/primary_teal" />
+            app:titleTextColor="@color/primary_blue" />
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayoutSchedule"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:tabTextColor="@color/text_sub"
-            app:tabSelectedTextColor="@color/primary_teal"
-            app:tabIndicatorColor="@color/primary_teal"
+            app:tabSelectedTextColor="@color/primary_blue"
+            app:tabIndicatorColor="@color/primary_blue"
             app:tabMode="fixed"
             app:tabIndicatorHeight="3dp"
-            app:tabRippleColor="@color/accent_teal_light">
+            app:tabRippleColor="@color/accent_blue_light">
             <com.google.android.material.tabs.TabItem android:text="Infant"/>
             <com.google.android.material.tabs.TabItem android:text="Child"/>
             <com.google.android.material.tabs.TabItem android:text="Teen"/>

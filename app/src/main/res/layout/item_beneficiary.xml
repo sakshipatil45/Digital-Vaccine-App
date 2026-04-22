@@ -65,7 +65,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_status_badge"
-            android:backgroundTint="@color/primary_teal"
+            android:backgroundTint="@color/primary_blue"
             android:paddingHorizontal="8dp"
             android:paddingVertical="4dp">
             <TextView

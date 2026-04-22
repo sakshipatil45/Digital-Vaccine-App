@@ -4,46 +4,47 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_user">
+    android:background="@color/bg_user"
+    android:fitsSystemWindows="true">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="64dp">
+        android:paddingBottom="100dp"
+        android:clipToPadding="false"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="20dp">
 
             <!-- Header Section -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="24dp"
+                android:paddingVertical="8dp">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
-
                     <TextView
                         android:id="@+id/tvWelcomeName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Hello, Rahul 👋"
-                        android:textColor="@color/primary_teal"
+                        android:text="Hello, User 👋"
+                        android:textColor="@color/text_main"
                         android:textSize="22sp"
                         android:textStyle="bold" />
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Stay healthy, stay protected."
+                        android:text="Stay healthy, stay protected"
                         android:textColor="@color/text_sub"
-                        android:textSize="14sp" />
+                        android:textSize="13sp" />
                 </LinearLayout>
 
                 <ImageButton
@@ -51,60 +52,25 @@
                     android:layout_width="44dp"
                     android:layout_height="44dp"
                     android:layout_alignParentEnd="true"
-                    android:background="@drawable/bg_rounded_card"
-                    android:padding="10dp"
-                    android:scaleType="centerInside"
+                    android:layout_centerVertical="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@android:drawable/ic_popup_reminder"
                     app:tint="@color/primary_teal" />
             </RelativeLayout>
 
-            <!-- Profile Switcher Card -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="@color/stroke_color">
-                
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="8dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-                    
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_profile"
-                        app:tint="#666666"/>
-                        
-                    <Spinner
-                        android:id="@+id/spinnerProfileSwitch"
-                        android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:layout_marginStart="8dp"
-                        android:background="@null"/>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Stats Row -->
+            <!-- Stats Cards Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginBottom="24dp">
+                android:weightSum="2"
+                android:layout_marginBottom="20dp">
 
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
                     app:cardBackgroundColor="@color/white"
-                    app:cardCornerRadius="20dp"
+                    app:cardCornerRadius="16dp"
                     app:cardElevation="2dp"
                     app:strokeWidth="0dp">
 
@@ -113,12 +79,6 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:padding="16dp">
-                        
-                        <View
-                            android:layout_width="24dp"
-                            android:layout_height="4dp"
-                            android:background="@color/primary_teal"
-                            android:layout_marginBottom="12dp"/>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -132,296 +92,237 @@
                             android:id="@+id/tvCompletedCount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="03"
+                            android:layout_marginTop="6dp"
+                            android:text="00"
                             android:textColor="@color/primary_teal"
-                            android:textSize="26sp"
+                            android:textSize="24sp"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    app:cardBackgroundColor="@color/white"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="2dp"
-                    app:strokeWidth="0dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-                        
-                        <View
-                            android:layout_width="24dp"
-                            android:layout_height="4dp"
-                            android:background="@color/accent_orange"
-                            android:layout_marginBottom="12dp"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Pending"
-                            android:textColor="@color/text_sub"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tvPendingCount"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="02"
-                            android:textColor="@color/accent_orange"
-                            android:textSize="26sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- Overall Progress Card -->
+            <!-- Selected Member Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:text="Selected Member"
+                android:textColor="@color/text_main"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnChangeMember"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                app:cardBackgroundColor="@color/accent_teal_light"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
                 app:strokeWidth="0dp">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="20dp">
+                    android:padding="16dp">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_centerVertical="true">
+                        android:layout_centerVertical="true"
+                        android:orientation="vertical">
 
                         <TextView
+                            android:id="@+id/tvSelectedMemberName"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Overall Progress"
-                            android:textColor="@color/primary_teal"
-                            android:textSize="16sp"
+                            android:text="Rahul Sharma"
+                            android:textColor="@color/text_main"
+                            android:textSize="15sp"
                             android:textStyle="bold" />
 
                         <TextView
+                            android:id="@+id/tvSelectedMemberInfo"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Keep track of your\nvaccination journey"
+                            android:layout_marginTop="2dp"
+                            android:text="Age 24 | Self"
                             android:textColor="@color/text_sub"
-                            android:textSize="12sp" />
+                            android:textSize="13sp" />
                     </LinearLayout>
 
-                    <FrameLayout
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
-                        android:layout_alignParentEnd="true">
-
-                        <com.google.android.material.progressindicator.CircularProgressIndicator
-                            android:id="@+id/pbVaccinationProgress"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            app:indicatorSize="80dp"
-                            app:trackThickness="8dp"
-                            app:trackColor="@color/white"
-                            app:indicatorColor="@color/primary_teal"
-                            app:trackCornerRadius="4dp"
-                            android:progress="60" />
-
-                        <TextView
-                            android:id="@+id/tvProgressPercent"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:text="60%"
-                            android:textColor="@color/primary_teal"
-                            android:textStyle="bold"
-                            android:textSize="14sp" />
-                    </FrameLayout>
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:src="@android:drawable/ic_menu_edit"
+                        app:tint="@color/primary_teal" />
                 </RelativeLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Quick Actions Grid -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
                 android:text="Quick Actions"
                 android:textColor="@color/text_main"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="16dp"/>
+                android:textStyle="bold" />
 
-            <!-- Quick Actions Grid -->
-            <LinearLayout
+            <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="24dp">
+                android:alignmentMode="alignMargins"
+                android:columnCount="2"
+                android:rowCount="2">
 
+                <!-- Schedule -->
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/btnDashFamily"
+                    android:id="@+id/btnDashSchedule"
                     android:layout_width="0dp"
-                    android:layout_height="120dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    app:cardBackgroundColor="@color/accent_blue_light"
-                    app:cardCornerRadius="20dp"
-                    android:clickable="true"
-                    android:focusable="true">
-
+                    android:layout_height="wrap_content"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="6dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="0dp">
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
+                        android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:padding="12dp">
-
+                        android:orientation="vertical"
+                        android:padding="20dp">
                         <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/ic_family"
-                            app:tint="@color/primary_teal"/>
-                        
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/ic_calendar"
+                            app:tint="@color/primary_teal" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="Family Members"
+                            android:layout_marginTop="10dp"
+                            android:text="Schedule"
                             android:textColor="@color/text_main"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:gravity="center"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Manage your family"
-                            android:textColor="@color/text_sub"
-                            android:textSize="10sp"
-                            android:gravity="center"/>
+                            android:textSize="13sp"
+                            android:textStyle="bold"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- My Vaccines -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnDashVaccines"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="6dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="0dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/ic_vax"
+                            app:tint="@color/primary_teal" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:text="My Vaccines"
+                            android:textColor="@color/text_main"
+                            android:textSize="13sp"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Reminders -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/btnDashReminders"
                     android:layout_width="0dp"
-                    android:layout_height="120dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    app:cardBackgroundColor="@color/accent_purple"
-                    app:cardCornerRadius="20dp"
-                    android:clickable="true"
-                    android:focusable="true">
-
+                    android:layout_height="wrap_content"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="6dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="0dp">
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
+                        android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:padding="12dp">
-
+                        android:orientation="vertical"
+                        android:padding="20dp">
                         <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@android:drawable/ic_popup_reminder"
-                            app:tint="#D1C4E9"/>
-                        
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/ic_reminders"
+                            app:tint="@color/primary_teal" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="Upcoming Reminder"
+                            android:layout_marginTop="10dp"
+                            android:text="Reminders"
                             android:textColor="@color/text_main"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:gravity="center"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Next: Polio Drops"
-                            android:textColor="@color/text_sub"
-                            android:textSize="10sp"
-                            android:gravity="center"/>
+                            android:textSize="13sp"
+                            android:textStyle="bold"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-            </LinearLayout>
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardLatestAnnouncement"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                app:cardBackgroundColor="@color/accent_blue_light"
-                app:cardCornerRadius="20dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#1976D2">
-                
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <!-- Family -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnDashFamily"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-                    
-                    <TextView
-                        android:layout_width="wrap_content"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="6dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="0dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="📢 Alert"
-                        android:textColor="#1976D2"
-                        android:textStyle="bold"
-                        android:textSize="12sp"/>
-                        
-                    <TextView
-                        android:id="@+id/tvAnnounceTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Title"
-                        android:textColor="#333333"
-                        android:textStyle="bold"
-                        android:textSize="16sp"/>
-                        
-                    <TextView
-                        android:id="@+id/tvAnnounceMsg"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Message content..."
-                        android:textColor="#666666"
-                        android:textSize="12sp"/>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/ic_family"
+                            app:tint="@color/primary_teal" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:text="Family"
+                            android:textColor="@color/text_main"
+                            android:textSize="13sp"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </GridLayout>
 
-            <!-- Hidden buttons for logic compatibility -->
-            <View android:id="@+id/btnDashSchedule" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
-            <View android:id="@+id/btnDashViewRecords" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
-            <View android:id="@+id/btnDashProfile" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
-            <View android:id="@+id/btnDashLogout" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+            <!-- Spacer for logout/profile visibility in logic -->
+            <View android:id="@+id/btnDashProfile" android:layout_width="0dp" android:layout_height="0dp" />
+            <View android:id="@+id/btnDashLogout" android:layout_width="0dp" android:layout_height="0dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:layout_gravity="bottom"
-        android:background="@color/white"
-        app:elevation="8dp"
-        app:menu="@menu/bottom_nav_menu"
-        app:labelVisibilityMode="labeled"
-        app:itemIconTint="@color/primary_teal"
-        app:itemTextColor="@color/text_sub"
-        app:itemRippleColor="@color/accent_teal_light"/>
+    <!-- Bottom Navigation Wrapper removed -->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

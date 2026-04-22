@@ -87,6 +87,6 @@
         app:icon="@android:drawable/ic_input_add"
         android:textColor="@color/white"
         app:iconTint="@color/white"
-        android:backgroundTint="@color/primary_teal" />
+        android:backgroundTint="@color/primary_blue" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
