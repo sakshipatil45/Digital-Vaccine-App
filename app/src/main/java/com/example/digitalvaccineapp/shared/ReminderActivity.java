@@ -29,6 +29,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.List;
 import java.util.Map;
 
@@ -40,18 +41,11 @@ public class ReminderActivity extends AppCompatActivity {
     private MaterialButton btnSetReminder;
     private java.util.Calendar selectedCalendar;
     
-    private androidx.recyclerview.widget.RecyclerView rvAutoReminders;
-    private VaccinationAdapter autoReminderAdapter;
-    private List<Vaccination> autoReminderList = new ArrayList<>();
     private VaccinationRepository repository;
-    private Map<String, String> patientMap = new java.util.HashMap<>();
-    private String selectedBeneficiaryId = null;
     private com.google.firebase.firestore.FirebaseFirestore db;
-    private RadioGroup rgTarget;
-    private RadioButton rbIndividual, rbAgeGroup;
-    private View layoutIndividual, layoutCategory;
     private AutoCompleteTextView spinnerCategory;
-    private android.widget.TextView tvTargetTitle;
+    private String userRole = "citizen";
+    private String userPhone = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,57 +60,13 @@ public class ReminderActivity extends AppCompatActivity {
         spinnerCategory = findViewById(R.id.spinnerReminderCategory);
         etDate = findViewById(R.id.etReminderDate);
         btnSetReminder = findViewById(R.id.btnSetReminder);
-        rvAutoReminders = findViewById(R.id.rvAutoReminders);
-        
-        rgTarget = findViewById(R.id.rgReminderTarget);
-        rbIndividual = findViewById(R.id.rbIndividual);
-        rbAgeGroup = findViewById(R.id.rbAgeGroup);
-        layoutIndividual = findViewById(R.id.layoutIndividualSelection);
-        layoutCategory = findViewById(R.id.layoutCategorySelection);
-        tvTargetTitle = findViewById(R.id.tvTargetType);
 
         String[] categories = {"Child", "Pregnant Woman", "Adult"};
         spinnerCategory.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, categories));
         spinnerCategory.setThreshold(0);
-
-        rgTarget.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.rbIndividual) {
-                layoutIndividual.setVisibility(View.VISIBLE);
-                layoutCategory.setVisibility(View.GONE);
-                btnSetReminder.setText("Set Shared Reminder");
-            } else {
-                layoutIndividual.setVisibility(View.GONE);
-                layoutCategory.setVisibility(View.VISIBLE);
-                btnSetReminder.setText("Set Age-Group Campaign");
-            }
-        });
-
-        // Setup RecyclerView for Dynamic Reminders
-        rvAutoReminders.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
-        autoReminderAdapter = new VaccinationAdapter(autoReminderList, new VaccinationAdapter.OnVaccinationClickListener() {
-            @Override public void onEditClick(Vaccination v) {}
-            @Override public void onDeleteClick(Vaccination v) {}
-            @Override public void onItemClick(Vaccination v) {}
-            @Override public void onReminderClick(Vaccination v) {
-                // Pre-fill manual form
-                spinnerVaccine.setText(v.getVaccineName(), false);
-            }
-        }, true);
-        rvAutoReminders.setAdapter(autoReminderAdapter);
         
         spinnerVaccine.setThreshold(0);
-
-        // Setup Vaccines
-        String[] vaccines = {"Covaxin", "Covishield", "Sputnik V", "Pfizer", "Moderna", "Other"};
-        spinnerVaccine.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, vaccines));
-
-        Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("force_vaccine")) {
-            spinnerVaccine.setText(intent.getStringExtra("force_vaccine"), false);
-        }
-
-        // Setup Patients (Global Registry Sync)
-        loadPatients();
+        setupVaccineAdapter();
 
         etDate.setOnClickListener(v -> showDatePicker());
         btnSetReminder.setOnClickListener(v -> setReminder());
@@ -124,83 +74,28 @@ public class ReminderActivity extends AppCompatActivity {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         requestNotificationPermission();
+        loadUserProfile();
     }
 
-    private void loadAutoReminders(String bId, String category) {
-        if (bId == null) return;
-        repository.getDueVaccines(bId, category, new VaccinationRepository.DataCallback() {
-            @Override
-            public void onDataLoaded(List<Vaccination> vax) {
-                autoReminderList.clear();
-                if (vax != null) autoReminderList.addAll(vax);
-                autoReminderAdapter.notifyDataSetChanged();
-            }
-            @Override public void onError(String msg) {
-                android.widget.Toast.makeText(ReminderActivity.this, "Failed to load schedule: " + msg, android.widget.Toast.LENGTH_SHORT).show();
+    private void loadUserProfile() {
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) return;
+        
+        db.collection("users").document(uid).get().addOnSuccessListener(doc -> {
+            if (doc.exists()) {
+                userRole = doc.getString("role");
+                userPhone = doc.getString("phone");
             }
         });
     }
 
-    private void loadPatients() {
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) return;
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        // 1. Get User Profile to check role/phone
-        db.collection("users").document(uid).get().addOnSuccessListener(userDoc -> {
-            if (!userDoc.exists()) return;
-            
-            String role = userDoc.getString("role");
-            String phone = userDoc.getString("phone");
-            String myName = userDoc.getString("name");
-
-            List<String> initialNames = new ArrayList<>();
-            if ("admin".equalsIgnoreCase(role)) {
-                // Show role-based options
-                tvTargetTitle.setVisibility(View.VISIBLE);
-                rgTarget.setVisibility(View.VISIBLE);
-
-                // Fetch all beneficiaries assigned to this Administrator
-                db.collection("beneficiaries").whereEqualTo("adminId", uid).get()
-                    .addOnSuccessListener(queryDocumentSnapshots -> populateSpinner(queryDocumentSnapshots, initialNames))
-                    .addOnFailureListener(e -> Toast.makeText(this, "Sync failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-            } else {
-                // Add the user themselves to the dropdown
-                if (myName != null) {
-                    String selfEntry = myName + " (Self)";
-                    initialNames.add(selfEntry);
-                    patientMap.put(selfEntry, uid); // Link to user's own document/id
-                }
-
-                // Fetch family members linked by phone
-                if (phone != null && !phone.isEmpty()) {
-                    db.collection("beneficiaries").whereEqualTo("mobileNumber", phone).get()
-                        .addOnSuccessListener(queryDocumentSnapshots -> populateSpinner(queryDocumentSnapshots, initialNames))
-                        .addOnFailureListener(e -> {
-                            populateSpinner(null, initialNames); // Show at least 'Self'
-                            Toast.makeText(this, "Family sync failed", Toast.LENGTH_SHORT).show();
-                        });
-                } else {
-                    populateSpinner(null, initialNames);
-                    Toast.makeText(this, "Set phone in Profile to sync with family", Toast.LENGTH_LONG).show();
-                }
-            }
-        }).addOnFailureListener(e -> Toast.makeText(this, "Failed to load profile", Toast.LENGTH_SHORT).show());
-    }
-
-    private void populateSpinner(com.google.firebase.firestore.QuerySnapshot snapshots, List<String> names) {
-        if (snapshots != null) {
-            for (QueryDocumentSnapshot doc : snapshots) {
-                String name = doc.getString("name");
-                if (name != null) {
-                    String displayName = name;
-                    // Tag them if they are citizens to distinguish
-                    String category = doc.getString("category");
-                    if (category != null) displayName += " (" + category + ")";
-                    
-                    names.add(displayName);
-                    patientMap.put(displayName, doc.getId());
-                }
-            }
+    private void setupVaccineAdapter() {
+        String[] vaccines = {"Covaxin", "Covishield", "Sputnik V", "Pfizer", "Moderna", "Other"};
+        spinnerVaccine.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, vaccines));
+        
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("force_vaccine")) {
+            spinnerVaccine.setText(intent.getStringExtra("force_vaccine"), false);
         }
     }
 
@@ -232,48 +127,74 @@ public class ReminderActivity extends AppCompatActivity {
 
         btnSetReminder.setEnabled(false);
 
-        if (rbAgeGroup.isChecked()) {
-            String category = spinnerCategory.getText().toString();
-            if (category.isEmpty()) {
-                Toast.makeText(this, "Please select an age group", Toast.LENGTH_SHORT).show();
-                btnSetReminder.setEnabled(true);
-                return;
-            }
+        String category = spinnerCategory.getText().toString();
+        if (category.isEmpty()) {
+            Toast.makeText(this, "Please select an age group", Toast.LENGTH_SHORT).show();
+            btnSetReminder.setEnabled(true);
+            return;
+        }
+
+        if ("admin".equalsIgnoreCase(userRole)) {
+            // Admins create global campaigns
             repository.addCampaignReminder(category, vaccine, date, new VaccinationRepository.SimpleCallback() {
                 @Override
                 public void onSuccess() {
-                    Toast.makeText(ReminderActivity.this, "Group campaign sent successfully!", Toast.LENGTH_LONG).show();
+                    scheduleLocalNotification(vaccine);
+                    Toast.makeText(ReminderActivity.this, "Global campaign set successfully!", Toast.LENGTH_LONG).show();
                     finish();
                 }
                 @Override
                 public void onError(String message) {
                     btnSetReminder.setEnabled(true);
-                    Toast.makeText(ReminderActivity.this, "Campaign failed: " + message, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ReminderActivity.this, "Failed: " + message, Toast.LENGTH_SHORT).show();
                 }
             });
         } else {
-            String patientName = "Selected Member";
-            selectedBeneficiaryId = patientMap.get(patientName);
-
-            if (selectedBeneficiaryId == null) {
-                Toast.makeText(this, "Please select a valid patient", Toast.LENGTH_SHORT).show();
+            // Citizens create reminders for their own family members in that category
+            if (userPhone == null || userPhone.isEmpty()) {
+                Toast.makeText(this, "Set phone in Profile to sync reminders", Toast.LENGTH_LONG).show();
                 btnSetReminder.setEnabled(true);
                 return;
             }
 
-            repository.addReminder(selectedBeneficiaryId, vaccine, date, new VaccinationRepository.SimpleCallback() {
-                @Override
-                public void onSuccess() {
-                    scheduleLocalNotification(vaccine);
-                    Toast.makeText(ReminderActivity.this, "Shared reminder synced!", Toast.LENGTH_LONG).show();
-                    finish();
-                }
-                @Override
-                public void onError(String message) {
+            db.collection("beneficiaries")
+                .whereEqualTo("mobileNumber", userPhone)
+                .whereEqualTo("category", category)
+                .get()
+                .addOnSuccessListener(snapshots -> {
+                    if (snapshots.isEmpty()) {
+                        // Fallback: Just schedule local notification if no family members found
+                        scheduleLocalNotification(vaccine);
+                        Toast.makeText(this, "Local reminder set (No matching family members found)", Toast.LENGTH_LONG).show();
+                        finish();
+                        return;
+                    }
+
+                    AtomicInteger count = new AtomicInteger(snapshots.size());
+                    for (QueryDocumentSnapshot doc : snapshots) {
+                        repository.addReminder(doc.getId(), vaccine, date, new VaccinationRepository.SimpleCallback() {
+                            @Override
+                            public void onSuccess() {
+                                if (count.decrementAndGet() == 0) {
+                                    scheduleLocalNotification(vaccine);
+                                    Toast.makeText(ReminderActivity.this, "Family reminders synced!", Toast.LENGTH_LONG).show();
+                                    finish();
+                                }
+                            }
+                            @Override
+                            public void onError(String msg) {
+                                if (count.decrementAndGet() == 0) {
+                                    scheduleLocalNotification(vaccine);
+                                    finish();
+                                }
+                            }
+                        });
+                    }
+                })
+                .addOnFailureListener(e -> {
                     btnSetReminder.setEnabled(true);
-                    Toast.makeText(ReminderActivity.this, "Sync failed: " + message, Toast.LENGTH_SHORT).show();
-                }
-            });
+                    Toast.makeText(this, "Sync failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
         }
     }
 
