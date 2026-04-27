@@ -68,7 +68,7 @@ public class AdminUserListActivity extends AppCompatActivity {
             Intent intent = new Intent(AdminUserListActivity.this, BeneficiaryDetailActivity.class);
             intent.putExtra("beneficiaryId", beneficiary.getId());
             intent.putExtra("beneficiaryName", beneficiary.getName());
-            intent.putExtra("beneficiaryVillage", beneficiary.getVillage());
+
             intent.putExtra("beneficiaryAge", beneficiary.getAge());
             startActivity(intent);
         });
@@ -76,7 +76,7 @@ public class AdminUserListActivity extends AppCompatActivity {
         rvBeneficiaries.setAdapter(adapter);
 
         svBeneficiaries = findViewById(R.id.svBeneficiaries);
-        svBeneficiaries.setQueryHint("Search by Name, Village or ID");
+        svBeneficiaries.setQueryHint("Search by Name, Category or ID");
         svBeneficiaries.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) { return false; }
@@ -106,16 +106,27 @@ public class AdminUserListActivity extends AppCompatActivity {
         
         progressBar.setVisibility(View.VISIBLE);
         
-        // Admin fetches ALL beneficiaries globally
-        db.collection("beneficiaries")
+        // Admin fetches ALL family members globally
+        db.collection("family_members")
             .get()
             .addOnCompleteListener(task -> {
                 progressBar.setVisibility(View.GONE);
                 if (task.isSuccessful()) {
                     beneficiaryList.clear();
                     for (QueryDocumentSnapshot document : task.getResult()) {
-                        Beneficiary beneficiary = document.toObject(Beneficiary.class);
+                        Beneficiary beneficiary = new Beneficiary();
                         beneficiary.setId(document.getId());
+                        beneficiary.setName(document.getString("name"));
+
+                        beneficiary.setCategory(document.getString("category"));
+                        
+                        // Handle age which might be stored as String or Number
+                        Object ageObj = document.get("age");
+                        if (ageObj != null) {
+                            beneficiary.setAge(ageObj.toString());
+                        }
+                        
+                        // Link phone from userId if needed
                         beneficiaryList.add(beneficiary);
                     }
                     adapter.updateData(beneficiaryList);

@@ -48,14 +48,21 @@ public class BeneficiaryAdapter extends RecyclerView.Adapter<BeneficiaryAdapter.
     public void onBindViewHolder(@NonNull BeneficiaryViewHolder holder, int position) {
         Beneficiary beneficiary = beneficiaryList.get(position);
         
-        holder.tvName.setText(beneficiary.getName());
-        holder.tvDetails.setText(beneficiary.getVillage() + " • " + beneficiary.getAge() + " yrs");
+        String name = beneficiary.getName() != null ? beneficiary.getName() : "Unknown";
+
+        String age = beneficiary.getAge() != null ? beneficiary.getAge() : "?";
+
+        holder.tvName.setText(name);
+        holder.tvDetails.setText(age + " yrs");
         holder.tvCategoryBadge.setText(beneficiary.getCategory());
         
         String icon = "👤";
-        if ("Child".equalsIgnoreCase(beneficiary.getCategory())) icon = "👶";
-        else if ("Pregnant Woman".equalsIgnoreCase(beneficiary.getCategory())) icon = "🤰";
-        else if ("Adult".equalsIgnoreCase(beneficiary.getCategory())) icon = "🧑";
+        String cat = beneficiary.getCategory();
+        if (cat != null) {
+            if (cat.contains("year")) icon = "👶";
+            else if (cat.equals("Pregnant Women")) icon = "🤰";
+            else if (cat.contains("18+")) icon = "🧑";
+        }
         holder.tvCategoryIcon.setText(icon);
 
         holder.itemView.setOnClickListener(v -> {
@@ -84,8 +91,10 @@ public class BeneficiaryAdapter extends RecyclerView.Adapter<BeneficiaryAdapter.
                 String filterPattern = constraint.toString().toLowerCase().trim();
 
                 for (Beneficiary item : beneficiaryListFull) {
-                    if (item.getName().toLowerCase().contains(filterPattern) || 
-                        item.getVillage().toLowerCase().contains(filterPattern)) {
+                    String name = item.getName() != null ? item.getName().toLowerCase() : "";
+
+                    
+                    if (name.contains(filterPattern)) {
                         filteredList.add(item);
                     }
                 }

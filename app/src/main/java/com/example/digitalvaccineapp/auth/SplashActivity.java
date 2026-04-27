@@ -29,7 +29,7 @@ public class SplashActivity extends AppCompatActivity {
     private void checkLoginAndRedirect() {
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         boolean isLoggedInSharedPrefs = prefs.getBoolean("isLoggedIn", false);
-        
+
         // Also check Firebase just in case
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 

@@ -24,15 +24,15 @@ import java.util.UUID;
 
 public class AddFamilyMemberActivity extends AppCompatActivity {
 
-    private TextInputEditText etFamilyName, etFamilyAge;
-    private RadioGroup rgFamilyGender;
-    private AutoCompleteTextView spFamilyRelationship;
+    private TextInputEditText etFamilyName, etFamilyAge, etUserPhone, etMotherName, etFatherName, etHusbandName;
+    private RadioGroup rgFamilyGender, rgFamilyPregnant;
+    private android.widget.LinearLayout layoutChildFields, layoutPregnantFields;
+    private AutoCompleteTextView spinnerCategory;
     private MaterialButton btnSaveFamilyMember;
 
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
-    private String userPhone = "";
-    private String userVillage = "";
+    private FirebaseAuth secondaryAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +41,15 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
+        
+        // Initialize secondary auth for background account creation
+        try {
+            com.google.firebase.FirebaseOptions options = com.google.firebase.FirebaseApp.getInstance().getOptions();
+            com.google.firebase.FirebaseApp secondaryApp = com.google.firebase.FirebaseApp.initializeApp(this, options, "Secondary");
+            secondaryAuth = com.google.firebase.auth.FirebaseAuth.getInstance(secondaryApp);
+        } catch (Exception e) {
+            secondaryAuth = mAuth; // Fallback
+        }
 
         Toolbar toolbar = findViewById(R.id.toolbarAddFamily);
         setSupportActionBar(toolbar);
@@ -52,44 +61,56 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
 
         etFamilyName = findViewById(R.id.etFamilyName);
         etFamilyAge = findViewById(R.id.etFamilyAge);
+        etUserPhone = findViewById(R.id.etUserPhone);
+        etMotherName = findViewById(R.id.etMotherName);
+        etFatherName = findViewById(R.id.etFatherName);
+        etHusbandName = findViewById(R.id.etHusbandName);
         rgFamilyGender = findViewById(R.id.rgFamilyGender);
-        spFamilyRelationship = findViewById(R.id.spFamilyRelationship);
+        rgFamilyPregnant = findViewById(R.id.rgFamilyPregnant);
+        layoutChildFields = findViewById(R.id.layoutChildFields);
+        layoutPregnantFields = findViewById(R.id.layoutPregnantFields);
+        spinnerCategory = findViewById(R.id.spinnerCategory);
         btnSaveFamilyMember = findViewById(R.id.btnSaveFamilyMember);
 
-        // Fetch parent's phone for linking
-        fetchUserPhone();
-
-        // Setup AutoCompleteTextView
-        String[] relationships = {"Child", "Self", "Son", "Daughter", "Father", "Mother", "Spouse", "Other"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, relationships);
-        spFamilyRelationship.setAdapter(adapter);
+        setupCategorySpinner();
 
         btnSaveFamilyMember.setOnClickListener(v -> saveFamilyMember());
     }
 
-    private void fetchUserPhone() {
-        if (mAuth.getCurrentUser() == null) return;
-        db.collection("users").document(mAuth.getCurrentUser().getUid()).get()
-            .addOnSuccessListener(documentSnapshot -> {
-                if (documentSnapshot.exists()) {
-                    userPhone = documentSnapshot.getString("phone");
-                    userVillage = documentSnapshot.getString("village");
-                }
-            });
+    private void setupCategorySpinner() {
+        String[] categories = {"0–1 year", "1–5 years", "6–12 years", "Pregnant Women", "18+ years"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, categories);
+        spinnerCategory.setAdapter(adapter);
+
+        spinnerCategory.setOnItemClickListener((parent, view, position, id) -> {
+            String selected = parent.getItemAtPosition(position).toString();
+            updateFieldVisibility(selected);
+        });
+    }
+
+    private void updateFieldVisibility(String category) {
+        layoutChildFields.setVisibility(android.view.View.GONE);
+        layoutPregnantFields.setVisibility(android.view.View.GONE);
+        rgFamilyPregnant.setVisibility(android.view.View.GONE);
+
+        if (category.equals("Pregnant Women")) {
+            layoutPregnantFields.setVisibility(android.view.View.VISIBLE);
+            rgFamilyPregnant.check(R.id.rbPregnantYes);
+            rgFamilyGender.check(R.id.rbFamilyFemale);
+        } else if (category.contains("year")) {
+            layoutChildFields.setVisibility(android.view.View.VISIBLE);
+            rgFamilyPregnant.check(R.id.rbPregnantNo);
+        }
     }
 
     private void saveFamilyMember() {
         String name = etFamilyName.getText().toString().trim();
-        String age = etFamilyAge.getText().toString().trim();
-        String relationship = spFamilyRelationship.getText().toString().trim();
+        String ageStr = etFamilyAge.getText().toString().trim();
+        String targetPhone = etUserPhone.getText().toString().trim();
+        String category = spinnerCategory.getText().toString().trim();
 
-        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(age)) {
+        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(ageStr) || TextUtils.isEmpty(targetPhone) || TextUtils.isEmpty(category)) {
             Snackbar.make(findViewById(android.R.id.content), "Please fill all fields", Snackbar.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (userPhone == null || userPhone.isEmpty()) {
-            Snackbar.make(findViewById(android.R.id.content), "Please set your phone number in Profile to sync records", Snackbar.LENGTH_LONG).show();
             return;
         }
 
@@ -101,33 +122,81 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
         RadioButton selectedGender = findViewById(selectedGenderId);
         String gender = selectedGender.getText().toString();
 
-        if (mAuth.getCurrentUser() == null) return;
-        String userId = mAuth.getCurrentUser().getUid();
+        final boolean isPregnant = (category.equals("Pregnant Women"));
 
-        // Save to Global Beneficiaries collection for cross-role sync
         btnSaveFamilyMember.setEnabled(false);
+
+        // Find User by Phone
+        db.collection("users").whereEqualTo("phone", targetPhone).get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        // Auto-create user account
+                        String email = targetPhone + "@digitalvaccine.com";
+                        secondaryAuth.createUserWithEmailAndPassword(email, "password123")
+                            .addOnSuccessListener(authResult -> {
+                                String newUserId = authResult.getUser().getUid();
+                                java.util.HashMap<String, Object> newUser = new java.util.HashMap<>();
+                                newUser.put("userId", newUserId);
+                                newUser.put("phone", targetPhone);
+                                newUser.put("name", "User " + targetPhone);
+                                newUser.put("role", "citizen");
+                                newUser.put("role", "citizen");
+                                newUser.put("createdAt", com.google.firebase.Timestamp.now());
+
+                                db.collection("users").document(newUserId).set(newUser)
+                                    .addOnSuccessListener(aVoid -> {
+                                        saveMemberToDb(newUserId, name, ageStr, gender, isPregnant, category);
+                                    });
+                                
+                                secondaryAuth.signOut();
+                            })
+                            .addOnFailureListener(e -> {
+                                btnSaveFamilyMember.setEnabled(true);
+                                Snackbar.make(findViewById(android.R.id.content), "Auto-reg failed: " + e.getMessage(), Snackbar.LENGTH_LONG).show();
+                            });
+                        return;
+                    }
+
+                    com.google.firebase.firestore.DocumentSnapshot userDoc = queryDocumentSnapshots.getDocuments().get(0);
+                    String targetUserId = userDoc.getId();
+
+                    saveMemberToDb(targetUserId, name, ageStr, gender, isPregnant, category);
+                })
+                .addOnFailureListener(e -> {
+                    btnSaveFamilyMember.setEnabled(true);
+                    Snackbar.make(findViewById(android.R.id.content), "Search error: " + e.getMessage(), Snackbar.LENGTH_LONG).show();
+                });
+    }
+
+    private void saveMemberToDb(String targetUserId, String name, String ageStr, String gender, boolean isPregnant, String category) {
         String newId = UUID.randomUUID().toString();
-        
         java.util.HashMap<String, Object> memberData = new java.util.HashMap<>();
-        memberData.put("id", newId);
+        memberData.put("memberId", newId);
+        memberData.put("userId", targetUserId);
+
         memberData.put("name", name);
-        memberData.put("age", age);
+        memberData.put("age", ageStr);
         memberData.put("gender", gender);
-        memberData.put("category", relationship); // Matching 'category' field used by System Administrators
-        memberData.put("mobileNumber", userPhone); // Linking Key
-        memberData.put("village", userVillage != null ? userVillage : "General"); // Sync Key
-        memberData.put("citizenId", userId);
+        memberData.put("isPregnant", isPregnant);
+        memberData.put("category", category);
         memberData.put("createdAt", com.google.firebase.Timestamp.now());
 
-        db.collection("beneficiaries")
-            .document(newId).set(memberData)
-            .addOnSuccessListener(aVoid -> {
-                Snackbar.make(findViewById(android.R.id.content), "Record added to shared registry", Snackbar.LENGTH_LONG).show();
-                finish();
-            })
-            .addOnFailureListener(e -> {
-                btnSaveFamilyMember.setEnabled(true);
-                Snackbar.make(findViewById(android.R.id.content), "Failed: " + e.getMessage(), Snackbar.LENGTH_LONG).show();
-            });
+        if (category.contains("year")) {
+            memberData.put("motherName", etMotherName.getText().toString().trim());
+            memberData.put("fatherName", etFatherName.getText().toString().trim());
+        } else if (category.equals("Pregnant Women")) {
+            memberData.put("husbandName", etHusbandName.getText().toString().trim());
+        }
+
+        db.collection("family_members").document(newId).set(memberData)
+                .addOnSuccessListener(aVoid -> {
+                    btnSaveFamilyMember.setEnabled(true);
+                    Toast.makeText(this, "Member added successfully", Toast.LENGTH_SHORT).show();
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    btnSaveFamilyMember.setEnabled(true);
+                    Snackbar.make(findViewById(android.R.id.content), "Save failed: " + e.getMessage(), Snackbar.LENGTH_LONG).show();
+                });
     }
 }

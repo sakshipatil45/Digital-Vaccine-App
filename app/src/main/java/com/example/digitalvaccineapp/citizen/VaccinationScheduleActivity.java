@@ -56,9 +56,18 @@ public class VaccinationScheduleActivity extends AppCompatActivity {
         rvSchedule.setAdapter(adapter);
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override public void onTabSelected(TabLayout.Tab tab) { filterByGroup(tab.getText().toString()); }
-            @Override public void onTabUnselected(TabLayout.Tab tab) {}
-            @Override public void onTabReselected(TabLayout.Tab tab) {}
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                filterByGroup(tab.getText().toString());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
         });
 
         loadMasterSchedule();
@@ -67,18 +76,18 @@ public class VaccinationScheduleActivity extends AppCompatActivity {
     private void loadMasterSchedule() {
         pbSchedule.setVisibility(View.VISIBLE);
         db.collection("vaccines_master")
-            .orderBy("recommendedMonths")
-            .get()
-            .addOnCompleteListener(task -> {
-                pbSchedule.setVisibility(View.GONE);
-                if (task.isSuccessful() && task.getResult() != null) {
-                    fullList.clear();
-                    for (QueryDocumentSnapshot doc : task.getResult()) {
-                        fullList.add(doc.toObject(Vaccine.class));
+                .orderBy("recommendedMonths")
+                .get()
+                .addOnCompleteListener(task -> {
+                    pbSchedule.setVisibility(View.GONE);
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        fullList.clear();
+                        for (QueryDocumentSnapshot doc : task.getResult()) {
+                            fullList.add(doc.toObject(Vaccine.class));
+                        }
+                        filterByGroup("Infant"); // Default tab
                     }
-                    filterByGroup("Infant"); // Default tab
-                }
-            });
+                });
     }
 
     private void filterByGroup(String group) {
@@ -93,23 +102,33 @@ public class VaccinationScheduleActivity extends AppCompatActivity {
 
     private class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.VH> {
         private List<Vaccine> list;
-        public ScheduleAdapter(List<Vaccine> list) { this.list = list; }
 
-        @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup p, int t) {
+        public ScheduleAdapter(List<Vaccine> list) {
+            this.list = list;
+        }
+
+        @NonNull
+        @Override
+        public VH onCreateViewHolder(@NonNull ViewGroup p, int t) {
             View v = LayoutInflater.from(p.getContext()).inflate(android.R.layout.simple_list_item_2, p, false);
             return new VH(v);
         }
 
-        @Override public void onBindViewHolder(@NonNull VH h, int p) {
+        @Override
+        public void onBindViewHolder(@NonNull VH h, int p) {
             Vaccine v = list.get(p);
             h.t1.setText(v.getName() + " (" + v.getDoseInfo() + ")");
             h.t2.setText("Recommended at " + v.getRecommendedMonths() + " months\n" + v.getDescription());
         }
 
-        @Override public int getItemCount() { return list.size(); }
+        @Override
+        public int getItemCount() {
+            return list.size();
+        }
 
         class VH extends RecyclerView.ViewHolder {
             TextView t1, t2;
+
             public VH(@NonNull View v) {
                 super(v);
                 t1 = v.findViewById(android.R.id.text1);

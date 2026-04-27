@@ -37,7 +37,7 @@ import java.util.Map;
 public class ReminderActivity extends AppCompatActivity {
 
     private AutoCompleteTextView spinnerVaccine;
-    private TextInputEditText etDate;
+    private TextInputEditText etDate, etTime, etPlace;
     private MaterialButton btnSetReminder;
     private java.util.Calendar selectedCalendar;
     
@@ -59,9 +59,11 @@ public class ReminderActivity extends AppCompatActivity {
         spinnerVaccine = findViewById(R.id.spinnerReminderVaccine);
         spinnerCategory = findViewById(R.id.spinnerReminderCategory);
         etDate = findViewById(R.id.etReminderDate);
+        etTime = findViewById(R.id.etReminderTime);
+        etPlace = findViewById(R.id.etReminderPlace);
         btnSetReminder = findViewById(R.id.btnSetReminder);
 
-        String[] categories = {"Child", "Pregnant Woman", "Adult"};
+        String[] categories = {"0–1 year", "1–5 years", "6–12 years", "Pregnant Women", "18+ years"};
         spinnerCategory.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, categories));
         spinnerCategory.setThreshold(0);
         
@@ -119,9 +121,11 @@ public class ReminderActivity extends AppCompatActivity {
     private void setReminder() {
         String vaccine = spinnerVaccine.getText().toString();
         String date = etDate.getText().toString();
+        String time = etTime.getText().toString();
+        String place = etPlace.getText().toString();
 
-        if (vaccine.isEmpty() || date.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+        if (vaccine.isEmpty() || date.isEmpty() || time.isEmpty() || place.isEmpty()) {
+            Toast.makeText(this, "Please fill all fields (Date, Time, Place)", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -135,12 +139,12 @@ public class ReminderActivity extends AppCompatActivity {
         }
 
         if ("admin".equalsIgnoreCase(userRole)) {
-            // Admins create global campaigns
-            repository.addCampaignReminder(category, vaccine, date, new VaccinationRepository.SimpleCallback() {
+            // Admins create global campaigns AND individual pending records
+            repository.scheduleGlobalVaccination(category, vaccine, date, time, place, new VaccinationRepository.SimpleCallback() {
                 @Override
                 public void onSuccess() {
                     scheduleLocalNotification(vaccine);
-                    Toast.makeText(ReminderActivity.this, "Global campaign set successfully!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(ReminderActivity.this, "Campaign scheduled and profiles updated!", Toast.LENGTH_LONG).show();
                     finish();
                 }
                 @Override
@@ -151,14 +155,11 @@ public class ReminderActivity extends AppCompatActivity {
             });
         } else {
             // Citizens create reminders for their own family members in that category
-            if (userPhone == null || userPhone.isEmpty()) {
-                Toast.makeText(this, "Set phone in Profile to sync reminders", Toast.LENGTH_LONG).show();
-                btnSetReminder.setEnabled(true);
-                return;
-            }
+            String uid = FirebaseAuth.getInstance().getUid();
+            if (uid == null) return;
 
-            db.collection("beneficiaries")
-                .whereEqualTo("mobileNumber", userPhone)
+            db.collection("family_members")
+                .whereEqualTo("userId", uid)
                 .whereEqualTo("category", category)
                 .get()
                 .addOnSuccessListener(snapshots -> {

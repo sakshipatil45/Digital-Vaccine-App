@@ -179,9 +179,9 @@
                 android:columnCount="2"
                 android:rowCount="2">
 
-                <!-- Schedule -->
+                <!-- Profile -->
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/btnDashSchedule"
+                    android:id="@+id/btnDashProfileCard"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_rowWeight="1"
@@ -200,13 +200,13 @@
                         <ImageView
                             android:layout_width="28dp"
                             android:layout_height="28dp"
-                            android:src="@drawable/ic_calendar"
+                            android:src="@drawable/ic_profile"
                             app:tint="@color/primary_teal" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:text="Schedule"
+                            android:text="Profile"
                             android:textColor="@color/text_main"
                             android:textSize="13sp"
                             android:textStyle="bold"/>
@@ -323,6 +323,15 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Bottom Navigation Wrapper removed -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/userBottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@color/white"
+        app:elevation="8dp"
+        app:itemIconTint="@color/primary_teal"
+        app:itemTextColor="@color/primary_teal"
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

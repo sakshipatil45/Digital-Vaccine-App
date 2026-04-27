@@ -135,46 +135,22 @@ public class RecordsActivity extends AppCompatActivity {
         if (mAuth.getCurrentUser() == null) return;
         progressBar.setVisibility(View.VISIBLE);
 
-        // Fetch user phone to link to beneficiaries
-        db.collection("users").document(mAuth.getCurrentUser().getUid()).get()
-            .addOnSuccessListener(userDoc -> {
-                String phone = userDoc.getString("phone");
-                if (phone != null && !phone.isEmpty()) {
-                    aggregateRecords(phone);
-                } else {
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "Set phone in Profile to fetch records", Toast.LENGTH_LONG).show();
-                }
-            });
-    }
-
-    private void aggregateRecords(String phone) {
+        String uid = mAuth.getCurrentUser().getUid();
         fullList.clear();
-        db.collection("beneficiaries").whereEqualTo("mobileNumber", phone).get()
-            .addOnSuccessListener(queryDocumentSnapshots -> {
-                if (queryDocumentSnapshots.isEmpty()) {
-                    finishLoading();
-                    return;
+        
+        db.collection("vaccinations").whereEqualTo("userId", uid).get()
+            .addOnSuccessListener(vaxDocs -> {
+                for (QueryDocumentSnapshot vaxDoc : vaxDocs) {
+                    Vaccination v = vaxDoc.toObject(Vaccination.class);
+                    v.setId(vaxDoc.getId());
+                    v.setPatientId(vaxDoc.getString("memberId")); // Store member ID for deletion/edit
+                    fullList.add(v);
                 }
-
-                int total = queryDocumentSnapshots.size();
-                AtomicInteger processed = new AtomicInteger(0);
-
-                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                    String beneficiaryId = doc.getId();
-                    db.collection("beneficiaries").document(beneficiaryId).collection("vaccinations").get()
-                        .addOnSuccessListener(vaxDocs -> {
-                            for (QueryDocumentSnapshot vaxDoc : vaxDocs) {
-                                Vaccination v = vaxDoc.toObject(Vaccination.class);
-                                v.setId(vaxDoc.getId());
-                                v.setPatientId(beneficiaryId); // Store parent ID for deletion/edit
-                                fullList.add(v);
-                            }
-                            if (processed.incrementAndGet() == total) {
-                                finishLoading();
-                            }
-                        });
-                }
+                finishLoading();
+            })
+            .addOnFailureListener(e -> {
+                finishLoading();
+                Toast.makeText(this, "Failed to load records", Toast.LENGTH_SHORT).show();
             });
     }
 

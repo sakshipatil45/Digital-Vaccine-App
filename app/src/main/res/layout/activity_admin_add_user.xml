@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="@color/bg_admin">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -15,7 +15,7 @@
             android:id="@+id/toolbarAddBeneficiary"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Onboard Beneficiary"
+            app:title="Add New User"
             app:titleTextColor="@color/text_main" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -31,72 +31,23 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Category Spinner -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Beneficiary Category"
-                android:textColor="@color/text_main"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp"/>
-
-            <Spinner
-                android:id="@+id/spBeneficiaryCategory"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:paddingHorizontal="12dp"
-                android:layout_marginBottom="16dp"/>
-
             <!-- Name Input -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Full Name"
-                app:boxStrokeColor="@color/primary_blue"
-                app:hintTextColor="@color/primary_blue"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
                 android:layout_marginBottom="16dp">
                 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etBeneficiaryName"
+                    android:id="@+id/etUserName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textPersonName" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Age Input -->
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Age (in years or months)"
-                app:boxStrokeColor="@color/primary_blue"
-                app:hintTextColor="@color/primary_blue"
-                android:layout_marginBottom="16dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etBeneficiaryAge"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="number" />
-            </com.google.android.material.textfield.TextInputLayout>
-            
-            <!-- Village Input -->
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Village / Area"
-                app:boxStrokeColor="@color/primary_blue"
-                app:hintTextColor="@color/primary_blue"
-                android:layout_marginBottom="16dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etBeneficiaryVillage"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textPostalAddress" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Mobile Input -->
@@ -105,59 +56,29 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Mobile Number"
-                app:boxStrokeColor="@color/primary_blue"
-                app:hintTextColor="@color/primary_blue"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
                 android:layout_marginBottom="24dp">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etBeneficiaryMobile"
+                    android:id="@+id/etUserMobile"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="phone" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Gender Section -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Gender"
-                android:textColor="@color/text_main"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp"/>
-
-            <RadioGroup
-                android:id="@+id/rgBeneficiaryGender"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="32dp">
-
-                <RadioButton
-                    android:id="@+id/rbMale"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Male"
-                    android:layout_marginEnd="16dp"/>
-
-                <RadioButton
-                    android:id="@+id/rbFemale"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Female"
-                    android:layout_marginEnd="16dp"/>
-            </RadioGroup>
-
             <!-- Submit Button -->
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSaveBeneficiary"
+                android:id="@+id/btnSaveUser"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:text="Save Beneficiary"
+                android:text="Save User"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:backgroundTint="@color/primary_blue"
-                app:cornerRadius="28dp" />
+                android:backgroundTint="@color/primary_teal"
+                app:cornerRadius="16dp" />
 
         </LinearLayout>
     </ScrollView>

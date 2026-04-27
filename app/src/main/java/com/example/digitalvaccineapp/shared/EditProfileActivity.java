@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EditProfileActivity extends AppCompatActivity {
-    private TextInputEditText etName, etAge, etPhone;
+    private TextInputEditText etName, etAge, etPhone, etNewPassword, etConfirmPassword;
     private AutoCompleteTextView etGender;
     private MaterialButton btnSave;
     private MaterialToolbar toolbar;
@@ -31,6 +31,8 @@ public class EditProfileActivity extends AppCompatActivity {
         etAge = findViewById(R.id.etEditProfileAge);
         etPhone = findViewById(R.id.etEditProfilePhone);
         etGender = findViewById(R.id.etEditProfileGender);
+        etNewPassword = findViewById(R.id.etNewPassword);
+        etConfirmPassword = findViewById(R.id.etConfirmPassword);
         btnSave = findViewById(R.id.btnSaveProfile);
         toolbar = findViewById(R.id.toolbarEditProfile);
 
@@ -80,10 +82,28 @@ public class EditProfileActivity extends AppCompatActivity {
         String age = etAge.getText().toString();
         String phone = etPhone.getText().toString();
         String gender = etGender.getText().toString();
+        String newPass = etNewPassword.getText().toString().trim();
+        String confirmPass = etConfirmPassword.getText().toString().trim();
 
         if (phone.isEmpty()) {
             Toast.makeText(this, "Phone number is required for synchronization", Toast.LENGTH_SHORT).show();
             return;
+        }
+
+        if (!newPass.isEmpty()) {
+            if (newPass.length() < 6) {
+                Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (!newPass.equals(confirmPass)) {
+                Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            mAuth.getCurrentUser().updatePassword(newPass)
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Password update failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
         }
 
         Map<String, Object> userUpdates = new HashMap<>();

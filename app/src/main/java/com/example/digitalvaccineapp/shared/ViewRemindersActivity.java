@@ -48,7 +48,8 @@ public class ViewRemindersActivity extends AppCompatActivity {
 
         // 1. Listen to personal reminders
         if (personalListener != null) personalListener.remove();
-        personalListener = db.collection("beneficiaries").document(beneficiaryId).collection("reminders")
+        personalListener = db.collection("notifications")
+            .whereEqualTo("memberId", beneficiaryId)
             .orderBy("reminderDate", Query.Direction.ASCENDING)
             .addSnapshotListener((snapshots, e) -> {
                 if (e != null || snapshots == null) return;
@@ -67,7 +68,7 @@ public class ViewRemindersActivity extends AppCompatActivity {
     }
 
     private void fetchCampaignRemindersRealTime() {
-        db.collection("beneficiaries").document(beneficiaryId).get().addOnSuccessListener(doc -> {
+        db.collection("family_members").document(beneficiaryId).get().addOnSuccessListener(doc -> {
             String category = doc.getString("category");
             if (category != null) {
                 if (campaignListener != null) campaignListener.remove();

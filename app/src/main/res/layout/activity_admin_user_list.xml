@@ -44,7 +44,7 @@
                     android:id="@+id/svBeneficiaries"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:queryHint="Search by Name or Village"
+                    app:queryHint="Search by Name or Category"
                     app:iconifiedByDefault="false"
                     app:queryBackground="@android:color/transparent"/>
             </com.google.android.material.card.MaterialCardView>

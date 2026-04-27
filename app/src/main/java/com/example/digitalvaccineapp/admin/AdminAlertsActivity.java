@@ -73,53 +73,31 @@ public class AdminAlertsActivity extends AppCompatActivity {
         
         progressBar.setVisibility(View.VISIBLE);
         
-        // Admin fetches ALL beneficiaries to check for alerts
-        db.collection("beneficiaries")
+        // Admin fetches ALL vaccinations to check for alerts
+        db.collection("vaccinations")
             .get()
             .addOnCompleteListener(task -> {
-                if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                    List<String> ids = new ArrayList<>();
-                    for (QueryDocumentSnapshot doc : task.getResult()) ids.add(doc.getId());
-                    
-                    aggregateVaccinations(ids);
-                } else {
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "No records found in system.", Toast.LENGTH_SHORT).show();
-                }
-            });
-    }
-
-    private void aggregateVaccinations(List<String> patientIds) {
-        AtomicInteger processed = new AtomicInteger(0);
-        int total = patientIds.size();
-        alertList.clear();
-
-        for (String id : patientIds) {
-            db.collection("beneficiaries").document(id).collection("vaccinations")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        for (QueryDocumentSnapshot doc : task.getResult()) {
-                            Vaccination v = doc.toObject(Vaccination.class);
-                            v.setId(doc.getId());
-                            v.setPatientId(id);
-                            // Filter for pending/alert logic
-                            if (v.getStatus() != null && v.getStatus().equalsIgnoreCase("pending")) {
-                                alertList.add(v);
-                            }
+                progressBar.setVisibility(View.GONE);
+                if (task.isSuccessful()) {
+                    alertList.clear();
+                    for (QueryDocumentSnapshot doc : task.getResult()) {
+                        Vaccination v = doc.toObject(Vaccination.class);
+                        v.setId(doc.getId());
+                        v.setPatientId(doc.getString("memberId"));
+                        
+                        // Filter for pending/alert logic
+                        if (v.getStatus() != null && v.getStatus().equalsIgnoreCase("pending")) {
+                            alertList.add(v);
                         }
                     }
                     
-                    if (processed.incrementAndGet() == total) {
-                        runOnUiThread(() -> {
-                            progressBar.setVisibility(View.GONE);
-                            adapter.notifyDataSetChanged();
-                            if (alertList.isEmpty()) {
-                                Toast.makeText(this, "Everything is up to date! 🎉", Toast.LENGTH_LONG).show();
-                            }
-                        });
+                    adapter.notifyDataSetChanged();
+                    if (alertList.isEmpty()) {
+                        Toast.makeText(this, "Everything is up to date! 🎉", Toast.LENGTH_LONG).show();
                     }
-                });
-        }
+                } else {
+                    Toast.makeText(this, "Failed to load alerts.", Toast.LENGTH_SHORT).show();
+                }
+            });
     }
 }

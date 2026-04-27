@@ -49,55 +49,65 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void loginUser() {
-        String email = etEmail.getText().toString().trim();
+        String phoneInput = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
 
-        if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
-            Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(phoneInput) || TextUtils.isEmpty(password)) {
+            Toast.makeText(this, "Please enter mobile number and password", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Faking email for Firebase Auth
+        String email = phoneInput;
+        if (!email.contains("@")) {
+            email = email + "@digitalvaccine.com";
+        }
+
         mAuth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this, task -> {
-                if (task.isSuccessful()) {
-                    String userId = mAuth.getCurrentUser().getUid();
-                    db.collection("users").document(userId).get()
-                        .addOnCompleteListener(roleTask -> {
-                            if (roleTask.isSuccessful() && roleTask.getResult() != null) {
-                                DocumentSnapshot document = roleTask.getResult();
-                                String role = document.getString("role");
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        String userId = mAuth.getCurrentUser().getUid();
+                        db.collection("users").document(userId).get()
+                                .addOnCompleteListener(roleTask -> {
+                                    if (roleTask.isSuccessful() && roleTask.getResult() != null) {
+                                        DocumentSnapshot document = roleTask.getResult();
+                                        String role = document.getString("role");
 
-                                // Save FCM Token for Cloud Push Notifications
-                                com.google.firebase.messaging.FirebaseMessaging.getInstance().getToken()
-                                    .addOnSuccessListener(token -> {
-                                        db.collection("users").document(userId).update("fcmToken", token);
-                                    });
+                                        // Save FCM Token for Cloud Push Notifications
+                                        com.google.firebase.messaging.FirebaseMessaging.getInstance().getToken()
+                                                .addOnSuccessListener(token -> {
+                                                    db.collection("users").document(userId).update("fcmToken", token);
+                                                });
 
-                                // Save login session (SharedPreferences)
-                                SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-                                SharedPreferences.Editor editor = prefs.edit();
-                                editor.putBoolean("isLoggedIn", true);
-                                editor.putString("userRole", role != null ? role : "citizen");
-                                editor.apply();
+                                        // Save login session (SharedPreferences)
+                                        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                                        SharedPreferences.Editor editor = prefs.edit();
+                                        editor.putBoolean("isLoggedIn", true);
+                                        editor.putString("userRole", role != null ? role : "citizen");
+                                        editor.apply();
 
-                                Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
-                                Intent intent;
-                                if ("admin".equals(role)) {
-                                    intent = new Intent(LoginActivity.this, AdminDashboardActivity.class);
-                                } else {
-                                    intent = new Intent(LoginActivity.this, VaccinationActivity.class);
-                                }
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                startActivity(intent);
-                                finish();
-                            } else {
-                                Toast.makeText(LoginActivity.this, "Failed to load profile data", Toast.LENGTH_SHORT).show();
-                                mAuth.signOut();
-                            }
-                        });
-                } else {
-                    Toast.makeText(LoginActivity.this, "Authentication Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                }
-            });
+                                        Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT)
+                                                .show();
+                                        Intent intent;
+                                        if ("admin".equals(role)) {
+                                            intent = new Intent(LoginActivity.this, AdminDashboardActivity.class);
+                                        } else {
+                                            intent = new Intent(LoginActivity.this, VaccinationActivity.class);
+                                        }
+                                        intent.setFlags(
+                                                Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                        startActivity(intent);
+                                        finish();
+                                    } else {
+                                        Toast.makeText(LoginActivity.this, "Failed to load profile data",
+                                                Toast.LENGTH_SHORT).show();
+                                        mAuth.signOut();
+                                    }
+                                });
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Authentication Failed: " + task.getException().getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 }

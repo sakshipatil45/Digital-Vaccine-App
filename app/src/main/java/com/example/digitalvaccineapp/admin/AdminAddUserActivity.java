@@ -22,15 +22,13 @@ import java.util.UUID;
 
 public class AdminAddUserActivity extends AppCompatActivity {
 
-    private TextInputEditText etName, etAge, etVillage, etMobile;
-    private RadioGroup rgGender;
-    private Spinner spCategory;
+    private TextInputEditText etName, etMobile;
     private MaterialButton btnSave;
 
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private boolean isEditMode = false;
-    private String editBeneficiaryId = null;
+    private String editUserId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,58 +43,33 @@ public class AdminAddUserActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
-            getSupportActionBar().setTitle(isEditMode ? "Update Record" : "Add Patient");
+            getSupportActionBar().setTitle(isEditMode ? "Update User" : "Add New User");
         }
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        etName = findViewById(R.id.etBeneficiaryName);
-        etAge = findViewById(R.id.etBeneficiaryAge);
-        etVillage = findViewById(R.id.etBeneficiaryVillage);
-        etMobile = findViewById(R.id.etBeneficiaryMobile);
-        rgGender = findViewById(R.id.rgBeneficiaryGender);
-        spCategory = findViewById(R.id.spBeneficiaryCategory);
-        btnSave = findViewById(R.id.btnSaveBeneficiary);
+        etName = findViewById(R.id.etUserName);
+        etMobile = findViewById(R.id.etUserMobile);
+        btnSave = findViewById(R.id.btnSaveUser);
 
-        String[] categories = {"Child", "Pregnant Woman", "Adult"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, categories);
-        spCategory.setAdapter(adapter);
-
-        btnSave.setOnClickListener(v -> saveBeneficiary());
+        btnSave.setOnClickListener(v -> saveUser());
 
         if (getIntent().hasExtra("edit_mode")) {
             isEditMode = getIntent().getBooleanExtra("edit_mode", false);
-            editBeneficiaryId = getIntent().getStringExtra("beneficiaryId");
-            btnSave.setText("Update Patient Data");
+            editUserId = getIntent().getStringExtra("userId");
+            btnSave.setText("Update User Data");
             loadExistingData();
         }
     }
 
     private void loadExistingData() {
-        if (editBeneficiaryId == null) return;
+        if (editUserId == null) return;
         
-        db.collection("beneficiaries").document(editBeneficiaryId)
+        db.collection("users").document(editUserId)
             .get()
             .addOnSuccessListener(documentSnapshot -> {
                 if (documentSnapshot.exists()) {
                     etName.setText(documentSnapshot.getString("name"));
-                    etAge.setText(documentSnapshot.getString("age"));
-                    etVillage.setText(documentSnapshot.getString("village"));
-                    etMobile.setText(documentSnapshot.getString("mobileNumber"));
-                    
-                    String gender = documentSnapshot.getString("gender");
-                    if ("Male".equalsIgnoreCase(gender)) rgGender.check(R.id.rbMale);
-                    else if ("Female".equalsIgnoreCase(gender)) rgGender.check(R.id.rbFemale);
-                    
-                    String category = documentSnapshot.getString("category");
-                    if (category != null) {
-                        String[] categories = {"Child", "Pregnant Woman", "Adult"};
-                        for (int i = 0; i < categories.length; i++) {
-                            if (categories[i].equals(category)) {
-                                spCategory.setSelection(i);
-                                break;
-                            }
-                        }
-                    }
+                    etMobile.setText(documentSnapshot.getString("phone"));
                 }
             })
             .addOnFailureListener(e -> {
@@ -104,14 +77,11 @@ public class AdminAddUserActivity extends AppCompatActivity {
             });
     }
 
-    private void saveBeneficiary() {
+    private void saveUser() {
         String name = etName.getText().toString().trim();
-        String age = etAge.getText().toString().trim();
-        String village = etVillage.getText().toString().trim();
         String mobile = etMobile.getText().toString().trim();
-        String category = spCategory.getSelectedItem().toString();
 
-        if (name.isEmpty() || age.isEmpty() || village.isEmpty() || mobile.isEmpty() || category.isEmpty()) {
+        if (name.isEmpty() || mobile.isEmpty()) {
             Snackbar.make(findViewById(android.R.id.content), "All fields must be filled.", Snackbar.LENGTH_SHORT).show();
             return;
         }
@@ -121,33 +91,28 @@ public class AdminAddUserActivity extends AppCompatActivity {
             return;
         }
 
-        int selectedGenderId = rgGender.getCheckedRadioButtonId();
-        if (selectedGenderId == -1) {
-            Snackbar.make(findViewById(android.R.id.content), "Please select a gender.", Snackbar.LENGTH_SHORT).show();
-            return;
-        }
-        RadioButton selectedGender = findViewById(selectedGenderId);
-        String gender = selectedGender.getText().toString();
-
         if (mAuth.getCurrentUser() == null) return;
-        String adminId = mAuth.getCurrentUser().getUid();
 
         btnSave.setEnabled(false);
         
-        String beneficiaryId;
+        String userId;
         if (isEditMode) {
-            beneficiaryId = editBeneficiaryId;
+            userId = editUserId;
         } else {
-            beneficiaryId = UUID.randomUUID().toString();
+            userId = UUID.randomUUID().toString();
         }
 
-        Beneficiary beneficiary = new Beneficiary(beneficiaryId, name, age, gender, village, mobile, category, adminId);
+        java.util.Map<String, Object> userData = new java.util.HashMap<>();
+        userData.put("userId", userId);
+        userData.put("name", name);
+        userData.put("phone", mobile);
+        userData.put("role", "Citizen");
+        userData.put("createdAt", com.google.firebase.Timestamp.now());
 
-        // Path changed to global "beneficiaries" for smooth sync across roles
-        db.collection("beneficiaries").document(beneficiaryId)
-            .set(beneficiary)
+        db.collection("users").document(userId)
+            .set(userData)
             .addOnSuccessListener(aVoid -> {
-                Snackbar.make(findViewById(android.R.id.content), isEditMode ? "Patient data updated" : "Beneficiary successfully registered", Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(android.R.id.content), isEditMode ? "User data updated" : "User successfully registered", Snackbar.LENGTH_SHORT).show();
                 finish();
             })
             .addOnFailureListener(e -> {

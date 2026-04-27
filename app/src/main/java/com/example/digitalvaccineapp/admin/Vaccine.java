@@ -10,9 +10,11 @@ public class Vaccine {
     private String benefits;
     private String sideEffects;
 
-    public Vaccine() {}
+    public Vaccine() {
+    }
 
-    public Vaccine(String id, String name, String ageGroup, int recommendedMonths, String doseInfo, String description, String benefits, String sideEffects) {
+    public Vaccine(String id, String name, String ageGroup, int recommendedMonths, String doseInfo, String description,
+            String benefits, String sideEffects) {
         this.id = id;
         this.name = name;
         this.ageGroup = ageGroup;
@@ -23,27 +25,67 @@ public class Vaccine {
         this.sideEffects = sideEffects;
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public String getId() {
+        return id;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public String getAgeGroup() { return ageGroup; }
-    public void setAgeGroup(String ageGroup) { this.ageGroup = ageGroup; }
+    public String getName() {
+        return name;
+    }
 
-    public int getRecommendedMonths() { return recommendedMonths; }
-    public void setRecommendedMonths(int recommendedMonths) { this.recommendedMonths = recommendedMonths; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public String getDoseInfo() { return doseInfo; }
-    public void setDoseInfo(String doseInfo) { this.doseInfo = doseInfo; }
+    public String getAgeGroup() {
+        return ageGroup;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public void setAgeGroup(String ageGroup) {
+        this.ageGroup = ageGroup;
+    }
 
-    public String getBenefits() { return benefits; }
-    public void setBenefits(String benefits) { this.benefits = benefits; }
+    public int getRecommendedMonths() {
+        return recommendedMonths;
+    }
 
-    public String getSideEffects() { return sideEffects; }
-    public void setSideEffects(String sideEffects) { this.sideEffects = sideEffects; }
+    public void setRecommendedMonths(int recommendedMonths) {
+        this.recommendedMonths = recommendedMonths;
+    }
+
+    public String getDoseInfo() {
+        return doseInfo;
+    }
+
+    public void setDoseInfo(String doseInfo) {
+        this.doseInfo = doseInfo;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getBenefits() {
+        return benefits;
+    }
+
+    public void setBenefits(String benefits) {
+        this.benefits = benefits;
+    }
+
+    public String getSideEffects() {
+        return sideEffects;
+    }
+
+    public void setSideEffects(String sideEffects) {
+        this.sideEffects = sideEffects;
+    }
 }

@@ -122,25 +122,20 @@ public class AddVaccinationActivity extends AppCompatActivity {
             return;
         }
 
-        // Otherwise (Citizen Mode), fetch from global registry using Phone Number
-        db.collection("users").document(uid).get().addOnSuccessListener(userDoc -> {
-            String phone = userDoc.getString("phone");
-            if (phone == null || phone.isEmpty()) return;
-
-            db.collection("beneficiaries").whereEqualTo("mobileNumber", phone).get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<String> dependentNames = new ArrayList<>();
-                    for (com.google.firebase.firestore.QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        String name = doc.getString("name");
-                        if (name != null) {
-                            dependentNames.add(name);
-                            dependentMap.put(name, doc.getId());
-                        }
+        // Otherwise, fetch from global registry using userId
+        db.collection("family_members").whereEqualTo("userId", uid).get()
+            .addOnSuccessListener(queryDocumentSnapshots -> {
+                List<String> dependentNames = new ArrayList<>();
+                for (com.google.firebase.firestore.QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                    String name = doc.getString("name");
+                    if (name != null) {
+                        dependentNames.add(name);
+                        dependentMap.put(name, doc.getId());
                     }
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, dependentNames);
-                    spinnerDependentName.setAdapter(adapter);
-                });
-        });
+                }
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, dependentNames);
+                spinnerDependentName.setAdapter(adapter);
+            });
     }
 
     private void showDatePicker() {

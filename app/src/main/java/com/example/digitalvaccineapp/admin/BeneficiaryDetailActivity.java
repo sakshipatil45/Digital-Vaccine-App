@@ -27,7 +27,7 @@ import java.util.List;
 
 public class BeneficiaryDetailActivity extends AppCompatActivity {
 
-    private TextView tvProfileName, tvProfileDetails;
+    private TextView tvProfileName, tvProfileDetails, tvExtraDetails, tvLinkedPhone;
     private RecyclerView rvVaccinations;
     private LinearLayout llEmptyState;
     private ProgressBar progressBar;
@@ -38,7 +38,7 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
-    private String beneficiaryId, beneficiaryName, beneficiaryVillage, beneficiaryAge;
+    private String beneficiaryId, beneficiaryName, beneficiaryAge;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +50,7 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
 
         beneficiaryId = getIntent().getStringExtra("beneficiaryId");
         beneficiaryName = getIntent().getStringExtra("beneficiaryName");
-        beneficiaryVillage = getIntent().getStringExtra("beneficiaryVillage");
+
         beneficiaryAge = getIntent().getStringExtra("beneficiaryAge");
 
         Toolbar toolbar = findViewById(R.id.toolbarBeneficiaryDetail);
@@ -63,6 +63,8 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
 
         tvProfileName = findViewById(R.id.tvProfileName);
         tvProfileDetails = findViewById(R.id.tvProfileDetails);
+        tvExtraDetails = findViewById(R.id.tvExtraDetails);
+        tvLinkedPhone = findViewById(R.id.tvLinkedPhone);
         rvVaccinations = findViewById(R.id.rvVaccinations);
         llEmptyState = findViewById(R.id.llEmptyState);
         progressBar = findViewById(R.id.progressBar);
@@ -80,7 +82,7 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
         btnDeleteProfile.setOnClickListener(v -> deleteBeneficiary());
 
         tvProfileName.setText(beneficiaryName != null ? beneficiaryName : "Unknown Patient");
-        tvProfileDetails.setText(beneficiaryVillage + " • " + beneficiaryAge + " yrs");
+        tvProfileDetails.setText(beneficiaryAge + " yrs");
 
         rvVaccinations.setLayoutManager(new LinearLayoutManager(this));
         vaccinationList = new ArrayList<>();
@@ -128,12 +130,56 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        loadBeneficiaryData();
         loadVaccinations();
+    }
+
+    private void loadBeneficiaryData() {
+        if (beneficiaryId == null) return;
+        
+        db.collection("family_members").document(beneficiaryId).get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    String userId = documentSnapshot.getString("userId");
+                    
+                    if (userId != null) {
+                        db.collection("users").document(userId).get()
+                            .addOnSuccessListener(userDoc -> {
+                                if (userDoc.exists()) {
+                                    String phone = userDoc.getString("phone");
+                                    if (phone != null) {
+                                        tvLinkedPhone.setText("📞 Mobile: " + phone);
+                                    }
+                                }
+                            });
+                    }
+
+                    String category = documentSnapshot.getString("category");
+                    String mother = documentSnapshot.getString("motherName");
+                    String father = documentSnapshot.getString("fatherName");
+                    String husband = documentSnapshot.getString("husbandName");
+
+                    if (category != null && category.contains("year")) {
+                        StringBuilder sb = new StringBuilder();
+                        if (mother != null && !mother.isEmpty()) sb.append("Mother: ").append(mother);
+                        if (father != null && !father.isEmpty()) {
+                            if (sb.length() > 0) sb.append(" • ");
+                            sb.append("Father: ").append(father);
+                        }
+                        tvExtraDetails.setText(sb.toString());
+                        tvExtraDetails.setVisibility(View.VISIBLE);
+                    } else if ("Pregnant Women".equals(category) && husband != null && !husband.isEmpty()) {
+                        tvExtraDetails.setText("Husband: " + husband);
+                        tvExtraDetails.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        loadBeneficiaryData();
         loadVaccinations();
     }
 
@@ -141,8 +187,8 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
         if (mAuth.getCurrentUser() == null || beneficiaryId == null) return;
         
         // Path updated for Global Registry Sync
-        db.collection("beneficiaries").document(beneficiaryId)
-            .collection("vaccinations")
+        db.collection("vaccinations")
+            .whereEqualTo("memberId", beneficiaryId)
             .get()
             .addOnCompleteListener(task -> {
                 progressBar.setVisibility(View.GONE);
@@ -172,7 +218,7 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
         if (beneficiaryId == null) return;
         
         // Path updated for Global Registry Sync
-        db.collection("beneficiaries").document(beneficiaryId)
+        db.collection("family_members").document(beneficiaryId)
             .delete()
             .addOnSuccessListener(aVoid -> {
                 Snackbar.make(findViewById(android.R.id.content), "Beneficiary record removed", Snackbar.LENGTH_SHORT).show();
@@ -187,8 +233,7 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
         if (vaxId == null || beneficiaryId == null) return;
         
         // Path updated for Global Registry Sync
-        db.collection("beneficiaries").document(beneficiaryId)
-            .collection("vaccinations").document(vaxId)
+        db.collection("vaccinations").document(vaxId)
             .delete()
             .addOnSuccessListener(aVoid -> {
                 Snackbar.make(findViewById(android.R.id.content), "Record purged from shared registry", Snackbar.LENGTH_SHORT).show();

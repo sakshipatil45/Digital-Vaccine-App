@@ -2,15 +2,15 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.DigitalVaccineApp" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Primary brand color -->
-        <item name="colorPrimary">@color/primary_blue</item>
+        <item name="colorPrimary">@color/primary_teal</item>
         <item name="colorOnPrimary">@color/white</item>
-        <item name="colorPrimaryContainer">@color/accent_blue_light</item>
-        <item name="colorOnPrimaryContainer">@color/primary_blue</item>
+        <item name="colorPrimaryContainer">@color/accent_teal_light</item>
+        <item name="colorOnPrimaryContainer">@color/primary_teal_dark</item>
         
-        <item name="colorSecondary">@color/primary_purple</item>
+        <item name="colorSecondary">@color/primary_teal</item>
         <item name="colorOnSecondary">@color/white</item>
-        <item name="colorSecondaryContainer">@color/accent_purple_light</item>
-        <item name="colorOnSecondaryContainer">@color/primary_purple</item>
+        <item name="colorSecondaryContainer">@color/accent_teal_light</item>
+        <item name="colorOnSecondaryContainer">@color/primary_teal_dark</item>
         
         <!-- Background and Surface colors -->
         <item name="android:windowBackground">@color/bg_user</item>

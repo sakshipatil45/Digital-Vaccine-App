@@ -69,63 +69,63 @@ public class AdminVaccineActivity extends AppCompatActivity {
     }
 
     private final String[] defaultVaccines = {
-        "BCG (Tuberculosis)", "OPV (Oral Polio)", "HepB (Hepatitis B)", 
-        "Pentavalent (DPT+HepB+Hib)", "IPV (Injected Polio)", "Rotavirus Vaccine", 
-        "PCV (Pneumococcal)", "Measles/MR", "JE (Japanese Encephalitis)", 
-        "DPT Booster", "Vitamin A", "Td (Tetanus & Diphtheria)"
+            "BCG (Tuberculosis)", "OPV (Oral Polio)", "HepB (Hepatitis B)",
+            "Pentavalent (DPT+HepB+Hib)", "IPV (Injected Polio)", "Rotavirus Vaccine",
+            "PCV (Pneumococcal)", "Measles/MR", "JE (Japanese Encephalitis)",
+            "DPT Booster", "Vitamin A", "Td (Tetanus & Diphtheria)"
     };
 
     private void loadVaccines() {
         pbVaccineMaster.setVisibility(View.VISIBLE);
         db.collection("vaccines_master")
-            .orderBy("recommendedMonths")
-            .addSnapshotListener((snapshots, e) -> {
-                pbVaccineMaster.setVisibility(View.GONE);
-                vaccineList.clear();
-                java.util.Set<String> addedNames = new java.util.HashSet<>();
+                .orderBy("recommendedMonths")
+                .addSnapshotListener((snapshots, e) -> {
+                    pbVaccineMaster.setVisibility(View.GONE);
+                    vaccineList.clear();
+                    java.util.Set<String> addedNames = new java.util.HashSet<>();
 
-                // 1. Add Custom/Database Vaccines first (Source of Truth)
-                if (snapshots != null && !snapshots.isEmpty()) {
-                    for (QueryDocumentSnapshot doc : snapshots) {
-                        Vaccine v = doc.toObject(Vaccine.class);
-                        v.setId(doc.getId());
-                        vaccineList.add(v);
-                        addedNames.add(v.getName().toLowerCase());
-                    }
-                }
-
-                // 2. Add Predefined Vaccines from array if they don't exist in DB
-                for (String name : defaultVaccines) {
-                    // Extract base name for comparison (e.g., "BCG" from "BCG (Tuberculosis)")
-                    String baseName = name.split(" ")[0].toLowerCase();
-                    boolean alreadyExists = false;
-                    for (String existing : addedNames) {
-                        if (existing.contains(baseName)) {
-                            alreadyExists = true;
-                            break;
+                    // 1. Add Custom/Database Vaccines first (Source of Truth)
+                    if (snapshots != null && !snapshots.isEmpty()) {
+                        for (QueryDocumentSnapshot doc : snapshots) {
+                            Vaccine v = doc.toObject(Vaccine.class);
+                            v.setId(doc.getId());
+                            vaccineList.add(v);
+                            addedNames.add(v.getName().toLowerCase());
                         }
                     }
 
-                    if (!alreadyExists) {
-                        Vaccine v = new Vaccine();
-                        v.setName(name);
-                        v.setAgeGroup("General");
-                        v.setDoseInfo("Standard");
-                        v.setDescription("Predefined system vaccine");
-                        vaccineList.add(v);
-                    }
-                }
-                
-                adapter.notifyDataSetChanged();
+                    // 2. Add Predefined Vaccines from array if they don't exist in DB
+                    for (String name : defaultVaccines) {
+                        // Extract base name for comparison (e.g., "BCG" from "BCG (Tuberculosis)")
+                        String baseName = name.split(" ")[0].toLowerCase();
+                        boolean alreadyExists = false;
+                        for (String existing : addedNames) {
+                            if (existing.contains(baseName)) {
+                                alreadyExists = true;
+                                break;
+                            }
+                        }
 
-                if (vaccineList.isEmpty()) {
-                    llEmptyVaccines.setVisibility(View.VISIBLE);
-                    rvVaccineMaster.setVisibility(View.GONE);
-                } else {
-                    llEmptyVaccines.setVisibility(View.GONE);
-                    rvVaccineMaster.setVisibility(View.VISIBLE);
-                }
-            });
+                        if (!alreadyExists) {
+                            Vaccine v = new Vaccine();
+                            v.setName(name);
+                            v.setAgeGroup("General");
+                            v.setDoseInfo("Standard");
+                            v.setDescription("Predefined system vaccine");
+                            vaccineList.add(v);
+                        }
+                    }
+
+                    adapter.notifyDataSetChanged();
+
+                    if (vaccineList.isEmpty()) {
+                        llEmptyVaccines.setVisibility(View.VISIBLE);
+                        rvVaccineMaster.setVisibility(View.GONE);
+                    } else {
+                        llEmptyVaccines.setVisibility(View.GONE);
+                        rvVaccineMaster.setVisibility(View.VISIBLE);
+                    }
+                });
     }
 
     private void showVaccineDialog(Vaccine existing) {
@@ -136,7 +136,7 @@ public class AdminVaccineActivity extends AppCompatActivity {
         EditText etDesc = view.findViewById(R.id.etVacDesc);
         Spinner spGroup = view.findViewById(R.id.spVacGroup);
 
-        String[] groups = {"Infant", "Child", "Teen", "Adult"};
+        String[] groups = { "Infant", "Child", "Teen", "Adult" };
         spGroup.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, groups));
 
         if (existing != null) {
@@ -153,39 +153,46 @@ public class AdminVaccineActivity extends AppCompatActivity {
         }
 
         new MaterialAlertDialogBuilder(this)
-            .setTitle(existing == null ? "Add New Vaccine" : "Edit Vaccine")
-            .setView(view)
-            .setPositiveButton("Save", (dialog, which) -> {
-                String name = etName.getText().toString();
-                String months = etMonths.getText().toString();
-                if (TextUtils.isEmpty(name) || TextUtils.isEmpty(months)) return;
+                .setTitle(existing == null ? "Add New Vaccine" : "Edit Vaccine")
+                .setView(view)
+                .setPositiveButton("Save", (dialog, which) -> {
+                    String name = etName.getText().toString();
+                    String months = etMonths.getText().toString();
+                    if (TextUtils.isEmpty(name) || TextUtils.isEmpty(months))
+                        return;
 
-                Vaccine v = (existing == null) ? new Vaccine() : existing;
-                v.setName(name);
-                v.setRecommendedMonths(Integer.parseInt(months));
-                v.setDoseInfo(etDose.getText().toString());
-                v.setDescription(etDesc.getText().toString());
-                v.setAgeGroup(spGroup.getSelectedItem().toString());
+                    Vaccine v = (existing == null) ? new Vaccine() : existing;
+                    v.setName(name);
+                    v.setRecommendedMonths(Integer.parseInt(months));
+                    v.setDoseInfo(etDose.getText().toString());
+                    v.setDescription(etDesc.getText().toString());
+                    v.setAgeGroup(spGroup.getSelectedItem().toString());
 
-                if (existing == null) {
-                    db.collection("vaccines_master").add(v);
-                } else {
-                    db.collection("vaccines_master").document(existing.getId()).set(v);
-                }
-            })
-            .setNegativeButton("Cancel", null)
-            .show();
+                    if (existing == null) {
+                        db.collection("vaccines_master").add(v);
+                    } else {
+                        db.collection("vaccines_master").document(existing.getId()).set(v);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private class VaccineAdapter extends RecyclerView.Adapter<VaccineAdapter.VH> {
         private List<Vaccine> list;
-        public VaccineAdapter(List<Vaccine> list) { this.list = list; }
 
-        @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup p, int t) {
+        public VaccineAdapter(List<Vaccine> list) {
+            this.list = list;
+        }
+
+        @NonNull
+        @Override
+        public VH onCreateViewHolder(@NonNull ViewGroup p, int t) {
             return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_vaccine_master, p, false));
         }
 
-        @Override public void onBindViewHolder(@NonNull VH h, int p) {
+        @Override
+        public void onBindViewHolder(@NonNull VH h, int p) {
             Vaccine v = list.get(p);
             h.name.setText(v.getName());
             h.months.setText(v.getRecommendedMonths() + "m");
@@ -194,19 +201,24 @@ public class AdminVaccineActivity extends AppCompatActivity {
             h.edit.setOnClickListener(view -> showVaccineDialog(v));
             h.delete.setOnClickListener(view -> {
                 new MaterialAlertDialogBuilder(AdminVaccineActivity.this)
-                    .setTitle("Delete Vaccine?")
-                    .setMessage("This will remove it from the system inventory.")
-                    .setPositiveButton("Delete", (d, w) -> db.collection("vaccines_master").document(v.getId()).delete())
-                    .setNegativeButton("Keep", null)
-                    .show();
+                        .setTitle("Delete Vaccine?")
+                        .setMessage("This will remove it from the system inventory.")
+                        .setPositiveButton("Delete",
+                                (d, w) -> db.collection("vaccines_master").document(v.getId()).delete())
+                        .setNegativeButton("Keep", null)
+                        .show();
             });
         }
 
-        @Override public int getItemCount() { return list.size(); }
+        @Override
+        public int getItemCount() {
+            return list.size();
+        }
 
         class VH extends RecyclerView.ViewHolder {
             TextView name, months, group, desc;
             ImageButton edit, delete;
+
             public VH(@NonNull View v) {
                 super(v);
                 name = v.findViewById(R.id.tvVaccineMasterName);

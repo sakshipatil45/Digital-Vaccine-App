@@ -26,7 +26,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class AdminDashboardActivity extends AppCompatActivity {
 
     private TextView tvWelcomeAdmin, tvTotalUsers, tvVaccinatedCount;
-    private MaterialCardView btnAddVaccine, btnUpdateSchedule, btnSendAlert, btnManageUsers, btnProfile;
+    private MaterialCardView btnAddUser, btnAddFamily, btnUpdateSchedule, btnSendAlert;
+    private BottomNavigationView bottomNavigationView;
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
@@ -44,21 +45,19 @@ public class AdminDashboardActivity extends AppCompatActivity {
         tvTotalUsers = findViewById(R.id.tvTotalUsers);
         tvVaccinatedCount = findViewById(R.id.tvVaccinatedCount);
 
-        btnAddVaccine = findViewById(R.id.btnAdminAddVaccine);
+        btnAddUser = findViewById(R.id.btnAdminAddUser);
+        btnAddFamily = findViewById(R.id.btnAdminAddFamily);
         btnUpdateSchedule = findViewById(R.id.btnAdminUpdateSchedule);
         btnSendAlert = findViewById(R.id.btnAdminSendAlert);
-        btnManageUsers = findViewById(R.id.btnAdminViewUsers);
-        btnProfile = findViewById(R.id.btnAdminProfile);
+        bottomNavigationView = findViewById(R.id.adminBottomNav);
 
-        // Click Listeners
-        btnProfile.setOnClickListener(v -> {
-            startActivity(new Intent(this, ProfileActivity.class));
+        // Quick Action Click Listeners
+        btnAddUser.setOnClickListener(v -> {
+            startActivity(new Intent(this, AdminAddUserActivity.class));
         });
-        findViewById(R.id.btnAdminNotifications).setOnClickListener(v -> {
-            startActivity(new Intent(this, NotificationsActivity.class));
-        });
-        btnAddVaccine.setOnClickListener(v -> {
-            startActivity(new Intent(this, AdminVaccineActivity.class));
+
+        btnAddFamily.setOnClickListener(v -> {
+            startActivity(new Intent(this, com.example.digitalvaccineapp.citizen.AddFamilyMemberActivity.class));
         });
 
         btnUpdateSchedule.setOnClickListener(v -> {
@@ -69,67 +68,80 @@ public class AdminDashboardActivity extends AppCompatActivity {
             startActivity(new Intent(this, AdminAnnouncementsActivity.class));
         });
 
-        btnManageUsers.setOnClickListener(v -> {
-            startActivity(new Intent(this, AdminUserListActivity.class));
-        });
-
         findViewById(R.id.btnAdminLogoutHeader).setOnClickListener(v -> {
             logout();
+        });
+
+        // Bottom Navigation Setup
+        bottomNavigationView.setSelectedItemId(R.id.nav_admin_dash);
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_admin_dash) {
+                return true;
+            } else if (id == R.id.nav_admin_vaccines) {
+                startActivity(new Intent(this, AdminVaccineActivity.class));
+                return false;
+            } else if (id == R.id.nav_admin_users) {
+                startActivity(new Intent(this, AdminUserListActivity.class));
+                return false;
+            } else if (id == R.id.nav_admin_profile) {
+                startActivity(new Intent(this, ProfileActivity.class));
+                return false;
+            }
+            return false;
         });
 
         loadAdminProfile();
         setupRealTimeStats();
     }
 
-
     private void loadAdminProfile() {
         FirebaseUser user = mAuth.getCurrentUser();
-        if (user == null) return;
-        
+        if (user == null)
+            return;
+
         db.collection("users").document(user.getUid())
-            .addSnapshotListener((document, e) -> {
-                if (e != null || document == null || !document.exists()) return;
-                String name = document.getString("name");
-                if (name != null && !name.isEmpty()) {
-                    tvWelcomeAdmin.setText("Hello, " + name);
-                } else {
-                    tvWelcomeAdmin.setText("Hello, Admin");
-                }
-            });
+                .addSnapshotListener((document, e) -> {
+                    if (e != null || document == null || !document.exists())
+                        return;
+                    String name = document.getString("name");
+                    if (name != null && !name.isEmpty()) {
+                        tvWelcomeAdmin.setText("Hello, " + name);
+                    } else {
+                        tvWelcomeAdmin.setText("Hello, Admin");
+                    }
+                });
     }
 
     private void setupRealTimeStats() {
-        // Real-time listener for Total Beneficiaries
-        db.collection("beneficiaries")
-            .addSnapshotListener((snapshots, e) -> {
-                if (e != null || snapshots == null) return;
-                
-                int totalUsers = snapshots.size();
-                tvTotalUsers.setText(String.valueOf(totalUsers));
-                
-                // Fetch Vaccinated count using Collection Group Query (Real-time)
-                db.collectionGroup("vaccinations")
-                    .whereEqualTo("status", "Completed")
-                    .addSnapshotListener((vaxSnapshots, vaxE) -> {
-                        if (vaxE != null || vaxSnapshots == null) return;
-                        
-                        // We count distinct beneficiary IDs that have at least one completed vaccination
-                        // For a simple dashboard, we can just show total doses given or estimate
-                        // Let's count unique beneficiaries in this list
-                        java.util.Set<String> vaccinatedSet = new java.util.HashSet<>();
-                        for (com.google.firebase.firestore.QueryDocumentSnapshot doc : vaxSnapshots) {
-                            // The path is beneficiaries/{id}/vaccinations/{vId}
-                            String path = doc.getReference().getPath();
-                            String[] parts = path.split("/");
-                            if (parts.length >= 2) {
-                                vaccinatedSet.add(parts[1]);
-                            }
-                        }
-                        
-                        int vaccinatedCount = vaccinatedSet.size();
-                        tvVaccinatedCount.setText(String.valueOf(vaccinatedCount));
-                    });
-            });
+        // Real-time listener for Total Beneficiaries (Family Members)
+        db.collection("family_members")
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null || snapshots == null)
+                        return;
+
+                    int totalUsers = snapshots.size();
+                    tvTotalUsers.setText(String.valueOf(totalUsers));
+
+                    // Fetch Vaccinated count from flattened vaccinations collection
+                    db.collection("vaccinations")
+                            .whereEqualTo("status", "Completed")
+                            .addSnapshotListener((vaxSnapshots, vaxE) -> {
+                                if (vaxE != null || vaxSnapshots == null)
+                                    return;
+
+                                java.util.Set<String> vaccinatedSet = new java.util.HashSet<>();
+                                for (com.google.firebase.firestore.QueryDocumentSnapshot doc : vaxSnapshots) {
+                                    String memberId = doc.getString("memberId");
+                                    if (memberId != null) {
+                                        vaccinatedSet.add(memberId);
+                                    }
+                                }
+
+                                int vaccinatedCount = vaccinatedSet.size();
+                                tvVaccinatedCount.setText(String.valueOf(vaccinatedCount));
+                            });
+                });
     }
 
     private void logout() {
@@ -147,4 +159,3 @@ public class AdminDashboardActivity extends AppCompatActivity {
         // Stats are updated via SnapshotListeners (Real-time)
     }
 }
-

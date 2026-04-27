@@ -5,19 +5,19 @@ public class Beneficiary {
     private String name;
     private String age;
     private String gender;
-    private String village;
+
     private String mobileNumber;
     private String category; // Child, Pregnant Woman, Adult
     private String adminId;
 
     public Beneficiary() {}
 
-    public Beneficiary(String id, String name, String age, String gender, String village, String mobileNumber, String category, String adminId) {
+    public Beneficiary(String id, String name, String age, String gender, String mobileNumber, String category, String adminId) {
         this.id = id;
         this.name = name;
         this.age = age;
         this.gender = gender;
-        this.village = village;
+
         this.mobileNumber = mobileNumber;
         this.category = category;
         this.adminId = adminId;
@@ -35,8 +35,7 @@ public class Beneficiary {
     public String getGender() { return gender; }
     public void setGender(String gender) { this.gender = gender; }
 
-    public String getVillage() { return village; }
-    public void setVillage(String village) { this.village = village; }
+
 
     public String getMobileNumber() { return mobileNumber; }
     public void setMobileNumber(String mobileNumber) { this.mobileNumber = mobileNumber; }

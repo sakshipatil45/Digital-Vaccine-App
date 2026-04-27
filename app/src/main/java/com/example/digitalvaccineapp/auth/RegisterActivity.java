@@ -23,7 +23,7 @@ import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    private TextInputEditText etName, etEmail, etPhone, etFamilySyncPhone, etPassword, etConfirmPassword, etAge, etVillage;
+    private TextInputEditText etName, etPhone, etFamilySyncPhone, etPassword, etConfirmPassword, etAge;
     private RadioGroup rgGender;
     private MaterialButton btnRegister;
     private MaterialCardView cardAdmin, cardCitizen;
@@ -41,13 +41,12 @@ public class RegisterActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         etName = findViewById(R.id.etName);
-        etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
         etPhone = findViewById(R.id.etPhone);
         etFamilySyncPhone = findViewById(R.id.etFamilySyncPhone);
         etAge = findViewById(R.id.etAge);
-        etVillage = findViewById(R.id.etVillage);
+
         rgGender = findViewById(R.id.rgGender);
         btnRegister = findViewById(R.id.btnRegister);
         tvLogin = findViewById(R.id.tvLogin);
@@ -89,20 +88,18 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void registerUser() {
         String name = etName.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
         String confirmPassword = etConfirmPassword.getText().toString().trim();
         String age = etAge.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
         String familyPhone = etFamilySyncPhone.getText().toString().trim();
 
-        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(email) || TextUtils.isEmpty(password) ||
-            TextUtils.isEmpty(confirmPassword) || TextUtils.isEmpty(age) || phone.isEmpty() || familyPhone.isEmpty() || etVillage.getText().toString().trim().isEmpty()) {
-            Toast.makeText(this, "Please fill all fields, including Village", Toast.LENGTH_SHORT).show();
+
+        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(password) ||
+            TextUtils.isEmpty(confirmPassword) || TextUtils.isEmpty(age) || phone.isEmpty() || familyPhone.isEmpty()) {
+            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        String village = etVillage.getText().toString().trim();
 
         if (phone.length() < 10 || familyPhone.length() < 10) {
             Toast.makeText(this, "Enter valid 10-digit phone numbers", Toast.LENGTH_SHORT).show();
@@ -122,18 +119,20 @@ public class RegisterActivity extends AppCompatActivity {
         RadioButton rbSelected = findViewById(rgGender.getCheckedRadioButtonId());
         String gender = rbSelected.getText().toString();
 
+        String email = phone + "@digitalvaccine.com";
+
         mAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this, task -> {
                 if (task.isSuccessful()) {
                     // Save user details to backend
-                    saveProfileToBackend(name, phone, familyPhone, age, gender, selectedRole, village);
+                    saveProfileToBackend(name, phone, familyPhone, age, gender, selectedRole);
                 } else {
                     Toast.makeText(this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
     }
 
-    private void saveProfileToBackend(String name, String phone, String familySyncPhone, String age, String gender, String role, String village) {
+    private void saveProfileToBackend(String name, String phone, String familySyncPhone, String age, String gender, String role) {
         if (mAuth.getCurrentUser() == null) return;
 
         Map<String, Object> userData = new HashMap<>();
@@ -143,8 +142,7 @@ public class RegisterActivity extends AppCompatActivity {
         userData.put("familySyncPhone", familySyncPhone);
         userData.put("age", age);
         userData.put("gender", gender);
-        userData.put("village", village);
-        userData.put("email", mAuth.getCurrentUser().getEmail());
+
         userData.put("createdAt", com.google.firebase.Timestamp.now());
 
         db.collection("users").document(mAuth.getCurrentUser().getUid())

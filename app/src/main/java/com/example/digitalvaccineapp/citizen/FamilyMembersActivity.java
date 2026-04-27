@@ -64,6 +64,9 @@ public class FamilyMembersActivity extends AppCompatActivity {
         fabAddFamilyMember.setOnClickListener(v -> {
             startActivity(new Intent(FamilyMembersActivity.this, AddFamilyMemberActivity.class));
         });
+        
+        // Hide FAB for view-only Citizens
+        fabAddFamilyMember.setVisibility(View.GONE);
 
         loadFamilyMembers();
     }
@@ -76,55 +79,39 @@ public class FamilyMembersActivity extends AppCompatActivity {
 
     private void loadFamilyMembers() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) return;
-        
-        // Step 1: Get the parent's phone number from their profile
-        db.collection("users").document(user.getUid()).get()
-            .addOnSuccessListener(documentSnapshot -> {
-                if (documentSnapshot.exists()) {
-                    String phone = documentSnapshot.getString("phone");
-                    if (phone != null && !phone.isEmpty()) {
-                        fetchMembersByPhone(phone);
-                    } else {
-                        progressBar.setVisibility(View.GONE);
-                        Toast.makeText(this, "Set phone number in Profile to see records", Toast.LENGTH_LONG).show();
-                        llEmptyState.setVisibility(View.VISIBLE);
-                    }
-                }
-            });
-    }
+        if (user == null)
+            return;
 
-    private void fetchMembersByPhone(String phone) {
-        // Step 2: Fetch from global "beneficiaries" where mobileNumber matches parent's phone
-        db.collection("beneficiaries")
-            .whereEqualTo("mobileNumber", phone)
-            .get()
-            .addOnCompleteListener(task -> {
-                progressBar.setVisibility(View.GONE);
-                if (task.isSuccessful()) {
-                    memberList.clear();
-                    for (QueryDocumentSnapshot document : task.getResult()) {
-                        FamilyMember member = new FamilyMember(
-                            document.getId(),
-                            document.getString("name"),
-                            document.getString("age"),
-                            document.getString("gender"),
-                            document.getString("category") // relationship stored in category field
-                        );
-                        memberList.add(member);
-                    }
-                    adapter.notifyDataSetChanged();
-                    
-                    if (memberList.isEmpty()) {
-                        rvFamilyMembers.setVisibility(View.GONE);
-                        llEmptyState.setVisibility(View.VISIBLE);
+        db.collection("family_members")
+                .whereEqualTo("userId", user.getUid())
+                .get()
+                .addOnCompleteListener(task -> {
+                    progressBar.setVisibility(View.GONE);
+                    if (task.isSuccessful()) {
+                        memberList.clear();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            FamilyMember member = new FamilyMember(
+                                    document.getId(),
+                                    document.getString("name"),
+                                    document.getString("age"),
+                                    document.getString("gender"),
+                                    document.getString("category")
+                            );
+                            memberList.add(member);
+                        }
+                        adapter.notifyDataSetChanged();
+
+                        if (memberList.isEmpty()) {
+                            rvFamilyMembers.setVisibility(View.GONE);
+                            llEmptyState.setVisibility(View.VISIBLE);
+                        } else {
+                            rvFamilyMembers.setVisibility(View.VISIBLE);
+                            llEmptyState.setVisibility(View.GONE);
+                        }
                     } else {
-                        rvFamilyMembers.setVisibility(View.VISIBLE);
-                        llEmptyState.setVisibility(View.GONE);
+                        com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content),
+                                "Sync failed", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
                     }
-                } else {
-                    com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content), "Sync failed", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
-                }
-            });
+                });
     }
 }

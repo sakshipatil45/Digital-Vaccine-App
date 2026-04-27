@@ -65,7 +65,7 @@ public class AdminReportsActivity extends AppCompatActivity {
     private void fetchGlobalAnalytics() {
         if (mAuth.getCurrentUser() == null) return;
         
-        db.collection("beneficiaries")
+        db.collection("family_members")
             .get()
             .addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
@@ -74,7 +74,7 @@ public class AdminReportsActivity extends AppCompatActivity {
                     int countPregnant = 0;
                     int countAdult = 0;
                     
-                    java.util.Map<String, Integer> villageMap = new java.util.HashMap<>();
+
 
                     for (QueryDocumentSnapshot doc : task.getResult()) {
                         Beneficiary b = doc.toObject(Beneficiary.class);
@@ -86,11 +86,7 @@ public class AdminReportsActivity extends AppCompatActivity {
                             else countAdult++;
                         }
                         
-                        // Village tracking
-                        String village = b.getVillage();
-                        if (village != null) {
-                            villageMap.put(village, villageMap.getOrDefault(village, 0) + 1);
-                        }
+
                     }
 
                     tvTotalBeneficiaries.setText(String.valueOf(totalBeneficiaries));
@@ -104,32 +100,20 @@ public class AdminReportsActivity extends AppCompatActivity {
                         return;
                     }
 
-                    // Dynamic Village Breakdown Display (Console / Snackbar for now, can be extended to UI)
-                    StringBuilder villageStats = new StringBuilder("Coverage by Village:\n");
-                    for (java.util.Map.Entry<String, Integer> entry : villageMap.entrySet()) {
-                        villageStats.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
-                    }
 
-                    // Step 2: Aggregate vaccinations globally
-                    AtomicInteger completedQueries = new AtomicInteger(0);
-                    AtomicInteger totalDoses = new AtomicInteger(0);
 
-                    for (QueryDocumentSnapshot doc : task.getResult()) {
-                        doc.getReference().collection("vaccinations").get()
-                            .addOnCompleteListener(vaxTask -> {
-                                if (vaxTask.isSuccessful()) {
-                                    totalDoses.addAndGet(vaxTask.getResult().size());
-                                }
-                                
-                                if (completedQueries.incrementAndGet() == totalBeneficiaries) {
-                                    tvTotalVaccines.setText(String.valueOf(totalDoses.get()));
-                                    progressBarReports.setVisibility(View.GONE);
-                                    svReportsContent.setVisibility(View.VISIBLE);
-                                    
-                                    Snackbar.make(findViewById(android.R.id.content), "Global Sync Complete", Snackbar.LENGTH_SHORT).show();
-                                }
-                            });
-                    }
+                    // Step 2: Aggregate vaccinations globally from the flat collection
+                    db.collection("vaccinations").get().addOnCompleteListener(vaxTask -> {
+                        if (vaxTask.isSuccessful()) {
+                            tvTotalVaccines.setText(String.valueOf(vaxTask.getResult().size()));
+                        } else {
+                            tvTotalVaccines.setText("0");
+                        }
+                        
+                        progressBarReports.setVisibility(View.GONE);
+                        svReportsContent.setVisibility(View.VISIBLE);
+                        Snackbar.make(findViewById(android.R.id.content), "Global Sync Complete", Snackbar.LENGTH_SHORT).show();
+                    });
                 } else {
                     progressBarReports.setVisibility(View.GONE);
                     Snackbar.make(findViewById(android.R.id.content), "Failed to load global data.", Snackbar.LENGTH_LONG).show();
