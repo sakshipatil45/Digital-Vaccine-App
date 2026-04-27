@@ -116,7 +116,7 @@ async function seedData() {
 
             // Add 2-3 Family Members per user
             const memberCount = Math.floor(Math.random() * 2) + 2; // 2 or 3
-            const CATEGORIES = ["0–1 year", "1–5 years", "6–12 years", "Pregnant Women", "18+ years"];
+            const CATEGORIES = ["0-1 year", "1-5 years", "6-12 years", "Pregnant Women", "18+ years"];
             const MALE_NAMES = ["Aarav", "Vihaan", "Aditya", "Sai", "Arjun", "Ishaan", "Raj", "Suresh", "Rohan", "Kabir"];
             const FEMALE_NAMES = ["Anaya", "Diya", "Saanvi", "Myra", "Avni", "Kavya", "Meena", "Geeta", "Pooja", "Riya"];
 

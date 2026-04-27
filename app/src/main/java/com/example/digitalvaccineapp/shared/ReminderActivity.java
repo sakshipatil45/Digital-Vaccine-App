@@ -63,7 +63,7 @@ public class ReminderActivity extends AppCompatActivity {
         etPlace = findViewById(R.id.etReminderPlace);
         btnSetReminder = findViewById(R.id.btnSetReminder);
 
-        String[] categories = {"0–1 year", "1–5 years", "6–12 years", "Pregnant Women", "18+ years"};
+        String[] categories = {"0-1 year", "1-5 years", "6-12 years", "Pregnant Women", "18+ years"};
         spinnerCategory.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, categories));
         spinnerCategory.setThreshold(0);
         
