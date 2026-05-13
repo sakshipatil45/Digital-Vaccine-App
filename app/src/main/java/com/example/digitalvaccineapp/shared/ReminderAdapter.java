@@ -27,7 +27,23 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Reminder reminder = reminderList.get(position);
         holder.tvName.setText(reminder.getVaccineName());
-        holder.tvDate.setText("Due on: " + reminder.getReminderDate());
+        
+        String timeInfo = reminder.getReminderTime() != null ? " at " + reminder.getReminderTime() : "";
+        holder.tvDate.setText("Due on: " + reminder.getReminderDate() + timeInfo);
+        
+        if (reminder.getMemberName() != null && !reminder.getMemberName().isEmpty()) {
+            String displayName = reminder.getMemberName();
+            if (displayName.equalsIgnoreCase("Self")) displayName = "Primary User";
+            holder.tvDependent.setText("For: " + displayName);
+            holder.tvDependent.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvDependent.setVisibility(View.GONE);
+        }
+
+        if (reminder.getPlace() != null) {
+            holder.tvHospital.setText("Location: " + reminder.getPlace());
+            holder.tvHospital.setVisibility(View.VISIBLE);
+        }
         
         String status = reminder.getStatus() != null ? reminder.getStatus() : "Pending";
         holder.tvStatus.setText(status);
@@ -42,9 +58,7 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.ViewHo
         holder.btnEdit.setVisibility(View.GONE);
         holder.btnDelete.setVisibility(View.GONE);
         holder.btnReminder.setVisibility(View.GONE);
-        holder.tvHospital.setVisibility(View.GONE);
         holder.tvDose.setVisibility(View.GONE);
-        holder.tvDependent.setVisibility(View.GONE);
     }
 
     @Override

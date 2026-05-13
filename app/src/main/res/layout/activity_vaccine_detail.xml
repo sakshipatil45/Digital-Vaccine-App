@@ -45,37 +45,38 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="4dp"
                 app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="24dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Vaccine Name"
                         android:textColor="@color/text_sub"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvDetailName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        android:text="Covishield"
+                        android:layout_marginBottom="20dp"
+                        android:text="Covaxin"
                         android:textColor="@color/text_main"
-                        android:textSize="20sp"
+                        android:textSize="24sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Dose"
+                        android:text="Dose Number"
                         android:textColor="@color/text_sub"
                         android:textSize="12sp" />
 
@@ -83,15 +84,15 @@
                         android:id="@+id/tvDetailDose"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        android:text="1st Dose"
+                        android:layout_marginBottom="20dp"
+                        android:text="Dose 1"
                         android:textColor="@color/text_main"
-                        android:textSize="16sp" />
+                        android:textSize="18sp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Date Taken"
+                        android:text="Date &amp; Time"
                         android:textColor="@color/text_sub"
                         android:textSize="12sp" />
 
@@ -99,15 +100,15 @@
                         android:id="@+id/tvDetailDate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        android:text="Oct 12, 2024"
+                        android:layout_marginBottom="20dp"
+                        android:text="2026-04-29 12:00"
                         android:textColor="@color/text_main"
-                        android:textSize="16sp" />
+                        android:textSize="18sp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Hospital"
+                        android:text="Health Center / Hospital"
                         android:textColor="@color/text_sub"
                         android:textSize="12sp" />
 
@@ -115,82 +116,48 @@
                         android:id="@+id/tvDetailHospital"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
+                        android:layout_marginBottom="20dp"
                         android:text="City General Hospital"
                         android:textColor="@color/text_main"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Notes"
-                        android:textColor="@color/text_sub"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/tvDetailNotes"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        android:text="No side effects observed."
-                        android:textColor="@color/text_main"
-                        android:textSize="16sp" />
+                        android:textSize="18sp" />
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:background="#EEEEEE"
-                        android:layout_marginBottom="16dp"/>
+                        android:layout_marginBottom="20dp"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Scientific Description"
+                        android:text="Current Status"
                         android:textColor="@color/text_sub"
                         android:textSize="12sp" />
 
                     <TextView
-                        android:id="@+id/tvDetailDescription"
+                        android:id="@+id/tvDetailStatus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        android:text="Loading..."
-                        android:textColor="@color/text_main"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Benefits"
-                        android:textColor="@color/text_sub"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/tvDetailBenefits"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        android:text="Loading..."
-                        android:textColor="#2E7D32"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Side Effects"
-                        android:textColor="@color/text_sub"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/tvDetailSideEffects"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Loading..."
-                        android:textColor="#C62828"
-                        android:textSize="14sp" />
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:background="@drawable/bg_status_badge"
+                        android:text="PENDING"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="8dp"/>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Note: This record is verified by the health department. For any discrepancies, please contact your local health center."
+                android:textColor="@color/text_sub"
+                android:textSize="12sp"
+                android:textAlignment="center"
+                android:layout_marginTop="16dp" />
 
         </LinearLayout>
     </ScrollView>

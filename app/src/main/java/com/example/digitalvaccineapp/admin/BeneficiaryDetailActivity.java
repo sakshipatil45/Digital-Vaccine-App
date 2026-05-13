@@ -73,7 +73,7 @@ public class BeneficiaryDetailActivity extends AppCompatActivity {
         btnDeleteProfile = findViewById(R.id.btnDeleteProfile);
 
         btnEditProfile.setOnClickListener(v -> {
-            Intent intent = new Intent(BeneficiaryDetailActivity.this, AdminAddUserActivity.class);
+            Intent intent = new Intent(BeneficiaryDetailActivity.this, com.example.digitalvaccineapp.citizen.AddFamilyMemberActivity.class);
             intent.putExtra("edit_mode", true);
             intent.putExtra("beneficiaryId", beneficiaryId);
             startActivity(intent);

@@ -18,6 +18,9 @@ import java.util.List;
 
 public class NotificationsActivity extends AppCompatActivity {
 
+    private com.google.firebase.firestore.FirebaseFirestore db;
+    private java.util.List<NotificationItem> notificationList;
+    private NotificationAdapter adapter;
     private RecyclerView rvNotifications;
     private TextView tvEmptyState;
 
@@ -26,6 +29,7 @@ public class NotificationsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notifications);
 
+        db = com.google.firebase.firestore.FirebaseFirestore.getInstance();
         ImageButton btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> finish());
 
@@ -33,19 +37,49 @@ public class NotificationsActivity extends AppCompatActivity {
         tvEmptyState = findViewById(R.id.tvEmptyState);
 
         rvNotifications.setLayoutManager(new LinearLayoutManager(this));
+        notificationList = new java.util.ArrayList<>();
+        adapter = new NotificationAdapter(notificationList);
+        rvNotifications.setAdapter(adapter);
 
         loadNotifications();
     }
 
     private void loadNotifications() {
-        List<NotificationItem> list = NotificationPrefs.getReminders(this);
-        if (list.isEmpty()) {
+        notificationList.clear();
+        
+        // 1. Load local reminders
+        List<NotificationItem> localList = NotificationPrefs.getReminders(this);
+        notificationList.addAll(localList);
+
+        // 2. Fetch global announcements from Firestore
+        db.collection("announcements")
+            .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
+            .limit(20)
+            .get()
+            .addOnCompleteListener(task -> {
+                if (task.isSuccessful() && task.getResult() != null) {
+                    for (com.google.firebase.firestore.QueryDocumentSnapshot doc : task.getResult()) {
+                        String title = doc.getString("title");
+                        String message = doc.getString("message");
+                        String dateStr = doc.getString("date");
+                        if (dateStr == null) dateStr = "Broadcast Alert";
+                        
+                        notificationList.add(0, new NotificationItem(doc.getId(), title, message, dateStr));
+                    }
+                }
+                
+                updateUI();
+            });
+    }
+
+    private void updateUI() {
+        if (notificationList.isEmpty()) {
             rvNotifications.setVisibility(View.GONE);
             tvEmptyState.setVisibility(View.VISIBLE);
         } else {
             rvNotifications.setVisibility(View.VISIBLE);
             tvEmptyState.setVisibility(View.GONE);
-            rvNotifications.setAdapter(new NotificationAdapter(list));
+            adapter.notifyDataSetChanged();
         }
     }
 

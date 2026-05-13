@@ -73,6 +73,13 @@ public class VaccinationAdapter extends RecyclerView.Adapter<VaccinationAdapter.
             holder.btnDelete.setVisibility(View.VISIBLE);
         }
 
+        // Show bell icon only for pending records
+        if (status.contains("pending")) {
+            holder.btnReminder.setVisibility(View.VISIBLE);
+        } else {
+            holder.btnReminder.setVisibility(View.GONE);
+        }
+
         if (listener != null) {
             holder.itemView.setOnClickListener(v -> listener.onItemClick(vaccination));
             holder.btnEdit.setOnClickListener(v -> listener.onEditClick(vaccination));

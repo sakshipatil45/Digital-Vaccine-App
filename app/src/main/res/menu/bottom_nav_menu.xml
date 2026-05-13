@@ -2,18 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/nav_home"
-        android:icon="@android:drawable/ic_menu_today"
+        android:icon="@drawable/ic_home"
         android:title="Home" />
     <item
         android:id="@+id/nav_vaccines"
-        android:icon="@android:drawable/ic_menu_manage"
-        android:title="My Vaccines" />
-    <item
-        android:id="@+id/nav_reminders"
-        android:icon="@android:drawable/ic_popup_reminder"
-        android:title="Reminders" />
+        android:icon="@drawable/ic_vax"
+        android:title="Records" />
     <item
         android:id="@+id/nav_profile"
         android:icon="@drawable/ic_profile"
-        android:title="Profile" />
+        android:title="Account" />
 </menu>

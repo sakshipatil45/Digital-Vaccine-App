@@ -23,8 +23,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.digitalvaccineapp.R;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import android.content.Intent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +40,7 @@ public class AdminVaccineActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private List<Vaccine> vaccineList;
     private VaccineAdapter adapter;
+    private BottomNavigationView bottomNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +67,26 @@ public class AdminVaccineActivity extends AppCompatActivity {
         rvVaccineMaster.setAdapter(adapter);
 
         fabAddVaccine.setOnClickListener(v -> showVaccineDialog(null));
+
+        // Bottom Navigation Setup
+        bottomNavigationView = findViewById(R.id.adminBottomNav);
+        bottomNavigationView.setSelectedItemId(R.id.nav_admin_vaccines);
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_admin_dash) {
+                startActivity(new Intent(this, AdminDashboardActivity.class));
+                return false;
+            } else if (id == R.id.nav_admin_vaccines) {
+                return true;
+            } else if (id == R.id.nav_admin_users) {
+                startActivity(new Intent(this, AdminUserListActivity.class));
+                return false;
+            } else if (id == R.id.nav_admin_profile) {
+                startActivity(new Intent(this, AdminProfileActivity.class));
+                return false;
+            }
+            return false;
+        });
 
         loadVaccines();
     }

@@ -45,15 +45,15 @@ public class AdminDashboardActivity extends AppCompatActivity {
         tvTotalUsers = findViewById(R.id.tvTotalUsers);
         tvVaccinatedCount = findViewById(R.id.tvVaccinatedCount);
 
-        btnAddUser = findViewById(R.id.btnAdminAddUser);
+        com.google.android.material.card.MaterialCardView btnScheduledList = findViewById(R.id.btnAdminScheduledList);
         btnAddFamily = findViewById(R.id.btnAdminAddFamily);
         btnUpdateSchedule = findViewById(R.id.btnAdminUpdateSchedule);
         btnSendAlert = findViewById(R.id.btnAdminSendAlert);
         bottomNavigationView = findViewById(R.id.adminBottomNav);
 
         // Quick Action Click Listeners
-        btnAddUser.setOnClickListener(v -> {
-            startActivity(new Intent(this, AdminAddUserActivity.class));
+        btnScheduledList.setOnClickListener(v -> {
+            startActivity(new Intent(this, AdminScheduledCampaignsActivity.class));
         });
 
         btnAddFamily.setOnClickListener(v -> {
@@ -61,11 +61,17 @@ public class AdminDashboardActivity extends AppCompatActivity {
         });
 
         btnUpdateSchedule.setOnClickListener(v -> {
-            startActivity(new Intent(this, com.example.digitalvaccineapp.shared.ReminderActivity.class));
+            Intent intent = new Intent(this, com.example.digitalvaccineapp.shared.ReminderActivity.class);
+            intent.putExtra("isAdmin", true);
+            startActivity(intent);
         });
 
         btnSendAlert.setOnClickListener(v -> {
             startActivity(new Intent(this, AdminAnnouncementsActivity.class));
+        });
+
+        findViewById(R.id.btnAdminNotifications).setOnClickListener(v -> {
+            startActivity(new Intent(this, com.example.digitalvaccineapp.shared.NotificationsActivity.class));
         });
 
         findViewById(R.id.btnAdminLogoutHeader).setOnClickListener(v -> {
@@ -85,7 +91,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 startActivity(new Intent(this, AdminUserListActivity.class));
                 return false;
             } else if (id == R.id.nav_admin_profile) {
-                startActivity(new Intent(this, ProfileActivity.class));
+                startActivity(new Intent(this, AdminProfileActivity.class));
                 return false;
             }
             return false;

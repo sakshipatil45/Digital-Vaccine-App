@@ -47,6 +47,7 @@ public class AdminAnnouncementsActivity extends AppCompatActivity {
         etDate = findViewById(R.id.etAnnounceDate);
         etTime = findViewById(R.id.etAnnounceTime);
         etLocation = findViewById(R.id.etAnnounceLocation);
+        rvRecent = findViewById(R.id.rvRecentAnnouncements);
 
         Toolbar toolbar = findViewById(R.id.toolbarAnnouncements);
         setSupportActionBar(toolbar);
@@ -67,6 +68,23 @@ public class AdminAnnouncementsActivity extends AppCompatActivity {
         btnSend.setOnClickListener(v -> sendBroadcast());
 
         loadRecentAnnouncements();
+        handlePrefills();
+    }
+
+    private void handlePrefills() {
+        if (getIntent() != null) {
+            String title = getIntent().getStringExtra("prefill_title");
+            String msg = getIntent().getStringExtra("prefill_message");
+            String date = getIntent().getStringExtra("prefill_date");
+            String time = getIntent().getStringExtra("prefill_time");
+            String loc = getIntent().getStringExtra("prefill_location");
+
+            if (title != null) etTitle.setText(title);
+            if (msg != null) etMessage.setText(msg);
+            if (date != null) etDate.setText(date);
+            if (time != null) etTime.setText(time);
+            if (loc != null) etLocation.setText(loc);
+        }
     }
 
     private void showDatePicker() {

@@ -90,12 +90,15 @@ public class FamilyMembersActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         memberList.clear();
                         for (QueryDocumentSnapshot document : task.getResult()) {
+                            String rel = document.getString("relationship");
+                            if (rel == null) rel = document.getString("category");
+                            
                             FamilyMember member = new FamilyMember(
                                     document.getId(),
                                     document.getString("name"),
                                     document.getString("age"),
                                     document.getString("gender"),
-                                    document.getString("category")
+                                    rel
                             );
                             memberList.add(member);
                         }

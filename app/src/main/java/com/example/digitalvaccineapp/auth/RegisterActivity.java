@@ -127,7 +127,12 @@ public class RegisterActivity extends AppCompatActivity {
                     // Save user details to backend
                     saveProfileToBackend(name, phone, familyPhone, age, gender, selectedRole);
                 } else {
-                    Toast.makeText(this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                    String error = task.getException() != null ? task.getException().getMessage() : "Unknown error";
+                    if (task.getException() instanceof com.google.firebase.auth.FirebaseAuthUserCollisionException) {
+                        Toast.makeText(this, "This mobile number is already registered. If an Admin added you, please try logging in with the default password 'password123'.", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(this, "Registration failed: " + error, Toast.LENGTH_LONG).show();
+                    }
                 }
             });
     }

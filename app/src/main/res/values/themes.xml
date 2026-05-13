@@ -35,7 +35,17 @@
         <item name="shapeAppearanceLargeComponent">@style/ShapeAppearanceOverlay.App.LargeComponent</item>
         
         <item name="fontFamily">sans-serif</item>
+        <item name="bottomNavigationStyle">@style/Widget.App.BottomNavigationView</item>
     </style>
+
+    <style name="Widget.App.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemIconTint">@color/primary_teal</item>
+        <item name="itemTextColor">@color/primary_teal</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="android:background">@color/white</item>
+    </style>
+
+
 
     <style name="ShapeAppearanceOverlay.App.SmallComponent" parent="">
         <item name="cornerFamily">rounded</item>
@@ -48,5 +58,15 @@
     <style name="ShapeAppearanceOverlay.App.LargeComponent" parent="">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">24dp</item>
+    </style>
+    <style name="BottomNavLabel" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">11sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="BottomNavLabelInactive" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">10sp</item>
+        <item name="fontFamily">sans-serif</item>
     </style>
 </resources>

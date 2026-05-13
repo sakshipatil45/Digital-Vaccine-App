@@ -26,6 +26,7 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:padding="8dp"
+        android:paddingBottom="80dp"
         android:clipToPadding="false"/>
 
     <LinearLayout
@@ -67,5 +68,16 @@
         app:backgroundTint="@color/primary_blue"
         app:tint="@color/white"
         app:elevation="4dp"/>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/adminBottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:elevation="8dp"
+        app:itemIconSize="24dp"
+        app:itemTextAppearanceActive="@style/BottomNavLabel"
+        app:itemTextAppearanceInactive="@style/BottomNavLabelInactive"
+        app:menu="@menu/bottom_nav_admin" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

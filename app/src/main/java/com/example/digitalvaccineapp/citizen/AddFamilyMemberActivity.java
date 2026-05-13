@@ -33,6 +33,9 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private FirebaseAuth secondaryAuth;
+    private boolean isEditMode = false;
+    private String editMemberId = null;
+    private String existingUserId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,9 +56,16 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbarAddFamily);
         setSupportActionBar(toolbar);
+        
+        if (getIntent().hasExtra("edit_mode")) {
+            isEditMode = getIntent().getBooleanExtra("edit_mode", false);
+            editMemberId = getIntent().getStringExtra("beneficiaryId");
+        }
+
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setTitle(isEditMode ? "Edit Patient Profile" : "Add Family Member");
         }
         toolbar.setNavigationOnClickListener(v -> finish());
 
@@ -74,7 +84,47 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
 
         setupCategorySpinner();
 
+        if (isEditMode) {
+            btnSaveFamilyMember.setText("Update Record");
+            loadExistingData();
+        }
+
         btnSaveFamilyMember.setOnClickListener(v -> saveFamilyMember());
+    }
+
+    private void loadExistingData() {
+        if (editMemberId == null) return;
+        db.collection("family_members").document(editMemberId).get()
+            .addOnSuccessListener(doc -> {
+                if (doc.exists()) {
+                    existingUserId = doc.getString("userId");
+                    etFamilyName.setText(doc.getString("name"));
+                    etFamilyAge.setText(doc.getString("age"));
+                    
+                    String category = doc.getString("category");
+                    if (category != null) {
+                        spinnerCategory.setText(category, false);
+                        updateFieldVisibility(category);
+                    }
+                    
+                    String gender = doc.getString("gender");
+                    if ("Male".equalsIgnoreCase(gender)) rgFamilyGender.check(R.id.rbFamilyMale);
+                    else if ("Female".equalsIgnoreCase(gender)) rgFamilyGender.check(R.id.rbFamilyFemale);
+
+                    etMotherName.setText(doc.getString("motherName"));
+                    etFatherName.setText(doc.getString("fatherName"));
+                    etHusbandName.setText(doc.getString("husbandName"));
+
+                    if (existingUserId != null) {
+                        db.collection("users").document(existingUserId).get()
+                            .addOnSuccessListener(userDoc -> {
+                                if (userDoc.exists()) {
+                                    etUserPhone.setText(userDoc.getString("phone"));
+                                }
+                            });
+                    }
+                }
+            });
     }
 
     private void setupCategorySpinner() {
@@ -145,7 +195,7 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
 
                                 db.collection("users").document(newUserId).set(newUser)
                                     .addOnSuccessListener(aVoid -> {
-                                        saveMemberToDb(newUserId, name, ageStr, gender, isPregnant, category);
+                                        saveMemberToDb(newUserId, targetPhone, name, ageStr, gender, isPregnant, category);
                                     });
                                 
                                 secondaryAuth.signOut();
@@ -160,7 +210,7 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
                     com.google.firebase.firestore.DocumentSnapshot userDoc = queryDocumentSnapshots.getDocuments().get(0);
                     String targetUserId = userDoc.getId();
 
-                    saveMemberToDb(targetUserId, name, ageStr, gender, isPregnant, category);
+                    saveMemberToDb(targetUserId, targetPhone, name, ageStr, gender, isPregnant, category);
                 })
                 .addOnFailureListener(e -> {
                     btnSaveFamilyMember.setEnabled(true);
@@ -168,10 +218,13 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
                 });
     }
 
-    private void saveMemberToDb(String targetUserId, String name, String ageStr, String gender, boolean isPregnant, String category) {
-        String newId = UUID.randomUUID().toString();
+    private void saveMemberToDb(String targetUserId, String targetPhone, String name, String ageStr, String gender, boolean isPregnant, String category) {
+        String docId = isEditMode && editMemberId != null ? editMemberId : UUID.randomUUID().toString();
         java.util.HashMap<String, Object> memberData = new java.util.HashMap<>();
-        memberData.put("memberId", newId);
+        if (!isEditMode) {
+            memberData.put("memberId", docId);
+        }
+        memberData.put("targetPhone", targetPhone);
         memberData.put("userId", targetUserId);
 
         memberData.put("name", name);
@@ -180,15 +233,31 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
         memberData.put("isPregnant", isPregnant);
         memberData.put("category", category);
         memberData.put("createdAt", com.google.firebase.Timestamp.now());
+        memberData.put("updatedAt", com.google.firebase.Timestamp.now());
 
         if (category.contains("year")) {
             memberData.put("motherName", etMotherName.getText().toString().trim());
             memberData.put("fatherName", etFatherName.getText().toString().trim());
+            memberData.put("husbandName", null); // Clear if switched category
         } else if (category.equals("Pregnant Women")) {
             memberData.put("husbandName", etHusbandName.getText().toString().trim());
+            memberData.put("motherName", null);
+            memberData.put("fatherName", null);
         }
 
-        db.collection("family_members").document(newId).set(memberData)
+        if (isEditMode) {
+            db.collection("family_members").document(docId).update(memberData)
+                .addOnSuccessListener(aVoid -> {
+                    btnSaveFamilyMember.setEnabled(true);
+                    Toast.makeText(this, "Profile updated successfully", Toast.LENGTH_SHORT).show();
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    btnSaveFamilyMember.setEnabled(true);
+                    Snackbar.make(findViewById(android.R.id.content), "Update failed: " + e.getMessage(), Snackbar.LENGTH_LONG).show();
+                });
+        } else {
+            db.collection("family_members").document(docId).set(memberData)
                 .addOnSuccessListener(aVoid -> {
                     btnSaveFamilyMember.setEnabled(true);
                     Toast.makeText(this, "Member added successfully", Toast.LENGTH_SHORT).show();
@@ -198,5 +267,6 @@ public class AddFamilyMemberActivity extends AppCompatActivity {
                     btnSaveFamilyMember.setEnabled(true);
                     Snackbar.make(findViewById(android.R.id.content), "Save failed: " + e.getMessage(), Snackbar.LENGTH_LONG).show();
                 });
+        }
     }
 }

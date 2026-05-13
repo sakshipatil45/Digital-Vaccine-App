@@ -117,13 +117,16 @@ public class VaccinationRepository {
 
     // --- REMINDER SYNC METHODS ---
 
-    public void addReminder(String beneficiaryId, String vaccineName, String date, SimpleCallback callback) {
+    public void addReminder(String beneficiaryId, String memberName, String vaccineName, String date, String time, String place, SimpleCallback callback) {
         if (beneficiaryId == null) return;
 
         Map<String, Object> reminder = new HashMap<>();
         reminder.put("memberId", beneficiaryId);
+        reminder.put("memberName", memberName);
         reminder.put("vaccineName", vaccineName);
         reminder.put("reminderDate", date);
+        reminder.put("reminderTime", time);
+        reminder.put("place", place);
         reminder.put("status", "Pending");
         reminder.put("createdAt", com.google.firebase.Timestamp.now());
 
@@ -174,8 +177,11 @@ public class VaccinationRepository {
                                 // 2. Add Notification/Reminder
                                 Map<String, Object> notif = new HashMap<>();
                                 notif.put("memberId", memberId);
+                                notif.put("memberName", memberName);
                                 notif.put("vaccineName", vaccineName);
                                 notif.put("reminderDate", date);
+                                notif.put("reminderTime", time);
+                                notif.put("place", place);
                                 notif.put("status", "Pending");
                                 notif.put("message", "Upcoming vaccination scheduled at " + place);
                                 notif.put("createdAt", com.google.firebase.Timestamp.now());

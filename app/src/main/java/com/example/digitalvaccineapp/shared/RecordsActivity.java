@@ -3,6 +3,7 @@ package com.example.digitalvaccineapp.shared;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -27,8 +28,10 @@ public class RecordsActivity extends AppCompatActivity {
     private VaccinationRepository repository;
     private com.google.android.material.textfield.TextInputEditText etSearch;
     private android.widget.ProgressBar progressBar;
+    private TextView tvCompletedCount, tvPendingCount;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+    private String filterDependent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +42,17 @@ public class RecordsActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         repository = new VaccinationRepository(this);
         
+        filterDependent = getIntent().getStringExtra("filterDependent");
+        if (filterDependent != null) {
+            com.google.android.material.appbar.MaterialToolbar toolbar = findViewById(R.id.toolbar);
+            toolbar.setTitle("Records: " + filterDependent);
+        }
+
         recyclerView = findViewById(R.id.rvVaccinationsList);
         progressBar = findViewById(R.id.progressBar);
+        tvCompletedCount = findViewById(R.id.tvCompletedCount);
+        tvPendingCount = findViewById(R.id.tvPendingCount);
+        
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         
         adapter = new VaccinationAdapter(vaccinationList, new VaccinationAdapter.OnVaccinationClickListener() {
@@ -49,7 +61,7 @@ public class RecordsActivity extends AppCompatActivity {
                 Intent intent = new Intent(RecordsActivity.this, AddVaccinationActivity.class);
                 intent.putExtra("edit_mode", true);
                 intent.putExtra("vax_id", vaccination.getId());
-                intent.putExtra("beneficiary_id", vaccination.getPatientId()); // Passed for repository update
+                intent.putExtra("beneficiary_id", vaccination.getPatientId());
                 intent.putExtra("vax_name", vaccination.getVaccineName());
                 intent.putExtra("vax_dose", vaccination.getDoseNumber());
                 intent.putExtra("vax_date", vaccination.getDateTaken());
@@ -63,6 +75,9 @@ public class RecordsActivity extends AppCompatActivity {
                 Intent intent = new Intent(RecordsActivity.this, ReminderActivity.class);
                 intent.putExtra("force_vaccine", vaccination.getVaccineName());
                 intent.putExtra("force_patient", vaccination.getDependentName());
+                intent.putExtra("force_member_id", vaccination.getPatientId());
+                intent.putExtra("force_hospital", vaccination.getHospitalName());
+                intent.putExtra("force_date", vaccination.getDateTaken());
                 startActivity(intent);
             }
 
@@ -78,6 +93,7 @@ public class RecordsActivity extends AppCompatActivity {
                 intent.putExtra("dose", vaccination.getDoseNumber());
                 intent.putExtra("date", vaccination.getDateTaken());
                 intent.putExtra("hospital", vaccination.getHospitalName());
+                intent.putExtra("status", vaccination.getStatus());
                 startActivity(intent);
             }
         }, true);
@@ -120,15 +136,20 @@ public class RecordsActivity extends AppCompatActivity {
     private void filterRecords(String query) {
         List<Vaccination> filtered = new ArrayList<>();
         for (Vaccination v : fullList) {
-            if (v.getVaccineName().toLowerCase().contains(query.toLowerCase()) ||
+            boolean matchesQuery = v.getVaccineName().toLowerCase().contains(query.toLowerCase()) ||
                 v.getHospitalName().toLowerCase().contains(query.toLowerCase()) ||
-                v.getDependentName().toLowerCase().contains(query.toLowerCase())) {
+                v.getDependentName().toLowerCase().contains(query.toLowerCase());
+            
+            boolean matchesMember = (filterDependent == null) || (v.getDependentName() != null && v.getDependentName().equalsIgnoreCase(filterDependent));
+            
+            if (matchesQuery && matchesMember) {
                 filtered.add(v);
             }
         }
         vaccinationList.clear();
         vaccinationList.addAll(filtered);
         adapter.notifyDataSetChanged();
+        updateCounts(filtered);
     }
 
     private void fetchVaccinations() {
@@ -138,12 +159,13 @@ public class RecordsActivity extends AppCompatActivity {
         String uid = mAuth.getCurrentUser().getUid();
         fullList.clear();
         
+        // Fetch by userId (for now, will expand to phone if needed)
         db.collection("vaccinations").whereEqualTo("userId", uid).get()
             .addOnSuccessListener(vaxDocs -> {
                 for (QueryDocumentSnapshot vaxDoc : vaxDocs) {
                     Vaccination v = vaxDoc.toObject(Vaccination.class);
                     v.setId(vaxDoc.getId());
-                    v.setPatientId(vaxDoc.getString("memberId")); // Store member ID for deletion/edit
+                    v.setPatientId(vaxDoc.getString("memberId"));
                     fullList.add(v);
                 }
                 finishLoading();
@@ -158,8 +180,32 @@ public class RecordsActivity extends AppCompatActivity {
         runOnUiThread(() -> {
             progressBar.setVisibility(View.GONE);
             vaccinationList.clear();
-            vaccinationList.addAll(fullList);
+            
+            List<Vaccination> filtered = new ArrayList<>();
+            for (Vaccination v : fullList) {
+                if (filterDependent == null || (v.getDependentName() != null && v.getDependentName().equalsIgnoreCase(filterDependent))) {
+                    filtered.add(v);
+                }
+            }
+            
+            vaccinationList.addAll(filtered);
             adapter.notifyDataSetChanged();
+            updateCounts(filtered);
         });
+    }
+
+    private void updateCounts(List<Vaccination> list) {
+        int completed = 0;
+        int pending = 0;
+        for (Vaccination v : list) {
+            String status = v.getStatus() != null ? v.getStatus().toLowerCase() : "pending";
+            if (status.contains("completed") || status.contains("done")) {
+                completed++;
+            } else {
+                pending++;
+            }
+        }
+        tvCompletedCount.setText(String.valueOf(completed));
+        tvPendingCount.setText(String.valueOf(pending));
     }
 }

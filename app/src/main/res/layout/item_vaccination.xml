@@ -68,10 +68,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Self"
             android:textColor="@color/text_main"
             android:textSize="12sp"
             android:textStyle="italic"
+            android:visibility="gone"
             app:layout_constraintEnd_toStartOf="@id/vStatusBadge"
             app:layout_constraintStart_toEndOf="@id/iconContainer"
             app:layout_constraintTop_toBottomOf="@id/tvHospitalName" />

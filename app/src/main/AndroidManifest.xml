@@ -135,6 +135,21 @@
             android:exported="false">
         </activity>
 
+        <activity
+            android:name=".admin.AdminProfileActivity"
+            android:exported="false">
+        </activity>
+
+        <activity
+            android:name=".admin.AdminEditProfileActivity"
+            android:exported="false">
+        </activity>
+
+        <activity
+            android:name=".admin.AdminScheduledCampaignsActivity"
+            android:exported="false">
+        </activity>
+
         <service
             android:name=".core.MyFirebaseMessagingService"
             android:exported="true">
