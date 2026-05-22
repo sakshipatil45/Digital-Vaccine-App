@@ -26,7 +26,6 @@ public class RegisterActivity extends AppCompatActivity {
     private TextInputEditText etName, etPhone, etFamilySyncPhone, etPassword, etConfirmPassword, etAge;
     private RadioGroup rgGender;
     private MaterialButton btnRegister;
-    private MaterialCardView cardAdmin, cardCitizen;
     private String selectedRole = "citizen";
     private TextView tvLogin;
     private FirebaseAuth mAuth;
@@ -50,11 +49,6 @@ public class RegisterActivity extends AppCompatActivity {
         rgGender = findViewById(R.id.rgGender);
         btnRegister = findViewById(R.id.btnRegister);
         tvLogin = findViewById(R.id.tvLogin);
-        cardAdmin = findViewById(R.id.cardAdmin);
-        cardCitizen = findViewById(R.id.cardCitizen);
-
-        cardAdmin.setOnClickListener(v -> selectRole("admin"));
-        cardCitizen.setOnClickListener(v -> selectRole("citizen"));
 
         btnRegister.setOnClickListener(v -> registerUser());
         
@@ -63,27 +57,6 @@ public class RegisterActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
-    }
-
-    private void selectRole(String role) {
-        selectedRole = role;
-        if ("admin".equals(role)) {
-            cardAdmin.setStrokeColor(Color.parseColor("#1976D2")); // Blue for Admin
-            cardAdmin.setStrokeWidth(4);
-            cardAdmin.setCardBackgroundColor(Color.parseColor("#E3F2FD"));
-
-            cardCitizen.setStrokeColor(Color.parseColor("#E0E0E0"));
-            cardCitizen.setStrokeWidth(2);
-            cardCitizen.setCardBackgroundColor(Color.WHITE);
-        } else {
-            cardCitizen.setStrokeColor(Color.parseColor("#FF9800")); // Orange
-            cardCitizen.setStrokeWidth(4);
-            cardCitizen.setCardBackgroundColor(Color.parseColor("#FFF3E0"));
-
-            cardAdmin.setStrokeColor(Color.parseColor("#E0E0E0"));
-            cardAdmin.setStrokeWidth(2);
-            cardAdmin.setCardBackgroundColor(Color.WHITE);
-        }
     }
 
     private void registerUser() {
